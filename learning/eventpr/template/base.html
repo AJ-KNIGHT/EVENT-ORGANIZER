@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{% block title %}
+        {% endblock %}
+    </title>
+
+    <!-- CDNS -->
+
+    <link 
+    rel="stylesheet" 
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"
+    />
+    <link 
+    rel="stylesheet" 
+    href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css"
+    />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+<style>
+.nav li a{
+    color: gold;
+    font-size: 20px;
+}
+.navbar-brand{
+    font-size: 25px;
+    color: gold;
+    font-family: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
+}
+</style>
+
+
+  </head>
+  <body>
+
+    <!-- navbar start -->
+
+    <nav class="navbar navbaar-inverse">
+      <div class="container-fluid">
+        <div class="navbar-header">
+          <a href="#" class="navbar-brand">Events</a>
+        </div>
+        <ul class="nav navbar-nav">
+          <li class="active"><a href="{% url 'index' %}">Home</a></li>
+          <li><a href="{% url 'about' %}">About</a></li>
+          <li><a href="{% url 'events' %}">Events</a></li>
+          <li><a href="{% url 'booking' %}">Booking</a></li>
+          <li><a href="{% url 'contact' %}">Contact</a></li>
+
+        </ul>
+        <ul class="nav navbar-nav navbar-right">
+          <li>
+            <a href="#"
+              ><span class="glyphicon glyphicon-user"></span>Sign Up</a
+            >
+          </li>
+          <li>
+            <a href="#"><span class="glyphicon glyphicon-user"></span> Login</a>
+          </li>
+        </ul>
+      </div>
+    </nav>
+
+    {% block content %}
+    {% endblock %}
+ 
+  </body>
+</html>
