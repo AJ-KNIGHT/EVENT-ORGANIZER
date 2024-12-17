@@ -5,6 +5,12 @@ Booking
 {% endblock %}
 
 {% block content %}
-Booking Page
+<form action="" method="POST">
+    {% csrf_token %}
+
+{{form.as_P}}
+<button class="btn">Book Now</button>
+
+</form>
 
 {% endblock %}

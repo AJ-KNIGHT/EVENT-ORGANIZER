@@ -10,3 +10,10 @@
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
 
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+
+
+dictionary made in eventapp/views.py
+for loop with the use of dictionary in events.html
+
+
+perplexity :  https://www.perplexity.ai/search/git-clone-git-github-com-aj-kn-lkeIQWt7QGSFsnWKNl9g7g
