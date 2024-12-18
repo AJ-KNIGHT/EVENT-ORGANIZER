@@ -1,0 +1,92 @@
+body {
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+    background: linear-gradient(135deg, #283048, #859398);
+    color: #fff;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.container {
+    width: 100%;
+    max-width: 400px;
+    margin: 50px auto;
+    background: linear-gradient(135deg, #3a3d40, #48494b);
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    overflow: hidden;
+}
+
+.title {
+    background: linear-gradient(90deg, #6a82fb, #fc5c7d);
+    text-align: center;
+    font-size: 24px;
+    font-weight: bold;
+    color: #fff;
+    padding: 15px 0;
+    text-transform: uppercase;
+}
+
+.content {
+    padding: 20px;
+}
+
+.user-details {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.input-box {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.input-box label {
+    font-size: 14px;
+    color: #6a82fb;
+    font-weight: bold;
+}
+
+.input-box input {
+    height: 40px;
+    border: 1px solid #6a82fb;
+    border-radius: 5px;
+    padding: 0 10px;
+    background: transparent;
+    color: #fff;
+    font-size: 14px;
+}
+
+.input-box input:focus {
+    outline: none;
+    border-color: #fc5c7d;
+}
+
+.button input {
+    width: 100%;
+    height: 45px;
+    border: none;
+    border-radius: 5px;
+    background: linear-gradient(90deg, #6a82fb, #e89bc3);
+    color: #fff;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 1.5s ease, transform 0.5s ease;
+    background-size: 300% 300%;
+}
+
+.button input:hover {
+    background: linear-gradient(90deg, #6a82fb, #ddafe6, #fbcf71, #d38fd4);
+    background-position: right;
+    transform: scale(1.1);
+}
+
+script {
+    color: #fff;
+}

@@ -19,7 +19,7 @@
     />
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
-<style>
+ <style>
 .nav li a{
     color: gold;
     font-size: 20px;
@@ -45,26 +45,33 @@
         <ul class="nav navbar-nav">
           <li class="active"><a href="{% url 'index' %}">Home</a></li>
           <li><a href="{% url 'about' %}">About</a></li>
+          {% if user.is_authenticated %}
           <li><a href="{% url 'events' %}">Events</a></li>
           <li><a href="{% url 'booking' %}">Booking</a></li>
           <li><a href="{% url 'contact' %}">Contact</a></li>
-
+          <li>
+            <a href="{% url 'logout' %}"><span class="glyphicon glyphicon-user"></span> Logout</a>
+          </li>
+          <h3>{{user.username}}</h3>
+          {% else %}
         </ul>
         <ul class="nav navbar-nav navbar-right">
           <li>
-            <a href="#"
+            <a href="{% url 'register' %}"
               ><span class="glyphicon glyphicon-user"></span>Sign Up</a
             >
           </li>
           <li>
-            <a href="#"><span class="glyphicon glyphicon-user"></span> Login</a>
+            <a href="{% url 'login' %}"><span class="glyphicon glyphicon-user"></span> Login</a>
           </li>
+          {% endif %}
         </ul>
       </div>
     </nav>
 
     {% block content %}
     {% endblock %}
+    
  
   </body>
 </html>

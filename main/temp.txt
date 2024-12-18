@@ -17,3 +17,5 @@ for loop with the use of dictionary in events.html
 
 
 perplexity :  https://www.perplexity.ai/search/git-clone-git-github-com-aj-kn-lkeIQWt7QGSFsnWKNl9g7g
+
+chatgpt : https://chatgpt.com/share/67629026-3a28-8009-aeef-671b6f05d1f6

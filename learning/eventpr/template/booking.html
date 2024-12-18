@@ -1,16 +1,18 @@
 {% extends 'base.html' %}
 
-{% block title %}
-Booking
-{% endblock %}
+{% block title %} Booking Form{% endblock %}
+
 
 {% block content %}
+<div class="container p-3 text-center">
+    <h1>Book Your Events</h1><br>
 <form action="" method="POST">
     {% csrf_token %}
 
-{{form.as_P}}
-<button class="btn">Book Now</button>
+{{form.as_p}}
+<button class="btn text-center">Book Now</button>
 
 </form>
+</div>
 
 {% endblock %}

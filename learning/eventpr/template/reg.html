@@ -1,0 +1,49 @@
+{% load static %}
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{% static 'style/styleuser.css' %}">
+    <title>REgistration</title>
+</head>
+<body>
+   <div class="container">
+        <div class="title">Registration</div>
+        <div class="content">
+            <form action="" method="post">
+                {% csrf_token %}
+                <div class="user-details">
+                    <div class="input-box">
+                        <label>User Name :</label>
+                        <input type="text" name="username">
+                    </div>
+                    <div class="input-box">
+                        <label>E-Mail ID : </label>
+                        <input type="email" name="email">
+                    </div>
+                    <div class="input-box">
+                        <label>Password : </label>
+                        <input type="password" name="password">
+                    </div>
+                    <div class="input-box">
+                        <label>Confirm Password : </label>
+                        <input type="password" name="confirmpassword">
+                    </div>
+                    <div class="button">
+                        <input type="submit" name="submit" value="Signup">
+                    </div>
+                </div>
+            </form>
+        </div>
+        {% for message in messages %}
+        <script>
+            alert('{{message}}');
+        </script>
+        {% endfor %}
+    </div> 
+
+</body>
+</html>
