@@ -1,0 +1,102 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}About{% endblock %}
+
+{% block content %}
+<div class="container p-4">
+  <h2 class="text-center text-primary mb-4" data-aos="fade-up">About Us</h2>
+  
+  <div class="row mb-4">
+    <div class="col-md-6" data-aos="fade-right">
+      <h3 class="text-secondary">Who We Are</h3>
+      <p>We are a team of passionate individuals dedicated to creating seamless and unforgettable event experiences.</p>
+    </div>
+    <div class="col-md-6" data-aos="fade-left">
+      <img src="{% static 'images/about_us.jpg' %}" alt="About Us" class="img-fluid rounded" data-aos="zoom-in">
+    </div>
+  </div>
+
+  <div class="row mb-4">
+    <div class="col-md-12" data-aos="fade-up" data-aos-delay="100">
+      <h3 class="text-secondary">Our Mission</h3>
+      <p>Our mission is to provide an all-in-one platform that simplifies event management, helping organizers create amazing experiences while giving attendees the tools they need to find and enjoy events with ease.</p>
+    </div>
+  </div>
+
+  <div class="row" data-aos="fade-up" data-aos-delay="200">
+    <div class="col-md-12">
+      <h3 class="text-secondary">Contact Us</h3>
+      <ul>
+        <li><strong>Email:</strong> support@eventplatform.com</li>
+        <li><strong>Phone:</strong> +1 (123) 456-7890</li>
+        <li><strong>Address:</strong> 123 Event St, Event City, EC 12345</li>
+      </ul>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+<!-- Additional Styles -->
+<style>
+  h3 {
+    font-size: 1.75rem;
+    font-weight: 600;
+  }
+  ul {
+    list-style-type: none;
+    padding-left: 0;
+  }
+  ul li {
+    font-size: 1.1rem;
+    margin-bottom: 10px;
+  }
+
+  .img-fluid {
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+
+  /* Custom Animation */
+  .fade-right {
+    animation: fadeInRight 1s ease-in-out;
+  }
+  .fade-left {
+    animation: fadeInLeft 1s ease-in-out;
+  }
+  .zoom-in {
+    animation: zoomIn 1s ease-in-out;
+  }
+
+  @keyframes fadeInRight {
+    from {
+      opacity: 0;
+      transform: translateX(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  @keyframes fadeInLeft {
+    from {
+      opacity: 0;
+      transform: translateX(-20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  @keyframes zoomIn {
+    from {
+      opacity: 0;
+      transform: scale(0.8);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+</style>

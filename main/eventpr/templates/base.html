@@ -1,86 +1,154 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>{% block title %}Event Management{% endblock %}</title>
+    <title>{% block title %}EventPro - Leading Event Management{% endblock %}</title>
 
     {% load static %}
 
-    <!-- CDNs for Bootstrap, FontAwesome, and Google Fonts -->
+    <!-- CDN Links for Bootstrap, FontAwesome, Google Fonts, and AOS (for animations) -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet" />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" />
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;600&display=swap" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css" rel="stylesheet" />
 
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
 
     <style>
+        /* Global Styles */
         body {
-            font-family: 'Poppins', sans-serif;
+            font-family: 'Roboto', sans-serif;
             background-color: #f4f7fa;
             margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
+
         .navbar {
-            background-color: #333;
-            margin-bottom: 0;
+            background-color: #343a40;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
+
         .navbar-brand {
-            font-size: 30px;
+            font-size: 32px;
             color: #fff;
-            font-weight: 600;
+            font-weight: 700;
+            letter-spacing: 1px;
         }
-        .nav-item a {
+
+        .navbar-nav .nav-item a {
             font-size: 18px;
             color: #fff;
-            padding: 14px 20px;
+            padding: 14px 25px;
         }
-        .nav-item a:hover {
-            background-color: #555;
+
+        .navbar-nav .nav-item a:hover {
+            color: #007bff;
+            transition: color 0.3s ease;
         }
-        .navbar-nav .active a {
-            background-color: #007bff;
-            color: #fff;
-        }
+
         .hero-section {
-            background: linear-gradient(to bottom, rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.7)), url('{% static "images/hero-background.jpg" %}') no-repeat center center;
+            background: linear-gradient(to bottom, rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.7)), url('{% static "images/hero-bg.jpg" %}') no-repeat center center;
             background-size: cover;
-            height: 400px;
-            color: white;
+            height: 80vh;
             display: flex;
             justify-content: center;
             align-items: center;
+            color: #fff;
+            text-align: center;
+            animation: fadeIn 1s ease-in-out;
         }
+
         .hero-section h1 {
             font-size: 50px;
             font-weight: 600;
+            letter-spacing: 2px;
+            animation: fadeUp 1.2s ease-in-out;
         }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes fadeUp {
+            from {
+                transform: translateY(20px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
         footer {
-            background-color: #333;
+            background-color: #343a40;
             color: #fff;
-            padding: 20px;
+            padding: 25px;
             text-align: center;
+            box-shadow: 0 -4px 6px rgba(0, 0, 0, 0.1);
         }
+
         footer a {
             color: #fff;
+            text-decoration: none;
         }
+
         footer a:hover {
             color: #007bff;
         }
 
-        /* Optional: For better styling of the messages */
-        .alert {
-            margin-top: 20px;
+        /* Button Styles */
+        .btn-primary,
+        .btn-success {
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover,
+        .btn-success:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 12px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f4f7fa;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #007bff;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #0056b3;
         }
     </style>
 </head>
 
 <body>
 
+    <!-- Navbar -->
     <nav class="navbar navbar-expand-lg navbar-dark">
         <div class="container-fluid">
             <a class="navbar-brand" href="{% url 'index' %}">EventPro</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
@@ -89,7 +157,6 @@
                     <li class="nav-item"><a href="{% url 'about' %}" class="nav-link">About</a></li>
                     {% if user.is_authenticated %}
                         <li class="nav-item"><a href="{% url 'events' %}" class="nav-link">Events</a></li>
-                        <li class="nav-item"><a href="{% url 'booking' %}" class="nav-link">Booking</a></li>
                         <li class="nav-item"><a href="{% url 'contact' %}" class="nav-link">Contact</a></li>
                         <li class="nav-item"><a href="{% url 'logout' %}" class="nav-link">Logout</a></li>
                         <li class="nav-item"><span class="nav-link">{{ user.username }}</span></li>
@@ -113,12 +180,21 @@
         </div>
     {% endif %}
 
+    <!-- Main Content Section -->
     {% block content %}
     {% endblock %}
 
+    <!-- Footer -->
     <footer>
-        <p>&copy; 2024 EventPro. All rights reserved. | <a href="#">Privacy Policy</a> | <a href="#">Terms & Conditions</a></p>
+        <p>&copy; 2024 EventPro. All rights reserved. | <a href="#">Privacy Policy</a> | <a href="#">Terms & Conditions</a>
+        </p>
     </footer>
 
+    <!-- Initialize AOS (animations on scroll) -->
+    <script>
+        AOS.init();
+    </script>
+
 </body>
+
 </html>

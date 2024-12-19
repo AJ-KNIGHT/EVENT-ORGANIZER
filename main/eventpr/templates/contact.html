@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+
+{% block title %}
+Contact Us
+{% endblock %}
+
+{% block content %}
+<div class="container p-5" data-aos="fade-up">
+    <h2 class="text-center text-primary mb-4">Contact Us</h2>
+    
+    <div class="row">
+        <!-- Contact Form -->
+        <div class="col-md-6">
+            <h3 class="text-secondary">Get in Touch</h3>
+            <p>If you have any questions or need assistance, feel free to contact us using the form below. We are here to help you!</p>
+            <form action="#" method="post" class="shadow-lg p-4 bg-white rounded">
+                {% csrf_token %}
+                <div class="form-floating mb-4">
+                    <input type="text" class="form-control" id="name" name="name" placeholder="Full Name" required>
+                    <label for="name">Full Name</label>
+                </div>
+                <div class="form-floating mb-4">
+                    <input type="email" class="form-control" id="email" name="email" placeholder="Email Address" required>
+                    <label for="email">Email Address</label>
+                </div>
+                <div class="form-floating mb-4">
+                    <textarea class="form-control" id="message" name="message" placeholder="Your Message" rows="4" style="height: 120px;" required></textarea>
+                    <label for="message">Your Message</label>
+                </div>
+                <div class="d-grid">
+                    <button type="submit" class="btn btn-success btn-lg">Submit</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Contact Information -->
+        <div class="col-md-6" data-aos="fade-left" data-aos-delay="200">
+            <h3 class="text-secondary">Our Office</h3>
+            <ul class="list-unstyled">
+                <li><strong>Email:</strong> support@eventplatform.com</li>
+                <li><strong>Phone:</strong> +1 (123) 456-7890</li>
+                <li><strong>Address:</strong> 123 Event St, Event City, EC 12345</li>
+            </ul>
+            <img src="{% static 'images/contact-us.jpg' %}" alt="Contact Us" class="img-fluid rounded shadow-lg mt-4">
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+<style>
+    .container {
+        max-width: 800px;
+    }
+
+    form {
+        border-radius: 10px;
+    }
+
+    .btn-success:hover {
+        transform: scale(1.05);
+    }
+</style>
