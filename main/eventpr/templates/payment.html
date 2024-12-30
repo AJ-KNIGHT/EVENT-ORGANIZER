@@ -1,0 +1,170 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Payment Info Card -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-primary text-white">
+            <h2 class="card-title mb-0">Payment for Booking: {{ booking.event_name }}</h2>
+        </div>
+        <div class="card-body">
+            <p><strong>Event Date:</strong> {{ booking.event_date }}</p>
+            <p><strong>Venue:</strong> {{ booking.venue }}</p>
+            <p><strong>Total Amount:</strong> ₹{{ booking.total_amount }}</p>
+            <p><strong>Payment Method:</strong> {{ booking.payment_method }}</p> <!-- Displaying Payment Method -->
+        </div>
+    </div>
+
+    {% if booking.payment_method == "Cash" %}
+        <!-- If Cash Payment is Chosen -->
+        <div class="alert alert-info">
+            <p>You have chosen to pay in cash at the event venue. No further action is required.</p>
+        </div>
+    {% endif %}
+
+    {% if booking.payment_method == "Online" %}
+        <!-- Razorpay Payment Form -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-success text-white">
+                <h4 class="card-title mb-0">Complete Your Payment via Razorpay</h4>
+            </div>
+            <div class="card-body">
+                <p>Click below to proceed with the payment.</p>
+                <button id="razorpay-button" class="btn btn-success btn-block">Pay with Razorpay</button>
+            </div>
+        </div>
+    {% endif %}
+
+    {% if qr_code %}
+        <!-- QR Code for UPI Payment -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-info text-white">
+                <h4 class="card-title mb-0">Scan the QR Code to Pay</h4>
+            </div>
+            <div class="card-body text-center">
+                <img src="{{ qr_code.url }}" alt="QR Code" class="img-fluid" style="max-width: 300px; margin-bottom: 20px;">
+                <p>Scan the QR code using your UPI app to complete the payment.</p>
+            </div>
+        </div>
+    {% endif %}
+
+    {% if upi_details %}
+        <!-- Traditional UPI Payment Details for Non-QR Users -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-info text-white">
+                <h4 class="card-title mb-0">UPI Payment Details</h4>
+            </div>
+            <div class="card-body">
+                <p>{{ upi_details }}</p>
+                <p>Use your UPI app to send the payment. Please ensure the amount is correct.</p>
+            </div>
+        </div>
+    {% endif %}
+
+    {% if booking.payment_method != "Cash" %}
+        <!-- Payment Proof Upload Section -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-success text-white">
+                <h4 class="card-title mb-0">Upload Payment Proof</h4>
+            </div>
+            <div class="card-body">
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+
+                    {% if form.errors %}
+                    <div class="alert alert-danger">
+                        <ul>
+                            {% for field in form %}
+                            {% for error in field.errors %}
+                            <li>{{ error }}</li>
+                            {% endfor %}
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    {% endif %}
+
+                    <div class="form-group">
+                        {{ form.as_p }}
+                    </div>
+
+                    <div class="form-group">
+                        <button type="submit" class="btn btn-primary btn-block">Submit Payment Proof</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- Payment Instructions Section -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-warning text-dark">
+            <h4 class="card-title mb-0">Payment Instructions</h4>
+        </div>
+        <div class="card-body">
+            {% if booking.payment_method == "UPI" %}
+            <p>Use the QR code above to complete the payment via UPI.</p>
+            {% elif booking.payment_method == "Bank Transfer" %}
+            <p>Please transfer the amount to the provided bank account details.</p>
+            {% elif booking.payment_method == "Cash" %}
+            <p>Payment will be collected at the venue on the event day.</p>
+            {% else %}
+            <p>Complete the payment using the selected method.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Razorpay Script -->
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script>
+    {% if booking.payment_method == "Online" %}
+    var options = {
+        "key": "{{ razorpay_key_id }}",  // Your Razorpay Key ID
+        "amount": "{{ booking.total_amount|multiply:100 }}",  // Amount in paise
+        "currency": "INR",
+        "name": "Event Booking",
+        "description": "Booking for {{ booking.event_name }}",
+        "image": "https://example.com/logo.png",
+        "order_id": "{{ razorpay_order_id }}",  // Razorpay order ID
+        "handler": function (response) {
+            var data = {
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_signature: response.razorpay_signature
+            };
+
+            fetch("{% url 'paymentapp:payment_verify' %}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    alert('Payment verified successfully!');
+                    window.location.href = '/success-url/';
+                } else {
+                    alert('Payment verification failed!');
+                }
+            });
+        },
+        "prefill": {
+            "name": "{{ booking.user.first_name }} {{ booking.user.last_name }}",
+            "email": "{{ booking.user.email }}",
+            "contact": "{{ booking.user.profile.phone_number }}"
+        },
+        "theme": {
+            "color": "#F37254"
+        }
+    };
+
+    document.getElementById('razorpay-button').onclick = function(e) {
+        var rzp1 = new Razorpay(options);
+        rzp1.open();
+        e.preventDefault();
+    };
+    {% endif %}
+</script>
+{% endblock %}

@@ -1,9 +1,13 @@
 from django.contrib import admin
-from .models import Event
-from .models import Booking
-from .models import Contact
+from .models import Event, Booking, Contact  # Include Contact model
 
-# Register your models here.
+# Register the Event and Contact models
 admin.site.register(Event)
-admin.site.register(Booking)
 admin.site.register(Contact)
+
+# Register the Booking model with custom admin
+class BookingAdmin(admin.ModelAdmin):
+    list_display = ('id', 'cus_name', 'event_name', 'event_date', 'venue', 'booking_date')
+
+# Only register Booking with the BookingAdmin class
+admin.site.register(Booking, BookingAdmin)

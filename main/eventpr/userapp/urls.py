@@ -1,9 +1,8 @@
 from django.urls import path
 from . import views
 
-
-urlpatterns=[
-    path('',views.user,name='register'),
-    path('login/',views.login,name='login'),
-    path('logout/',views.logout,name='logout')
+urlpatterns = [
+    path('login/', views.login, name='login'),
+    path('signup/', views.signup, name='signup'),  # Replacing the earlier 'register' with 'signup'
+    path('logout/', views.logout, name='logout'),  # Adding logout for user management
 ]

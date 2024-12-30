@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+{% block title %}Your Booking Dashboard{% endblock %}
+
+{% block content %}
+<section class="booking-dashboard py-5">
+    <div class="container">
+        <h2 class="text-center mb-4">Your Booking Dashboard</h2>
+        {% if user_bookings %}
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Event Name</th>
+                        <th>Event Date</th>
+                        <th>Venue</th>
+                        <th>Booking Date</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for booking in user_bookings %}
+                        <tr>
+                            <td>{{ booking.event_name }}</td>
+                            <td>{{ booking.event_date }}</td>
+                            <td>{{ booking.venue }}</td>
+                            <td>{{ booking.booking_date }}</td>
+                            <td>
+                                <span class="badge {% if booking.payment_status == 'Paid' %}bg-success{% elif booking.payment_status == 'Pending' %}bg-warning{% else %}bg-danger{% endif %}">
+                                    {{ booking.payment_status }}
+                                </span>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <div class="text-center">
+                <h4 class="mt-4">You have no bookings yet.</h4>
+                <p>Start planning your next event today!</p>
+                <a href="{% url 'event_list' %}" class="btn btn-primary mt-3">Browse Events</a>
+            </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}
+
+<style>
+    .table th, .table td {
+        text-align: center;
+    }
+
+    .table-striped tbody tr:nth-of-type(odd) {
+        background-color: #f9f9f9;
+    }
+
+    .badge {
+        padding: 5px 10px;
+        font-size: 14px;
+        border-radius: 20px;
+    }
+
+    .bg-success {
+        background-color: #28a745;
+    }
+
+    .bg-warning {
+        background-color: #ffc107;
+    }
+
+    .bg-danger {
+        background-color: #dc3545;
+    }
+
+    .text-center {
+        text-align: center;
+    }
+
+    .btn-primary {
+        background-color: #007bff;
+        color: #fff;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 5px;
+        text-decoration: none;
+    }
+
+    .btn-primary:hover {
+        background-color: #0056b3;
+        color: #fff;
+    }
+</style>

@@ -1,14 +1,15 @@
 from django.db import models
-from django.utils import timezone
 from django.utils.text import slugify
-import uuid
+from django.conf import settings
 from decimal import Decimal
+
 
 class Event(models.Model):
     name = models.CharField(max_length=200)
-    slug = models.SlugField(unique=True, blank=True)  # Automatically generate unique slug
+    is_available = models.BooleanField(default=True)
+    slug = models.SlugField(unique=True, blank=True)
     desc = models.TextField(default='no description provided')
-    event_date = models.DateField(default=timezone.now)
+    event_date = models.DateField()
     location = models.CharField(max_length=200, default='not specified')
     price = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal('0.00'))
     img = models.ImageField(upload_to='events/', blank=True, null=True)
@@ -17,18 +18,11 @@ class Event(models.Model):
     itinerary = models.JSONField(default=list)
 
     def save(self, *args, **kwargs):
-    # Auto-generate slug using event name if not provided
         if not self.slug:
-            self.slug = slugify(self.name)
-            # Ensure uniqueness
-            self.slug = self.get_unique_slug(self.slug)
+            self.slug = self.get_unique_slug(slugify(self.name))
         super().save(*args, **kwargs)
 
-
     def get_unique_slug(self, slug):
-        """
-        Generates a unique slug by appending a counter if the slug already exists.
-        """
         original_slug = slug
         counter = 1
         while Event.objects.filter(slug=slug).exists():
@@ -39,17 +33,26 @@ class Event(models.Model):
     def __str__(self):
         return self.name
 
-class Booking(models.Model):
-    cus_name = models.CharField(max_length=55)  # Customer Name
-    cus_ph = models.CharField(max_length=12)  # Customer Phone
-    event_name = models.CharField(max_length=100, blank=False, null=False)  # Event Name
-    event_date = models.DateField()  # Event Date
-    venue = models.CharField(max_length=255, blank=False, null=False)  # Venue
-    description = models.TextField(blank=False, null=False)  # Event Description
-    booking_date = models.DateField(auto_now=True)  # Automatically set booking date
 
+# eventapp/models.py
+class Booking(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, default=1)
+    event_name =  models.ForeignKey(Event, on_delete=models.CASCADE)
+    event_date = models.DateField()
+    venue = models.CharField(max_length=255)
+    booking_date = models.DateTimeField()
+    admin_notes = models.TextField(blank=True, null=True)
+    customer_request = models.TextField(blank=True, null=True)
+    cus_name = models.CharField(max_length=255)
+    cus_email = models.EmailField()
+    cus_ph = models.CharField(max_length=10)
+    description = models.TextField(blank=True, null=True)
+    
     def __str__(self):
-        return f"{self.event_name} booked by {self.cus_name}"
+        return f"Booking for {self.event_name} by {self.cus_name}"
+
+
+
 
 class Contact(models.Model):
     name = models.CharField(max_length=100)

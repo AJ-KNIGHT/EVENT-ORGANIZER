@@ -13,7 +13,7 @@
         Reality</h1>
       <p class="lead mb-4 animated fadeIn" data-aos="fade-up" data-aos-delay="200">Experience flawless event planning
         with top-tier professionals. Let us bring your vision to life.</p>
-      <a href="{% url 'events' %}" class="btn btn-light btn-lg animated zoomIn" data-aos="zoom-in"
+      <a href="{% url 'event_list' %}" class="btn btn-light btn-lg animated zoomIn" data-aos="zoom-in"
         data-aos-delay="400">Explore Events</a>
     </div>
   </div>
@@ -36,28 +36,19 @@
           <!-- Check if the slug exists before creating the booking link -->
           {% if event.slug %}
           <a href="{% url 'booking' slug=event.slug %}" class="btn btn-success btn-lg">Book Now</a>
+          <a href="{% url 'event_detail' slug=event.slug %}" class="btn btn-primary btn-lg mt-2">View Details</a>
           {% else %}
           <p>No booking available for this event.</p>
           {% endif %}
         </div>
       </div>
     </div>
+    {% empty %}
+    <p>No events available at the moment.</p>
     {% endfor %}
   </div>
 </section>
 
-<!-- Call to Action Section -->
-<section class="container text-center py-5">
-  <h3 class="mb-4">Ready to Plan Your Event?</h3>
-  <p class="mb-4">Get in touch with our expert team and let us help you create an unforgettable experience.</p>
-
-  <!-- Book your first event from the list (or any logic you prefer) -->
-  {% if events %}
-  <a href="{% url 'booking' slug=events.0.slug %}" class="btn btn-success btn-lg">Book Your Event</a>
-  {% else %}
-  <p>Sorry, this event is not available for booking yet.</p>
-  {% endif %}
-</section>
 
 {% endblock %}
 
