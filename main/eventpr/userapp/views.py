@@ -1,9 +1,14 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login as auth_login, logout as auth_logout
-from .models import CustomUser
+from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.core.exceptions import ValidationError
-from django.core.validators import MinLengthValidator
+from django.core.mail import send_mail
+
+from .models import CustomUser , ChangeRequest
+from eventapp.models import Booking
+from eventapp.forms import ChangeRequestForm
+
 
 # User registration
 def signup(request):
@@ -82,3 +87,79 @@ def logout(request):
     auth_logout(request)
     messages.success(request, 'Logged out successfully!')
     return redirect('/')  # Redirect to homepage after logout
+
+
+
+
+
+@login_required
+def booking_dashboard(request):
+    """
+    Display all bookings for the logged-in user.
+    """
+    user = request.user
+    print(f"Logged-in user: {user}")
+    user_bookings = Booking.objects.filter(user=user)
+    print(f"User bookings: {user_bookings}")  # Debugging output to check if bookings are fetched
+
+    return render(request, 'booking_dashboard.html', {'user_bookings': user_bookings})
+
+
+
+
+@login_required
+def submit_change_request(request, booking_id):
+    """
+    Handle the submission of a change request for a specific booking.
+    """
+    booking = get_object_or_404(Booking, id=booking_id, user=request.user)
+
+    if request.method == 'POST':
+        form = ChangeRequestForm(request.POST)
+        if form.is_valid():
+            change_request = form.save(commit=False)  # Create a ChangeRequest instance but don't save it yet
+            change_request.booking = booking  # Associate the booking
+            change_request.user = request.user  # Associate the user
+            change_request.save()  # Save the instance to the database
+
+            # Notify admin via email
+            send_mail(
+                subject="Change Request Submitted",
+                message=f"A change request has been submitted for booking {booking.id}.\n"
+                        f"Request Type: {change_request.get_request_type_display()}\n"
+                        f"New Value/Details: {change_request.new_value}",
+                from_email='eventpro49@gmail.com',
+                recipient_list=['amal183626@gmail.com']
+            )
+
+            messages.success(request, "Your change request has been submitted successfully.")
+            return redirect('userapp:change_request_dashboard')  # Adjust the redirect as needed
+    else:
+        form = ChangeRequestForm()
+
+    return render(request, 'submit_change_request.html', {'booking': booking, 'form': form})
+
+
+@login_required
+def change_requests_dashboard(request):
+    """
+    Display all change requests submitted by the logged-in user.
+    """
+    change_requests = ChangeRequest.objects.filter(user=request.user)
+    print(change_requests)
+
+    return render(request, 'change_request_dashboard.html', {'change_requests': change_requests})
+
+@login_required
+def admin_dashboard(request):
+    """
+    Display all bookings for admin review.
+    Only accessible by staff users.
+    """
+    if not request.user.is_staff:
+        return redirect('userapp:booking_dashboard')
+
+    bookings = Booking.objects.all()
+    return render(request, 'admin_dashboard.html', {'bookings': bookings})
+
+

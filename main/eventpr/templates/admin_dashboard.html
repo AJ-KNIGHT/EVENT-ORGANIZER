@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="mb-4">Admin Dashboard</h2>
+    <table class="table table-bordered table-hover">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Event</th>
+                <th>Booked By</th>
+                <th>Booking Date</th>
+                <th>Total Amount</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for booking in bookings %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ booking.event.name }}</td>
+                    <td>{{ booking.user.username }}</td>
+                    <td>{{ booking.booking_date }}</td>
+                    <td>{{ booking.total_amount }}</td>
+                    <td>
+                        <a href="{% url 'admin_booking_details' booking.id %}" class="btn btn-sm btn-primary">View</a>
+                        <a href="{% url 'admin_booking_edit' booking.id %}" class="btn btn-sm btn-warning">Edit</a>
+                        <a href="{% url 'admin_booking_delete' booking.id %}" class="btn btn-sm btn-danger">Delete</a>
+                    </td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="6" class="text-center">No bookings found.</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

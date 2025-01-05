@@ -7,6 +7,9 @@ from django.utils.timezone import now
 from django.core.mail import send_mail
 from django.conf import settings
 from django.core.paginator import Paginator
+from django.utils import timezone
+from django.utils.timezone import make_aware
+from datetime import datetime
 #from paymentapp.models import Payment
 import random
 from django.contrib.auth.decorators import login_required
@@ -38,74 +41,7 @@ def event_detail(request, slug):
     related_events = Event.objects.filter(event_type=event.event_type).exclude(id=event.id)[:3]
     return render(request, 'event_details.html', {'event': event, 'related_events': related_events})
 
-# Booking view
 
-""" def booking(request, slug=None):
-    event = get_object_or_404(Event, slug=slug)
-
-    # Check if the event is bookable (event date and availability)
-    if event.event_date < date.today() or not event.is_available:
-        messages.error(request, "Sorry, this event is not available for booking yet.")
-        return redirect('events')
-
-    # Handle both GET and POST requests
-    if request.method == 'POST':
-        form = BookingForm(request.POST)
-        if form.is_valid():
-            # Create the Booking instance without saving to the database yet
-            booking = form.save(commit=False)
-
-            # Assign the logged-in user to the booking
-            booking.user = request.user  # This links the booking to the currently logged-in user
-
-            # Save the booking to the database
-            booking.save()
-
-            # Create the Payment record associated with the Booking instance
-            Payment.objects.create(
-                booking=booking,  # Associate payment with the booking
-                amount=0.0,  # Initial amount set to 0, updated after negotiation
-                status='Pending',  # Default payment status
-                # transaction_id=''  # To be updated after payment completion
-            )
-
-            # Send email notification to the user (Booking confirmation)
-            subject = f"Booking Confirmation for {event.name}"
-            message = f"Thank you for booking {event.name}.\nEvent Date: {event.event_date}\nVenue: {booking.venue}\n\nYour booking has been confirmed."
-            send_mail(
-                subject,
-                message,
-                settings.EMAIL_HOST_USER,
-                [booking.cus_email],  # Use the customer's email from the form
-                fail_silently=False,
-            )
-
-            # Also notify the admin
-            admin_subject = f"New Booking for {event.name}"
-            admin_message = f"A new booking has been made for {event.name} by {booking.cus_name}. Event Date: {event.event_date}, Venue: {booking.venue}."
-            send_mail(
-                admin_subject,
-                admin_message,
-                settings.EMAIL_HOST_USER,
-                [settings.ADMIN_EMAIL],  # Admin's email from settings
-                fail_silently=False,
-            )
-
-            messages.success(request, "Your event has been booked successfully! A confirmation email has been sent.")
-            return redirect('event_list')
-        else:
-            print(f"Form Errors: {form.errors}")  # Debug line to check form errors
-            messages.error(request, "There was an error with your booking. Please check the form and try again.")
-    else:
-        # Pre-populate the form with the event data
-        initial_data = {
-            'event_name': event.name,  # Ensure event_name is passed to the form
-            'event_date': event.event_date,
-            'venue': event.location
-        }
-        form = BookingForm(initial=initial_data)
-
-    return render(request, 'booking.html', {'form': form, 'event': event}) """
 # before removing the payment view |
    #                               v
 
@@ -180,79 +116,103 @@ def booking(request, slug=None):
 
     return render(request, 'booking.html', {'form': form, 'event': event}) """
 
-
+@login_required
 def booking(request, slug=None):
     event = get_object_or_404(Event, slug=slug)
 
-    # Check if the event is bookable (event date and availability)
+    # Check if the event is bookable
     if event.event_date < date.today() or not event.is_available:
         messages.error(request, "Sorry, this event is not available for booking yet.")
         return redirect('events')
 
-    # Handle both GET and POST requests
     if request.method == 'POST':
         form = BookingForm(request.POST)
         if form.is_valid():
-            # Create the Booking instance without saving to the database yet
+            print('Form is valid')
+
+            # Create booking instance but don't save it yet
             booking = form.save(commit=False)
 
-            # Assign the logged-in user to the booking
-            booking.user = request.user  # This links the booking to the currently logged-in user
+            # Manually assign the user (since it's excluded from the form)
+            booking.user = request.user
 
-             # Set the event's date (admin uploaded) to the booking's event_date field
-            booking.event_date = event.event_date  # Ensure event_date is set to the admin-uploaded date
+            # Set the event data (event_name and event_date)
+            booking.event_name = event
+            booking.event_date = event.event_date
 
-
-            # Set the total amount based on the event's price
-            booking.total_amount = event.price  # Set the total amount dynamically from the event's price
+            # Set the total amount (price of the event)
+            booking.total_amount = event.price
 
             # Save the booking to the database
             booking.save()
+            print(f"Booking created: {booking}")
+            print(f"Booking user: {booking.user}")
+            print(f"Event: {booking.event_name}")
 
-            # Send email notification to the user (Booking confirmation)
-            subject = f"Booking Confirmation for {event.name}"
-            message = f"Thank you for booking {event.name}.\nEvent Date: {event.event_date}\nVenue: {booking.venue}\n\nYour booking has been confirmed."
+            # Send email notifications (user and admin)
+
+            # Email to user (booking confirmation)
             send_mail(
-                subject,
-                message,
+                f"Booking Confirmation for {event.name}",
+                '',
                 settings.EMAIL_HOST_USER,
-                [booking.cus_email],  # Use the customer's email from the form
+                [booking.cus_email],
                 fail_silently=False,
+                html_message=f'''
+                    <html>
+                        <body>
+                            <h3 style="color: green;">Booking Confirmation</h3>
+                            <p>Hello <strong>{booking.cus_name}</strong>,</p>
+                            <p>Thank you for booking the event <strong>{event.name}</strong>.</p>
+                            <p>Your booking has been confirmed for the following event:</p>
+                            <ul>
+                                <li><strong>Event Name:</strong> {event.name}</li>
+                                <li><strong>Event Date:</strong> {event.event_date}</li>
+                                <li><strong>Venue:</strong> {booking.venue}</li>
+                                <li><strong>Total Amount:</strong> ${booking.total_amount}</li>
+                            </ul>
+                            <p>We look forward to seeing you at the event!</p>
+                            <p><em>If you need any assistance or want to make changes to your booking, feel free to contact us.</em></p>
+                            <p>Best regards,<br>The EventPro Team</p>
+                        </body>
+                    </html>
+                '''
             )
 
-            # Also notify the admin
-            admin_subject = f"New Booking for {event.name}"
-            admin_message = f"A new booking has been made for {event.name} by {booking.cus_name}. Event Date: {event.event_date}, Venue: {booking.venue}."
+            # Email to admin (new booking notification)
             send_mail(
-                admin_subject,
-                admin_message,
+                f"New Booking for {event.name}",
+                '',
                 settings.EMAIL_HOST_USER,
-                [settings.ADMIN_EMAIL],  # Admin's email from settings
+                [settings.ADMIN_EMAIL],
                 fail_silently=False,
+                html_message=f'''
+                    <html>
+                        <body>
+                            <h3 style="color: blue;">New Booking Notification</h3>
+                            <p>A new booking has been made for the event <strong>{event.name}</strong> by <strong>{booking.cus_name}</strong>.</p>
+                            <p><strong>Event Date:</strong> {event.event_date}</p>
+                            <p><strong>Venue:</strong> {booking.venue}</p>
+                            <p><strong>Total Amount:</strong> ${booking.total_amount}</p>
+                            <p>To view or manage this booking, visit the admin panel.</p>
+                            <p>Best regards,<br>The EventPro Team</p>
+                        </body>
+                    </html>
+                '''
             )
 
-            # Commenting out the payment-related redirect
-            # Redirect to the payment page with the booking ID
-            # messages.success(request, "Your event has been booked successfully! Please proceed with the payment.")
-            # return redirect('paymentapp:payment_view', booking_id=booking.id)
-
-            # Instead of redirecting to the payment page, simply show a success message
             messages.success(request, "Your event has been booked successfully!")
-            return redirect('events')  # Redirect to the events page or any other page you prefer
+            return redirect('userapp:booking_dashboard')  # Redirect to booking dashboard
         else:
-            print(f"Form Errors: {form.errors}")  # Debug line to check form errors
+            print(f"Form Errors: {form.errors}")
             messages.error(request, "There was an error with your booking. Please check the form and try again.")
     else:
         # Pre-populate the form with the event data
-        initial_data = {
-            'event_name': event.name,  # Ensure event_name is passed to the form
-            'event_date': event.event_date,
-            'venue': event.location,
-            'booking_date':date.today(),
-        }
-        form = BookingForm(initial=initial_data)
+        form = BookingForm(event_instance=event)
 
     return render(request, 'booking.html', {'form': form, 'event': event})
+
+
 
 
 # Contact view
@@ -269,56 +229,6 @@ def contact(request):
 
 
 
-
-
-# Change Request View
-@login_required
-def change_request_view(request, booking_id):
-    booking = get_object_or_404(Booking, id=booking_id, user=request.user)
-
-    if request.method == 'POST':
-        form = ChangeRequestForm(request.POST)
-        if form.is_valid():
-            booking.customer_request = form.cleaned_data['customer_request']
-            booking.save()
-
-            # Notify admin
-            send_mail(
-                subject="Change Request Submitted",
-                message=f"A change request has been submitted for booking {booking.id}: {booking.customer_request}",
-                from_email='eventpro49@gmail.com',
-                recipient_list=['amal183626@gmail.com']
-            )
-
-            messages.success(request, "Change request submitted successfully.")
-            return redirect('booking_dashboard')
-    else:
-        form = ChangeRequestForm()
-
-    return render(request, 'change_request.html', {'booking': booking, 'form': form})
-
-# Admin Dashboard for Review
-@login_required
-def admin_dashboard(request):
-    if not request.user.is_staff:
-        return redirect('booking_dashboard')
-
-    bookings = Booking.objects.all()
-    return render(request, 'admin_dashboard.html', {'bookings': bookings})
-
-
-# Customer Booking Dashboard
-
-@login_required  # Ensure only logged-in users can access this view
-def booking_dashboard(request):
-    # Fetch the user (based on logged-in user or a specific one)
-    user = request.user  # Or CustomUser.objects.get(username='akash')
-
-    # Get all bookings for the user
-    user_bookings = Booking.objects.filter(user=user)
-
-    # Render the dashboard template with the bookings
-    return render(request, 'booking_dashboard.html', {'user_bookings': user_bookings})
 
 
 

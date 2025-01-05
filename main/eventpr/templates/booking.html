@@ -49,30 +49,13 @@
                         {% endif %}
                     </div>
 
-                    <!-- Event Name -->
                     <div class="form-group">
-                        <label for="{{ form.event_name.id_for_label }}">Event Name</label>
-                        {{ form.event_name }}
-                        {% if form.event_name.errors %}
-                        <div class="invalid-feedback">
-                            {% for error in form.event_name.errors %}
-                            <p>{{ error }}</p>
-                            {% endfor %}
-                        </div>
-                        {% endif %}
+                        <label>Event Name</label>
+                        <p>{{ event.name }}</p> <!-- Show event name -->
                     </div>
-
-                    <!-- Event Date (Read-Only) -->
                     <div class="form-group">
-                        <label for="event_date">Event Date</label>
-                        <input type="date" value="{{ event.event_date|date:'Y-m-d' }}" readonly class="form-control" />
-                        {% if form.event_date.errors %}
-                        <div class="invalid-feedback">
-                            {% for error in form.event_date.errors %}
-                            <p>{{ error }}</p>
-                            {% endfor %}
-                        </div>
-                        {% endif %}
+                        <label>Event Date</label>
+                        <p>{{ event.event_date|date:"F j, Y" }}</p> <!-- Show event date -->
                     </div>
                 </div>
 
@@ -131,13 +114,25 @@
                     </div>
                 </div>
             </div>
+
             <div class="text-center mt-4">
                 <button type="submit" class="btn btn-success btn-lg px-5 py-3 rounded-pill">Confirm Booking</button>
             </div>
+
+            {% if form.errors %}
+            <div class="alert alert-danger">
+                <ul>
+                    {% for field, errors in form.errors.items %}
+                    <li><strong>{{ field }}</strong>: {{ errors|join:", " }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
         </form>
     </div>
 </section>
 {% endblock %}
+
 
 
 <style>

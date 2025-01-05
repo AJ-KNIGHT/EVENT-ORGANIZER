@@ -2,7 +2,7 @@ from django.db import models
 from django.utils.text import slugify
 from django.conf import settings
 from decimal import Decimal
-
+from django.utils import timezone
 
 class Event(models.Model):
     name = models.CharField(max_length=200)
@@ -36,11 +36,11 @@ class Event(models.Model):
 
 # eventapp/models.py
 class Booking(models.Model):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, default=1)
-    event_name =  models.ForeignKey(Event, on_delete=models.CASCADE)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='bookings')
+    event_name =  models.ForeignKey(Event, on_delete=models.CASCADE, related_name='bookings')
     event_date = models.DateField()
     venue = models.CharField(max_length=255)
-    booking_date = models.DateTimeField()
+    booking_date = models.DateField()
     admin_notes = models.TextField(blank=True, null=True)
     customer_request = models.TextField(blank=True, null=True)
     cus_name = models.CharField(max_length=255)
@@ -62,3 +62,6 @@ class Contact(models.Model):
 
     def __str__(self):
         return f"{self.name} - {self.email}"
+
+
+

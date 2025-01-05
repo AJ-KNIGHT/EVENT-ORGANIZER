@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Event, Booking, Contact  # Include Contact model
+from .models import Event, Booking, Contact 
 
 # Register the Event and Contact models
 admin.site.register(Event)

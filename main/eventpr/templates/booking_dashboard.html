@@ -14,6 +14,7 @@
                         <th>Venue</th>
                         <th>Booking Date</th>
                         <th>Status</th>
+                        <th>Change Request</th>  <!-- Added column for change request -->
                     </tr>
                 </thead>
                 <tbody>
@@ -23,10 +24,17 @@
                             <td>{{ booking.event_date }}</td>
                             <td>{{ booking.venue }}</td>
                             <td>{{ booking.booking_date }}</td>
+                            <td>{{ booking.id }}</td> 
                             <td>
                                 <span class="badge {% if booking.payment_status == 'Paid' %}bg-success{% elif booking.payment_status == 'Pending' %}bg-warning{% else %}bg-danger{% endif %}">
                                     {{ booking.payment_status }}
                                 </span>
+                            </td>
+                            <td>
+                                <!-- Link to submit change request -->
+                                <a href="{% url 'userapp:submit_change_request' booking.id %}" class="btn btn-warning">Request Change</a>
+
+
                             </td>
                         </tr>
                     {% endfor %}
@@ -36,12 +44,13 @@
             <div class="text-center">
                 <h4 class="mt-4">You have no bookings yet.</h4>
                 <p>Start planning your next event today!</p>
-                <a href="{% url 'event_list' %}" class="btn btn-primary mt-3">Browse Events</a>
+                <a href="{% url 'events' %}" class="btn btn-primary mt-3">Browse Events</a>
             </div>
         {% endif %}
     </div>
 </section>
 {% endblock %}
+
 
 <style>
     .table th, .table td {

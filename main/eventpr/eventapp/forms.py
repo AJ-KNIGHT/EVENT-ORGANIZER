@@ -1,5 +1,5 @@
 from django import forms
-from .models import Booking
+from .models import Booking , Event
 from django.contrib.auth.models import User
 from django.forms.widgets import DateInput 
 from django.core.validators import validate_email
@@ -7,31 +7,38 @@ from django.core.exceptions import ValidationError
 from django.core.exceptions import ValidationError
 from django.core.validators import validate_email
 from datetime import datetime, date
+from django.utils import timezone
+from django.utils.timezone import make_aware
+from datetime import datetime
+from userapp.models import ChangeRequest
 
 
 class DateInput(forms.DateInput):
     input_type = 'date'
+
 class BookingForm(forms.ModelForm):
     class Meta:
         model = Booking
-        fields = ['cus_name', 'cus_email', 'cus_ph', 'event_name', 'booking_date', 'venue', 'description', 'customer_request']
+        exclude = ['user','event_name','event_date']  # Exclude the user field
+        
+        fields = '__all__'
         widgets = {
             'booking_date': forms.DateInput(attrs={'type': 'date'}),  # Custom booking date
             'cus_name': forms.TextInput(attrs={'placeholder': 'Enter your name'}),
             'cus_email': forms.EmailInput(attrs={'placeholder': 'Enter your email'}),
             'cus_ph': forms.TextInput(attrs={'placeholder': 'Enter your phone number'}),
-            'event_name': forms.TextInput(attrs={'readonly': 'readonly', 'placeholder': 'Event Name'}),
             'venue': forms.TextInput(attrs={'placeholder': 'Preferred Event Venue'}),
             'description': forms.Textarea(attrs={'rows': 4, 'placeholder': 'Enter event description'}),
             'customer_request': forms.Textarea(attrs={'rows': 3, 'placeholder': 'Enter any special requests or changes'}),
-            'event_date': forms.DateInput(attrs={'readonly': 'readonly', 'type': 'date'}),  # Read-only event date
+            #'event_date': forms.HiddenInput(),  # Hidden field for event_date,
+            #'event_name': forms.HiddenInput()  # Use HiddenInput for event_name field
         }
         labels = {
             'cus_name': 'Customer Name:',
             'cus_email': 'Customer Email:',
             'cus_ph': 'Customer Phone:',
-            'event_name': 'Event Name:',
-            'event_date': 'Event Availability Date:',
+            #'event_name': 'Event Name:',
+            #'event_date': 'Event Availability Date:',
             'booking_date': 'Preferred Booking Date:',
             'venue': 'Preferred Venue:',
             'description': 'Event Description:',
@@ -39,28 +46,28 @@ class BookingForm(forms.ModelForm):
         }
 
     def __init__(self, *args, **kwargs):
-        event_instance = kwargs.get('instance', None)
+        # Assuming an event_instance is passed when initializing the form
+        event_instance = kwargs.pop('event_instance', None)  # Get event instance here
         super().__init__(*args, **kwargs)
-        
+
+        # Automatically set the event name and event date
         if event_instance:
-            # Pre-populate event_date with event's availability date if an event instance exists
-            self.fields['event_date'].initial = event_instance.event_date
-            self.instance.event_date = event_instance.event_date  # Ensure it's set in the model instance
+            #self.fields['event_name'].initial = event_instance.id
+            #self.fields['event_date'].initial = event_instance.event_date
+            self.fields['venue'].initial = event_instance.location
+            # Always set the booking_date to the current date by default
+            self.fields['booking_date'].initial = timezone.localdate()
+
+    
+
 
     def clean_booking_date(self):
         booking_date = self.cleaned_data.get('booking_date')
-        event_date = self.cleaned_data.get('event_date')
-        
-        if isinstance(booking_date, datetime):
-            booking_date = booking_date.date()
-
         if booking_date < date.today():
-            raise forms.ValidationError("The booking date cannot be in the past.")
-        
-        # Ensure event_date is not empty or None, set it to the event's date if missing
-        if not event_date:
-            event_date = self.instance.event_date  # Fallback to event's date if not provided
+            raise forms.ValidationError("Booking date cannot be in the past.")
         return booking_date
+
+
 
     def clean_cus_email(self):
         email = self.cleaned_data.get('cus_email')
@@ -74,10 +81,11 @@ class BookingForm(forms.ModelForm):
 
     def clean_cus_ph(self):
         cus_ph = self.cleaned_data.get('cus_ph')
-        cus_ph = cus_ph.strip()  # Trim spaces
+        cus_ph = cus_ph.strip()
         if not cus_ph.isdigit() or len(cus_ph) != 10:
             raise forms.ValidationError("Please enter a valid 10-digit phone number (without any spaces or special characters).")
         return cus_ph
+
 
 
 
@@ -103,3 +111,13 @@ class SignupForm(forms.ModelForm):
             raise forms.ValidationError("Passwords do not match")
 
         return cleaned_data
+
+class ChangeRequestForm(forms.ModelForm):
+    class Meta:
+        model = ChangeRequest
+        fields = ['request_type', 'new_value']
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['request_type'].label = "Type of Change"
+        self.fields['new_value'].label = "New Value/Details"

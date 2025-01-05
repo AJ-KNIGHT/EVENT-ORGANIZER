@@ -19,22 +19,28 @@
                 <p>{{ event.location }}</p>
                 <h4>Price</h4>
                 <p>${{ event.price }}</p>
-                <a href="{% url 'booking' slug=event.slug %}" class="btn btn-success">Book This Event</a>
+                <a href="{% url 'booking' event.slug %}" class="btn btn-success">Book This Event</a>
+
             </div>
         </div>
         <h3 class="mt-5">Related Events</h3>
         <div class="row">
+            {% if related_events %}
             {% for related_event in related_events %}
             <div class="col-md-4">
                 <div class="card">
                     <img src="{{ related_event.img.url }}" class="card-img-top" alt="{{ related_event.name }}">
                     <div class="card-body">
                         <h5 class="card-title">{{ related_event.name }}</h5>
-                        <a href="{% url 'event_detail' slug=related_event.slug %}" class="btn btn-primary">Learn More</a>
+                        <a href="{% url 'event_detail' slug=related_event.slug %}" class="btn btn-primary">Learn
+                            More</a>
                     </div>
                 </div>
             </div>
             {% endfor %}
+            {% else %}
+            <p>No related events available at the moment.</p>
+            {% endif %}
         </div>
     </div>
 </section>
