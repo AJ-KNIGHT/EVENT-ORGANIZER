@@ -1,0 +1,101 @@
+<!-- userapp/templates/profile.html -->
+{% extends 'base.html' %}
+
+{% block title %}Profile - {{ user.username }}{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <!-- Welcome Section -->
+    <div class="text-center mb-4">
+        <h1 class="display-4">Welcome, {{ user.username }}!</h1>
+        <p class="text-muted">Manage your account and bookings here.</p>
+    </div>
+
+    <!-- User Details Section -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <h4>Your Details</h4>
+            <p><strong>Full Name:</strong> {{ user.first_name }} {{ user.last_name }}</p>
+            <p><strong>Email:</strong> {{ user.email }}</p>
+            <p><strong>Username:</strong> {{ user.username }}</p>
+        </div>
+    </div>
+
+    <!-- Change Password Section -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <h4>Change Password</h4>
+            <p>If you'd like to update your password, click the button below:</p>
+            <a href="{% url 'userapp:change_password' %}" class="btn btn-warning">
+                <i class="bi bi-lock-fill"></i> Change Password
+            </a>
+        </div>
+    </div>
+
+    <!-- Update Profile Section -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <h4>Update Profile</h4>
+            <p>Update your personal information:</p>
+            <a href="{% url 'userapp:update_profile' %}" class="btn btn-primary">
+                <i class="bi bi-pencil-square"></i> Update Profile
+            </a>
+        </div>
+    </div>
+
+    {% if user.is_superuser %}
+        <!-- Admin Specific Sections -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-body">
+                <h4>Admin Dashboard</h4>
+                <p>Quickly access admin features:</p>
+                <a href="{% url 'userapp:admin_dashboard' %}" class="btn btn-primary">
+                    <i class="bi bi-house-door-fill"></i> Go to Admin Dashboard
+                </a>
+            </div>
+        </div>
+    {% else %}
+        <!-- User-Specific Sections -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-body">
+                <h4>Your Bookings</h4>
+                <p>View and manage your bookings:</p>
+                <a href="{% url 'userapp:booking_dashboard' %}" class="btn btn-info">
+                    <i class="bi bi-calendar-check-fill"></i> View Bookings
+                </a>
+            </div>
+        </div>
+
+        <div class="card shadow-sm mb-4">
+            <div class="card-body">
+                <h4>Your Change Requests</h4>
+                <p>View and manage your change requests:</p>
+                <a href="{% url 'userapp:change_requests_dashboard' %}" class="btn btn-secondary">
+                    <i class="bi bi-gear"></i> View Change Requests
+                </a>
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- Logout Section -->
+    <div class="text-center">
+        <a href="{% url 'userapp:logout' %}" class="btn btn-danger">
+            <i class="bi bi-box-arrow-right"></i> Logout
+        </a>
+    </div>
+</div>
+
+<!-- Optional Custom Styling -->
+<style>
+    .card {
+        border: none;
+        border-radius: 10px;
+    }
+    .card h4 {
+        color: #495057;
+    }
+    .btn {
+        border-radius: 20px;
+    }
+</style>
+{% endblock %}

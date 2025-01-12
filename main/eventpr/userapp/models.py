@@ -11,18 +11,17 @@ class CustomUser(AbstractUser):
         return f"{self.username} ({self.email})"
 
 class ChangeRequest(models.Model):
-    REQUEST_TYPES = [
-        ('venue', 'Venue'),
-        ('date', 'Date'),
-        ('other', 'Other'),
-    ]
-    
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
-    booking = models.ForeignKey(Booking, on_delete=models.CASCADE)  # Directly refer to Booking here
-    request_type = models.CharField(max_length=5, choices=REQUEST_TYPES)
-    new_value = models.CharField(max_length=200)
-    status = models.CharField(max_length=20, default='Pending')  # Example statuses: Pending, Approved, Rejected
+    booking = models.ForeignKey(Booking, on_delete=models.CASCADE)
+    request_type = models.CharField(
+        max_length=50,
+        choices=[('Date', 'Date'), ('Venue', 'Venue')]
+    )  # What change is requested
+    new_value = models.CharField(max_length=255)  # The new date/venue requested
+    status = models.CharField(
+        max_length=50,
+        choices=[('Pending', 'Pending'), ('Approved', 'Approved'), ('Rejected', 'Rejected')],
+        default='Pending'
+    )
     created_at = models.DateTimeField(auto_now_add=True)
 
-    def __str__(self):
-        return f"Change Request from {self.user.username} for {self.booking.event_name}"

@@ -1,0 +1,19 @@
+<html>
+  <body style="font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 0; margin: 0;">
+    <div style="max-width: 600px; margin: 20px auto; background-color: #ffffff; border-radius: 10px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);">
+      <div style="background-color: #FF5733; color: white; padding: 20px; border-radius: 10px 10px 0 0;">
+        <h2 style="margin: 0;">Change Request Rejected</h2>
+      </div>
+      <div style="padding: 20px;">
+        <p>Dear <strong>{{ cus_name }}</strong>,</p>
+        <p>Unfortunately, we could not approve your request for changes to your booking for the following reason:</p>
+        <blockquote style="font-style: italic; background-color: #f9f9f9; padding: 10px; border-left: 4px solid #FF5733;">
+          {{ rejection_reason }}
+        </blockquote>
+        <p>If you have any questions, feel free to reach out to us.</p>
+        <p>Warm regards,</p>
+        <p><strong>The EventPro Team</strong></p>
+      </div>
+    </div>
+  </body>
+</html>

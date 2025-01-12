@@ -112,6 +112,9 @@ class SignupForm(forms.ModelForm):
 
         return cleaned_data
 
+from django import forms
+from userapp.models import ChangeRequest
+
 class ChangeRequestForm(forms.ModelForm):
     class Meta:
         model = ChangeRequest
@@ -119,5 +122,13 @@ class ChangeRequestForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        
+        # Set field labels
         self.fields['request_type'].label = "Type of Change"
         self.fields['new_value'].label = "New Value/Details"
+        
+        # Add CSS classes to form fields
+        self.fields['request_type'].widget.attrs.update({'class': 'form-select'})
+        self.fields['new_value'].widget.attrs.update({'class': 'form-control'})
+
+        

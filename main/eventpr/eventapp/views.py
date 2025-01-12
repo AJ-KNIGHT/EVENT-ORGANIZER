@@ -13,15 +13,26 @@ from datetime import datetime
 #from paymentapp.models import Payment
 import random
 from django.contrib.auth.decorators import login_required
+from eventpr.utils import send_html_email
+from django.db.models import Count
+from django.utils.timezone import now
+from django.shortcuts import render
+from .models import Event
 
-# Index view
 def index(request):
+    # Get all events that are available and not in the past
     events = Event.objects.filter(event_date__gte=now().date(), is_available=True)
-    if len(events) < 3:
-        random_events = events  # Display all available events if fewer than 3 exist
+
+    # If fewer than 3 events, show all of them, else show 3 random events
+    if events.count() < 3:
+        random_events = events
     else:
-        random_events = random.sample(list(events), 3)
+        random_events = events.order_by('?')[:3]  # Randomly order and limit to 3 events
+
     return render(request, 'index.html', {'events': random_events})
+
+
+
 
 # About view
 def about(request):
@@ -42,85 +53,13 @@ def event_detail(request, slug):
     return render(request, 'event_details.html', {'event': event, 'related_events': related_events})
 
 
-# before removing the payment view |
-   #                               v
 
-""" from django.shortcuts import render, get_object_or_404, redirect
-from django.contrib import messages
-from .models import Event
-from .forms import BookingForm
-from django.core.mail import send_mail
-from django.conf import settings
-from datetime import date
 
-def booking(request, slug=None):
-    event = get_object_or_404(Event, slug=slug)
-
-    # Check if the event is bookable (event date and availability)
-    if event.event_date < date.today() or not event.is_available:
-        messages.error(request, "Sorry, this event is not available for booking yet.")
-        return redirect('events')
-
-    # Handle both GET and POST requests
-    if request.method == 'POST':
-        form = BookingForm(request.POST)
-        if form.is_valid():
-            # Create the Booking instance without saving to the database yet
-            booking = form.save(commit=False)
-
-            # Assign the logged-in user to the booking
-            booking.user = request.user  # This links the booking to the currently logged-in user
-
-            # Set the total amount based on the event's price
-            booking.total_amount = event.price  # Set the total amount dynamically from the event's price
-
-            # Save the booking to the database
-            booking.save()
-
-            # Send email notification to the user (Booking confirmation)
-            subject = f"Booking Confirmation for {event.name}"
-            message = f"Thank you for booking {event.name}.\nEvent Date: {event.event_date}\nVenue: {booking.venue}\n\nYour booking has been confirmed."
-            send_mail(
-                subject,
-                message,
-                settings.EMAIL_HOST_USER,
-                [booking.cus_email],  # Use the customer's email from the form
-                fail_silently=False,
-            )
-
-            # Also notify the admin
-            admin_subject = f"New Booking for {event.name}"
-            admin_message = f"A new booking has been made for {event.name} by {booking.cus_name}. Event Date: {event.event_date}, Venue: {booking.venue}."
-            send_mail(
-                admin_subject,
-                admin_message,
-                settings.EMAIL_HOST_USER,
-                [settings.ADMIN_EMAIL],  # Admin's email from settings
-                fail_silently=False,
-            )
-
-            # Redirect to the payment page with the booking ID
-            messages.success(request, "Your event has been booked successfully! Please proceed with the payment.")
-            return redirect('paymentapp:payment_view', booking_id=booking.id)
-        else:
-            print(f"Form Errors: {form.errors}")  # Debug line to check form errors
-            messages.error(request, "There was an error with your booking. Please check the form and try again.")
-    else:
-        # Pre-populate the form with the event data
-        initial_data = {
-            'event_name': event.name,  # Ensure event_name is passed to the form
-            'event_date': event.event_date,
-            'venue': event.location
-        }
-        form = BookingForm(initial=initial_data)
-
-    return render(request, 'booking.html', {'form': form, 'event': event}) """
 
 @login_required
 def booking(request, slug=None):
     event = get_object_or_404(Event, slug=slug)
 
-    # Check if the event is bookable
     if event.event_date < date.today() or not event.is_available:
         messages.error(request, "Sorry, this event is not available for booking yet.")
         return redirect('events')
@@ -128,91 +67,51 @@ def booking(request, slug=None):
     if request.method == 'POST':
         form = BookingForm(request.POST)
         if form.is_valid():
-            print('Form is valid')
-
-            # Create booking instance but don't save it yet
             booking = form.save(commit=False)
-
-            # Manually assign the user (since it's excluded from the form)
             booking.user = request.user
-
-            # Set the event data (event_name and event_date)
             booking.event_name = event
             booking.event_date = event.event_date
-
-            # Set the total amount (price of the event)
             booking.total_amount = event.price
-
-            # Save the booking to the database
             booking.save()
-            print(f"Booking created: {booking}")
-            print(f"Booking user: {booking.user}")
-            print(f"Event: {booking.event_name}")
 
-            # Send email notifications (user and admin)
-
-            # Email to user (booking confirmation)
-            send_mail(
-                f"Booking Confirmation for {event.name}",
-                '',
-                settings.EMAIL_HOST_USER,
-                [booking.cus_email],
-                fail_silently=False,
-                html_message=f'''
-                    <html>
-                        <body>
-                            <h3 style="color: green;">Booking Confirmation</h3>
-                            <p>Hello <strong>{booking.cus_name}</strong>,</p>
-                            <p>Thank you for booking the event <strong>{event.name}</strong>.</p>
-                            <p>Your booking has been confirmed for the following event:</p>
-                            <ul>
-                                <li><strong>Event Name:</strong> {event.name}</li>
-                                <li><strong>Event Date:</strong> {event.event_date}</li>
-                                <li><strong>Venue:</strong> {booking.venue}</li>
-                                <li><strong>Total Amount:</strong> ${booking.total_amount}</li>
-                            </ul>
-                            <p>We look forward to seeing you at the event!</p>
-                            <p><em>If you need any assistance or want to make changes to your booking, feel free to contact us.</em></p>
-                            <p>Best regards,<br>The EventPro Team</p>
-                        </body>
-                    </html>
-                '''
+            # Email to user
+            user_email_context = {
+                'cus_name': booking.cus_name,
+                'event_name': event.name,
+                'event_date': event.event_date,
+                'venue': booking.venue,
+                'total_amount': booking.total_amount,
+            }
+            send_html_email(
+                subject=f"Booking Confirmation for {event.name}",
+                template_name='email/booking_confirmation_email.html',
+                context=user_email_context,
+                recipient_list=[booking.cus_email],
             )
 
-            # Email to admin (new booking notification)
-            send_mail(
-                f"New Booking for {event.name}",
-                '',
-                settings.EMAIL_HOST_USER,
-                [settings.ADMIN_EMAIL],
-                fail_silently=False,
-                html_message=f'''
-                    <html>
-                        <body>
-                            <h3 style="color: blue;">New Booking Notification</h3>
-                            <p>A new booking has been made for the event <strong>{event.name}</strong> by <strong>{booking.cus_name}</strong>.</p>
-                            <p><strong>Event Date:</strong> {event.event_date}</p>
-                            <p><strong>Venue:</strong> {booking.venue}</p>
-                            <p><strong>Total Amount:</strong> ${booking.total_amount}</p>
-                            <p>To view or manage this booking, visit the admin panel.</p>
-                            <p>Best regards,<br>The EventPro Team</p>
-                        </body>
-                    </html>
-                '''
+            # Email to admin
+            admin_email_context = {
+                'event_name': event.name,
+                'event_date': event.event_date,
+                'cus_name': booking.cus_name,
+                'venue': booking.venue,
+                'total_amount': booking.total_amount,
+            }
+            send_html_email(
+                subject=f"New Booking for {event.name}",
+                template_name='email/new_booking_notification.html',
+                context=admin_email_context,
+                recipient_list=[settings.ADMIN_EMAIL],
             )
 
             messages.success(request, "Your event has been booked successfully!")
-            return redirect('userapp:booking_dashboard')  # Redirect to booking dashboard
+            return redirect('userapp:booking_dashboard')
         else:
-            print(f"Form Errors: {form.errors}")
             messages.error(request, "There was an error with your booking. Please check the form and try again.")
     else:
-        # Pre-populate the form with the event data
         form = BookingForm(event_instance=event)
 
     return render(request, 'booking.html', {'form': form, 'event': event})
-
-
 
 
 # Contact view
@@ -227,9 +126,13 @@ def contact(request):
     return render(request, 'contact.html')
 
 
+from datetime import datetime
 
-
-
+def base(request):
+    context = {
+        'current_year': datetime.now().year,
+    }
+    return render(request, 'base.html', context)
 
 
 

@@ -1,47 +1,78 @@
 {% extends 'base.html' %}
-
+{% load static %}
 {% block title %}{{ event.name }}{% endblock %}
 
 {% block content %}
 <section class="event-detail py-5">
     <div class="container">
-        <h1 class="text-center">{{ event.name }}</h1>
+        <!-- Event Title -->
+        <h1 class="text-center text-primary mb-4">{{ event.name }}</h1>
+
+        <!-- Event Details -->
         <div class="row">
-            <div class="col-md-6">
-                <img src="{{ event.img.url }}" class="img-fluid" alt="{{ event.name }}">
+            <div class="col-md-6 mb-4">
+                {% if event.img %}
+                    <img src="{{ event.img.url }}" class="img-fluid rounded shadow" alt="{{ event.name }}">
+                {% else %}
+                    <img src="{% static 'images/default_event.jpg' %}" class="img-fluid rounded shadow" alt="Default Event Image">
+                {% endif %}
             </div>
             <div class="col-md-6">
-                <h4>Description</h4>
+                <h4 class="text-secondary">Description</h4>
                 <p>{{ event.desc }}</p>
-                <h4>Event Date</h4>
-                <p>{{ event.event_date }}</p>
-                <h4>Location</h4>
-                <p>{{ event.location }}</p>
-                <h4>Price</h4>
-                <p>${{ event.price }}</p>
-                <a href="{% url 'booking' event.slug %}" class="btn btn-success">Book This Event</a>
-
+                <h4 class="text-secondary">Event Date</h4>
+                <p><i class="bi bi-calendar-event"></i> {{ event.event_date }}</p>
+                <h4 class="text-secondary">Location</h4>
+                <p><i class="bi bi-geo-alt"></i> {{ event.location }}</p>
+                <h4 class="text-secondary">Price</h4>
+                <p><strong>${{ event.price }}</strong></p>
+                <a href="{% url 'booking' event.slug %}" class="btn btn-success btn-lg mt-3">
+                    <i class="bi bi-ticket-fill"></i> Book This Event
+                </a>
             </div>
         </div>
-        <h3 class="mt-5">Related Events</h3>
+
+        <!-- Related Events Section -->
+        <h3 class="mt-5 text-center">Related Events</h3>
         <div class="row">
             {% if related_events %}
-            {% for related_event in related_events %}
-            <div class="col-md-4">
-                <div class="card">
-                    <img src="{{ related_event.img.url }}" class="card-img-top" alt="{{ related_event.name }}">
-                    <div class="card-body">
-                        <h5 class="card-title">{{ related_event.name }}</h5>
-                        <a href="{% url 'event_detail' slug=related_event.slug %}" class="btn btn-primary">Learn
-                            More</a>
+                {% for related_event in related_events %}
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100 shadow-sm">
+                        {% if related_event.img %}
+                            <img src="{{ related_event.img.url }}" class="card-img-top" alt="{{ related_event.name }}">
+                        {% else %}
+                            <img src="{% static 'images/default_event.jpg' %}" class="card-img-top" alt="Default Image">
+                        {% endif %}
+                        <div class="card-body">
+                            <h5 class="card-title">{{ related_event.name }}</h5>
+                            <p class="text-muted"><i class="bi bi-calendar"></i> {{ related_event.event_date }}</p>
+                            <a href="{% url 'event_detail' slug=related_event.slug %}" class="btn btn-primary">
+                                <i class="bi bi-arrow-right-circle"></i> Learn More
+                            </a>
+                        </div>
                     </div>
                 </div>
-            </div>
-            {% endfor %}
+                {% endfor %}
             {% else %}
-            <p>No related events available at the moment.</p>
+            <p class="text-center">No related events available at the moment.</p>
             {% endif %}
         </div>
     </div>
 </section>
+
+<!-- Styling for the template -->
+<style>
+    .event-detail h4 {
+        margin-top: 20px;
+    }
+    .btn-success {
+        background-color: #28a745;
+        border-color: #28a745;
+    }
+    .btn-success:hover {
+        background-color: #218838;
+        border-color: #1e7e34;
+    }
+</style>
 {% endblock %}

@@ -35,9 +35,13 @@ class Event(models.Model):
 
 
 # eventapp/models.py
+from django.db import models
+from django.conf import settings
+from eventapp.models import Event
+
 class Booking(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='bookings')
-    event_name =  models.ForeignKey(Event, on_delete=models.CASCADE, related_name='bookings')
+    event_name = models.ForeignKey(Event, on_delete=models.CASCADE, related_name='bookings')
     event_date = models.DateField()
     venue = models.CharField(max_length=255)
     booking_date = models.DateField()
@@ -48,8 +52,12 @@ class Booking(models.Model):
     cus_ph = models.CharField(max_length=10)
     description = models.TextField(blank=True, null=True)
     
+    # Add total_amount field
+    total_amount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+
     def __str__(self):
         return f"Booking for {self.event_name} by {self.cus_name}"
+
 
 
 

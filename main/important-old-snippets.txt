@@ -1,0 +1,185 @@
+# before removing the payment view |
+   #                               v
+
+""" from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib import messages
+from .models import Event
+from .forms import BookingForm
+from django.core.mail import send_mail
+from django.conf import settings
+from datetime import date
+
+def booking(request, slug=None):
+    event = get_object_or_404(Event, slug=slug)
+
+    # Check if the event is bookable (event date and availability)
+    if event.event_date < date.today() or not event.is_available:
+        messages.error(request, "Sorry, this event is not available for booking yet.")
+        return redirect('events')
+
+    # Handle both GET and POST requests
+    if request.method == 'POST':
+        form = BookingForm(request.POST)
+        if form.is_valid():
+            # Create the Booking instance without saving to the database yet
+            booking = form.save(commit=False)
+
+            # Assign the logged-in user to the booking
+            booking.user = request.user  # This links the booking to the currently logged-in user
+
+            # Set the total amount based on the event's price
+            booking.total_amount = event.price  # Set the total amount dynamically from the event's price
+
+            # Save the booking to the database
+            booking.save()
+
+            # Send email notification to the user (Booking confirmation)
+            subject = f"Booking Confirmation for {event.name}"
+            message = f"Thank you for booking {event.name}.\nEvent Date: {event.event_date}\nVenue: {booking.venue}\n\nYour booking has been confirmed."
+            send_mail(
+                subject,
+                message,
+                settings.EMAIL_HOST_USER,
+                [booking.cus_email],  # Use the customer's email from the form
+                fail_silently=False,
+            )
+
+            # Also notify the admin
+            admin_subject = f"New Booking for {event.name}"
+            admin_message = f"A new booking has been made for {event.name} by {booking.cus_name}. Event Date: {event.event_date}, Venue: {booking.venue}."
+            send_mail(
+                admin_subject,
+                admin_message,
+                settings.EMAIL_HOST_USER,
+                [settings.ADMIN_EMAIL],  # Admin's email from settings
+                fail_silently=False,
+            )
+
+            # Redirect to the payment page with the booking ID
+            messages.success(request, "Your event has been booked successfully! Please proceed with the payment.")
+            return redirect('paymentapp:payment_view', booking_id=booking.id)
+        else:
+            print(f"Form Errors: {form.errors}")  # Debug line to check form errors
+            messages.error(request, "There was an error with your booking. Please check the form and try again.")
+    else:
+        # Pre-populate the form with the event data
+        initial_data = {
+            'event_name': event.name,  # Ensure event_name is passed to the form
+            'event_date': event.event_date,
+            'venue': event.location
+        }
+        form = BookingForm(initial=initial_data)
+
+    return render(request, 'booking.html', {'form': form, 'event': event}) """
+
+# before using the utils/email
+@login_required
+def booking(request, slug=None):
+    event = get_object_or_404(Event, slug=slug)
+
+    # Check if the event is bookable
+    if event.event_date < date.today() or not event.is_available:
+        messages.error(request, "Sorry, this event is not available for booking yet.")
+        return redirect('events')
+
+    if request.method == 'POST':
+        form = BookingForm(request.POST)
+        if form.is_valid():
+            print('Form is valid')
+
+            # Create booking instance but don't save it yet
+            booking = form.save(commit=False)
+
+            # Manually assign the user (since it's excluded from the form)
+            booking.user = request.user
+
+            # Set the event data (event_name and event_date)
+            booking.event_name = event
+            booking.event_date = event.event_date
+
+            # Set the total amount (price of the event)
+            booking.total_amount = event.price
+
+            # Save the booking to the database
+            booking.save()
+            print(f"Booking created: {booking}")
+            print(f"Booking user: {booking.user}")
+            print(f"Event: {booking.event_name}")
+
+            # Email to user (booking confirmation)
+            send_mail(
+                f"Booking Confirmation for {event.name}",
+                '',
+                settings.EMAIL_HOST_USER,
+                [booking.cus_email],
+                fail_silently=False,
+                html_message=f'''
+                    <html>
+                        <body style="font-family: Arial, sans-serif; margin: 0; padding: 0; background-color: #f4f4f4;">
+                            <div style="max-width: 600px; margin: 20px auto; background-color: #ffffff; border-radius: 10px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);">
+                                <div style="padding: 20px; background-color: #4CAF50; color: #ffffff; border-radius: 10px 10px 0 0; text-align: center;">
+                                    <h2>Booking Confirmation</h2>
+                                </div>
+                                <div style="padding: 20px;">
+                                    <p>Dear <strong>{booking.cus_name}</strong>,</p>
+                                    <p>We are delighted to confirm your booking for the event <strong>{event.name}</strong>. Below are the details of your booking:</p>
+                                    <div style="border: 1px solid #ddd; padding: 10px; border-radius: 5px; background-color: #f9f9f9;">
+                                        <p><strong>Event Name:</strong> {event.name}</p>
+                                        <p><strong>Event Date:</strong> {event.event_date}</p>
+                                        <p><strong>Venue:</strong> {booking.venue}</p>
+                                        <p><strong>Total Amount:</strong> ${booking.total_amount}</p>
+                                    </div>
+                                    <p>We look forward to hosting you at the event. If you have any questions or need to make changes to your booking, please do not hesitate to contact us.</p>
+                                    <p>Warm regards,</p>
+                                    <p><strong>The EventPro Team</strong></p>
+                                </div>
+                            </div>
+                        </body>
+                    </html>
+                '''
+            )
+
+            # Email to admin (new booking notification)
+            send_mail(
+                f"New Booking for {event.name}",
+                '',
+                settings.EMAIL_HOST_USER,
+                [settings.ADMIN_EMAIL],
+                fail_silently=False,
+                html_message=f'''
+                    <html>
+                        <body style="font-family: Arial, sans-serif; margin: 0; padding: 0; background-color: #f4f4f4;">
+                            <div style="max-width: 600px; margin: 20px auto; background-color: #ffffff; border-radius: 10px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);">
+                                <div style="padding: 20px; background-color: #2196F3; color: #ffffff; border-radius: 10px 10px 0 0; text-align: center;">
+                                    <h2>New Booking Notification</h2>
+                                </div>
+                                <div style="padding: 20px;">
+                                    <p>Hello Admin,</p>
+                                    <p>A new booking has been made for the event <strong>{event.name}</strong>. Below are the booking details:</p>
+                                    <div style="border: 1px solid #ddd; padding: 10px; border-radius: 5px; background-color: #f9f9f9;">
+                                        <p><strong>Event Name:</strong> {event.name}</p>
+                                        <p><strong>Event Date:</strong> {event.event_date}</p>
+                                        <p><strong>Customer Name:</strong> {booking.cus_name}</p>
+                                        <p><strong>Venue:</strong> {booking.venue}</p>
+                                        <p><strong>Total Amount:</strong> ${booking.total_amount}</p>
+                                    </div>
+                                    <p>To view or manage this booking, please visit the admin panel.</p>
+                                    <p>Regards,</p>
+                                    <p><strong>The EventPro System</strong></p>
+                                </div>
+                            </div>
+                        </body>
+                    </html>
+                '''
+            )
+
+            messages.success(request, "Your event has been booked successfully!")
+            return redirect('userapp:booking_dashboard')  # Redirect to booking dashboard
+        else:
+            print(f"Form Errors: {form.errors}")
+            messages.error(request, "There was an error with your booking. Please check the form and try again.")
+    else:
+        # Pre-populate the form with the event data
+        form = BookingForm(event_instance=event)
+
+    return render(request, 'booking.html', {'form': form, 'event': event})

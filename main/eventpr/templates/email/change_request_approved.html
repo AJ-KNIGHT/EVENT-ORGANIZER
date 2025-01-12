@@ -1,0 +1,30 @@
+<html>
+  <body style="font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 0; margin: 0;">
+    <div style="max-width: 600px; margin: 20px auto; background-color: #ffffff; border-radius: 10px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);">
+      <div style="background-color: #4CAF50; color: white; padding: 20px; border-radius: 10px 10px 0 0;">
+        <h2 style="margin: 0;">Change Request Approved</h2>
+      </div>
+      <div style="padding: 20px;">
+        <p>Dear <strong>{{ cus_name }}</strong>,</p>
+        <p>Your request for changes to your booking has been approved. Below are the updated details:</p>
+        <table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
+          <tr>
+            <td style="padding: 10px; border: 1px solid #ddd;">Event Name:</td>
+            <td style="padding: 10px; border: 1px solid #ddd;">{{ event_name }}</td>
+          </tr>
+          <tr>
+            <td style="padding: 10px; border: 1px solid #ddd;">Event Date:</td>
+            <td style="padding: 10px; border: 1px solid #ddd;">{{ updated_date }}</td>
+          </tr>
+          <tr>
+            <td style="padding: 10px; border: 1px solid #ddd;">Venue:</td>
+            <td style="padding: 10px; border: 1px solid #ddd;">{{ updated_venue }}</td>
+          </tr>
+        </table>
+        <p>If you have further questions, feel free to contact us.</p>
+        <p>Warm regards,</p>
+        <p><strong>The EventPro Team</strong></p>
+      </div>
+    </div>
+  </body>
+</html>

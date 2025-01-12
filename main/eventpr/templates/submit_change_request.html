@@ -18,11 +18,11 @@
                         {% csrf_token %}
                         <div class="mb-3">
                             {{ form.request_type.label_tag }}
-                            {{ form.request_type|add_class:"form-select" }}
+                            {{ form.request_type }}  <!-- Automatically includes 'form-select' class -->
                         </div>
                         <div class="mb-3">
                             {{ form.new_value.label_tag }}
-                            {{ form.new_value|add_class:"form-control" }}
+                            {{ form.new_value }}  <!-- Automatically includes 'form-control' class -->
                         </div>
                         <button type="submit" class="btn btn-success btn-block w-100 mt-4">
                             <i class="fas fa-paper-plane me-2"></i> Submit Request
@@ -34,38 +34,3 @@
     </div>
 </div>
 {% endblock %}
-
-<style>
-    .change-request-form {
-        border: 1px solid #ccc;
-        border-radius: 5px;
-        padding: 20px;
-    }
-
-    .change-request-form h2 {
-        font-size: 1.2rem;
-        margin-bottom: 15px;
-    }
-
-    .change-request-form label {
-        font-weight: bold;
-    }
-
-    .change-request-form input[type="text"],
-    .change-request-form select {
-        width: 100%;
-        padding: 8px;
-        margin-bottom: 10px;
-        border: 1px solid #ccc;
-        border-radius: 3px;
-    }
-
-    .change-request-form button {
-        background-color: #4CAF50;
-        color: white;
-        padding: 10px 20px;
-        border: none;
-        border-radius: 3px;
-        cursor: pointer;
-    }
-</style>

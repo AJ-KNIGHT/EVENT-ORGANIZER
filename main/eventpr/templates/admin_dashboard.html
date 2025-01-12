@@ -1,39 +1,77 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Admin Dashboard{% endblock title %}
 
 {% block content %}
-<div class="container mt-5">
-    <h2 class="mb-4">Admin Dashboard</h2>
-    <table class="table table-bordered table-hover">
-        <thead>
-            <tr>
-                <th>#</th>
-                <th>Event</th>
-                <th>Booked By</th>
-                <th>Booking Date</th>
-                <th>Total Amount</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for booking in bookings %}
-                <tr>
-                    <td>{{ forloop.counter }}</td>
-                    <td>{{ booking.event.name }}</td>
-                    <td>{{ booking.user.username }}</td>
-                    <td>{{ booking.booking_date }}</td>
-                    <td>{{ booking.total_amount }}</td>
-                    <td>
-                        <a href="{% url 'admin_booking_details' booking.id %}" class="btn btn-sm btn-primary">View</a>
-                        <a href="{% url 'admin_booking_edit' booking.id %}" class="btn btn-sm btn-warning">Edit</a>
-                        <a href="{% url 'admin_booking_delete' booking.id %}" class="btn btn-sm btn-danger">Delete</a>
-                    </td>
-                </tr>
-            {% empty %}
-                <tr>
-                    <td colspan="6" class="text-center">No bookings found.</td>
-                </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+<div class="container mt-4">
+    <h1 class="mb-4">Admin Dashboard</h1>
+
+    <!-- Section: Pending Change Requests -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5>Pending Change Requests</h5>
+        </div>
+        <div class="card-body">
+            {% if pending_requests.exists %}
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Request ID</th>
+                            <th>Booking ID</th>
+                            <th>Requested By</th>
+                            <th>Requested Changes</th>
+                            <th>Date Submitted</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for request in pending_requests %}
+                            <tr>
+                                <td>{{ request.id }}</td>
+                                <td>{{ request.booking.id }}</td>
+                                <td>{{ request.booking.user.username }}</td>
+                                <td>
+                                    {% if request.new_date %}
+                                        <strong>Date:</strong> {{ request.new_date }}<br>
+                                    {% endif %}
+                                    {% if request.new_venue %}
+                                        <strong>Venue:</strong> {{ request.new_venue }}
+                                    {% endif %}
+                                </td>
+                                <td>{{ request.date_submitted }}</td>
+                                <td>
+                                    <a href="{% url 'approve_request' request.id %}" class="btn btn-success btn-sm">Approve</a>
+                                    <a href="{% url 'reject_request' request.id %}" class="btn btn-danger btn-sm">Reject</a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <p>No pending change requests.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Section: Statistics -->
+    <div class="card">
+        <div class="card-header">
+            <h5>Statistics</h5>
+        </div>
+        <div class="card-body">
+            <ul class="list-group">
+                <li class="list-group-item">
+                    <strong>Total Bookings:</strong> {{ total_bookings }}
+                </li>
+                <li class="list-group-item">
+                    <strong>Total Revenue:</strong> ₹{{ total_revenue }}
+                </li>
+                <li class="list-group-item">
+                    <strong>Pending Change Requests:</strong> {{ pending_requests.count }}
+                </li>
+            </ul>
+        </div>
+    </div>
 </div>
-{% endblock %}
+{% endblock content %}

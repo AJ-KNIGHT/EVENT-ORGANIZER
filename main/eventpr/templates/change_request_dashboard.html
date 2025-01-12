@@ -1,31 +1,34 @@
+<!-- userapp/templates/change_request_dashboard.html -->
 {% extends 'base.html' %}
 
 {% block content %}
-<h2>Your Change Requests</h2>
+<div class="container my-5">
+    <h2>Your Change Requests</h2>
 
-{% if change_requests %}
-<table class="table">
-    <thead>
-        <tr>
-            <th>Event</th>
-            <th>Request Type</th>
-            <th>Status</th>
-            <th>Date Submitted</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for request in change_requests %}
-        <tr>
-            <!-- Access the related Booking model for event_name -->
-            <td>{{ request.booking.event_name }}</td>
-            <td>{{ request.get_request_type_display }}</td> <!-- Use get_<field>_display for choice fields -->
-            <td>{{ request.status }}</td>
-            <td>{{ request.created_at }}</td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
-{% else %}
-<p>You have not submitted any change requests.</p>
-{% endif %}
+    {% if change_requests %}
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Event</th>
+                <th>Request Type</th>
+                <th>Status</th>
+                <th>Date Submitted</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for request in change_requests %}
+            <tr>
+                <!-- Access the related Booking model for event_name -->
+                <td>{{ request.booking.event_name }}</td>
+                <td>{{ request.get_request_type_display }}</td> <!-- Use get_<field>_display for choice fields -->
+                <td>{{ request.status }}</td>
+                <td>{{ request.created_at }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p>You have not submitted any change requests.</p>
+    {% endif %}
+</div>
 {% endblock %}
