@@ -183,3 +183,303 @@ def booking(request, slug=None):
         form = BookingForm(event_instance=event)
 
     return render(request, 'booking.html', {'form': form, 'event': event})
+
+
+
+
+
+
+index.html
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Home{% endblock %}
+
+{% block content %}
+<section class="hero-section">
+  <div class="video-container">
+    <video autoplay loop muted>
+      <source src="{% static 'images/pexel-party.mp4' %}" type="video/mp4">
+      Your browser does not support the video tag.
+    </video>
+  </div>
+  <div class="hero-content">
+    <div class="container">
+      <h1 class="display-4">Transforming Your Event Ideas into Reality</h1>
+      <p class="lead">Flawless event planning with top-tier professionals. Let us bring your vision to life.</p>
+      <a href="{% url 'events' %}" class="btn btn-light btn-lg">Explore Events</a>
+    </div>
+  </div>
+</section>
+
+<section class="events-section">
+  <div class="container">
+    <h2 class="section-title">Top Events</h2>
+    <div class="row">
+      {% for event in events %}
+      <div class="col-md-4">
+        <div class="event-card">
+          <div class="event-card-img">
+            <img src="{% if event.img %}{{ event.img.url }}{% else %}{% static 'images/default-event.jpg' %}{% endif %}"
+              alt="{{ event.name }}">
+          </div>
+          <div class="event-card-body">
+            <h3 class="event-card-title">{{ event.name }}</h3>
+            <p class="event-card-text">{{ event.desc|truncatewords:8 }}</p>
+            <a href="{% url 'booking' slug=event.slug %}" class="event-card-btn">Book Now</a>
+          </div>
+        </div>
+      </div>
+      {% empty %}
+      <div class="col-12 text-center">
+        <p>No events available at the moment. Please check back later.</p>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+{% endblock %}
+
+
+<!-- Custom Styles for Cards -->
+<style>
+  /* General Styles */
+  body {
+    font-family: 'Roboto', Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    line-height: 1.6;
+    background-color: #f8f9fa;
+    color: #333;
+  }
+
+  h1,
+  h2,
+  h3 {
+    font-weight: bold;
+    color: #333;
+  }
+
+  a {
+    text-decoration: none;
+    transition: color 0.3s ease;
+  }
+
+  a:hover {
+    color: #007bff;
+  }
+
+  /* Hero Section */
+  .hero-section {
+    position: relative;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    color: #fff;
+  }
+
+  .video-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    z-index: -1;
+  }
+
+  .video-container video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .hero-content {
+    z-index: 2;
+    max-width: 800px;
+  }
+
+  .hero-content h1 {
+    font-size: 3rem;
+    margin-bottom: 20px;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  }
+
+  .hero-content p {
+    font-size: 1.2rem;
+    margin-bottom: 30px;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  }
+
+  .hero-content .btn {
+    padding: 12px 30px;
+    background-color: #007bff;
+    color: #fff;
+    border-radius: 30px;
+    font-size: 1rem;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+  }
+
+  .hero-content .btn:hover {
+    background-color: #0056b3;
+    transform: translateY(-2px);
+  }
+
+  /* Events Section */
+  .events-section {
+    padding: 60px 15px;
+    background-color: #f8f9fa;
+  }
+
+  .events-section .section-title {
+    font-size: 2.5rem;
+    margin-bottom: 40px;
+    text-align: center;
+    color: #333;
+  }
+
+  /* Events Cards */
+  .events-section .row {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    /* Center-align cards */
+    gap: 30px;
+    /* Increased spacing between cards */
+  }
+
+  .event-card {
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border: 1px solid #eaeaea;
+    display: flex;
+    flex-direction: column;
+    max-width: 100%;
+    width: 300px;
+    /* Fixed width for consistent layout */
+    height: auto;
+    /* Adjust height dynamically */
+    overflow: hidden;
+    
+  }
+
+  .event-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+  }
+
+  .event-card-img {
+    width: 100%;
+    height: 180px;
+    overflow: hidden;
+    border-bottom: 1px solid #eaeaea;
+  }
+
+  .event-card-img img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+  }
+
+  .event-card:hover .event-card-img img {
+    transform: scale(1.1);
+  }
+
+  .event-card-body {
+    padding: 20px;
+    text-align: center;
+  }
+
+  .event-card-title {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #007bff;
+    margin-bottom: 10px;
+  }
+
+  .event-card-text {
+    font-size: 1rem;
+    color: #666;
+    margin-bottom: 20px;
+    line-height: 1.4;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    /* Display max 3 lines */
+    -webkit-box-orient: vertical;
+  }
+
+  .event-card-btn {
+    display: inline-block;
+    padding: 12px 30px;
+    background: linear-gradient(90deg, #007bff, #0056b3);
+    color: #fff;
+    border-radius: 50px;
+    font-size: 1rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.3s ease;
+  }
+
+  .event-card-btn:hover {
+    background: linear-gradient(90deg, #0056b3, #003d80);
+    transform: translateY(-2px);
+  }
+
+  /* Footer Section (optional improvement) */
+  footer {
+    background-color: #333;
+    color: #fff;
+    padding: 20px;
+    text-align: center;
+  }
+
+  footer a {
+    color: #007bff;
+    margin: 0 10px;
+    font-size: 1.2rem;
+    transition: color 0.3s ease;
+  }
+
+  footer a:hover {
+    color: #0056b3;
+  }
+
+  /* Responsive Design */
+  @media (max-width: 768px) {
+    .event-card {
+      width: 90%;
+      /* Adjust card width for smaller devices */
+    }
+
+    .hero-content h1 {
+      font-size: 2rem;
+    }
+
+    .hero-content p {
+      font-size: 1rem;
+    }
+  }
+
+  @media (max-width: 576px) {
+    .event-card {
+      width: 100%;
+      /* Take full width on mobile */
+    }
+
+    .hero-content h1 {
+      font-size: 1.8rem;
+    }
+
+    .hero-content p {
+      font-size: 0.9rem;
+    }
+  }
+</style>

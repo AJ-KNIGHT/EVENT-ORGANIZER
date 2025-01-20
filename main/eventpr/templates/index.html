@@ -20,21 +20,31 @@
   </div>
 </section>
 
-<!-- Event List Section -->
-<section class="event-list py-5">
+<section class="events-section">
   <div class="container">
-    <h2 class="text-center mb-5">Browse Our Events</h2>
-    <div class="row">
+    <h2 class="section-title text-primary mb-4">Top Events</h2>
+    <div class="row g-4">
       {% for event in events %}
-      <div class="event-card">
-        <div class="event-card-img">
-          <img src="{% if event.img %}{{ event.img.url }}{% else %}{% static 'images/default-event.jpg' %}"
-            alt="{{ event.name }}">
-        </div>
-        <div class="event-card-body">
-          <h3 class="event-card-title">{{ event.name }}</h3>
-          <p class="event-card-text">{{ event.desc|truncatewords:8 }}</p>
-          <a href="{% url 'booking' slug=event.slug %}" class="event-card-btn">Book Now</a>
+      <div class="col-md-6 col-lg-4 event-card" data-aos="fade-up">
+        <div class="card h-100 shadow-sm">
+          <!-- Event Image -->
+          {% if event.img %}
+          <img src="{{ event.img.url }}" alt="{{ event.name }} Image" class="card-img-top" style="height: 200px; object-fit: cover;">
+          {% else %}
+          <img src="{% static 'images/default-event.jpg' %}" alt="Default Image" class="card-img-top" style="height: 200px; object-fit: cover;">
+          {% endif %}
+
+          <!-- Event Details -->
+          <div class="card-body text-center">
+            <h5 class="card-title text-primary">{{ event.name }}</h5>
+            <p class="card-text text-muted">{{ event.desc|truncatewords:10 }}</p>
+            <p class="card-text"><strong>${{ event.price }}</strong></p>
+          </div>
+
+          <!-- Booking Button -->
+          <div class="card-footer text-center">
+            <a href="{% url 'booking' slug=event.slug %}" class="btn btn-primary">Book Now</a>
+          </div>
         </div>
       </div>
       {% empty %}
@@ -42,119 +52,70 @@
         <p>No events available at the moment. Please check back later.</p>
       </div>
       {% endfor %}
-
     </div>
   </div>
 </section>
 
 {% endblock %}
 
-<!-- Custom Styles for Cards -->
+<!-- Custom Styles -->
 <style>
-  /* Event Cards Container */
-  .event-list .row {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-between;
+  /* Events Section */
+  .events-section {
+    padding: 60px 15px;
+    background-color: #f8f9fa;
   }
 
-  /* Event Card Styling */
-  .event-card {
-    background-color: #fff;
-    border-radius: 8px;
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
-    overflow: hidden;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-    border: 2px solid #f1f1f1;
-    height: 100%;
-  }
-
-  .event-card:hover {
-    transform: translateY(-10px);
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
-  }
-
-  /* Event Card Image */
-  .event-card-img {
-    width: 100%;
-    height: 200px;
-    overflow: hidden;
-  }
-
-  .event-card-img img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-
-  /* Event Card Body */
-  .event-card-body {
-    padding: 20px;
+  .events-section .section-title {
+    font-size: 2.5rem;
+    margin-bottom: 40px;
     text-align: center;
-  }
-
-  /* Event Card Title */
-  .event-card-title {
-    font-size: 1.3rem;
-    font-weight: bold;
-    margin-bottom: 10px;
     color: #333;
   }
 
-  /* Event Card Text */
-  .event-card-text {
-    font-size: 0.9rem;
-    color: #555;
-    margin-bottom: 15px;
-    text-overflow: ellipsis;
+  /* Event Cards */
+  .event-card .card {
+    border: 1px solid #eaeaea;
+    border-radius: 10px;
     overflow: hidden;
-    display: -webkit-box;
-    -webkit-line-clamp: 3;
-    -webkit-box-orient: vertical;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
   }
 
-  /* Event Card Button */
-  .event-card-btn {
-    display: inline-block;
-    padding: 10px 20px;
-    background-color: #007bff;
-    color: #fff;
-    border-radius: 30px;
-    text-decoration: none;
+  .event-card .card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+  }
+
+  .event-card .card-img-top {
+    border-bottom: 1px solid #eaeaea;
+  }
+
+  .event-card .card-title {
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin-bottom: 10px;
+  }
+
+  .event-card .card-text {
     font-size: 1rem;
-    transition: background-color 0.3s ease, transform 0.3s ease;
+    margin-bottom: 10px;
   }
 
-  .event-card-btn:hover {
-    background-color: #0056b3;
-    transform: translateY(-3px);
+  .event-card .card-footer {
+    background: none;
+    border-top: none;
   }
 
-  /* Spacing between cards */
-  .col-md-4 {
-    flex: 1;
-    margin-bottom: 30px;
+  .event-card .btn {
+    padding: 10px 20px;
+    font-size: 1rem;
+    font-weight: 600;
   }
 
+  /* Responsive Design */
   @media (max-width: 768px) {
-    .event-list .row {
-      justify-content: center;
-    }
-
-    .col-md-4 {
-      flex: 1 0 100%;
+    .event-card {
+      margin-bottom: 20px;
     }
   }
 </style>
-
-<!-- Optional Custom JS for Card Hover Effect -->
-<script>
-  document.querySelectorAll('.event-card').forEach(card => {
-    card.addEventListener('mouseenter', () => {
-      card.style.transform = 'scale(1.05)';
-    });
-    card.addEventListener('mouseleave', () => {
-      card.style.transform = 'scale(1)';
-    });
-  });
-</script>
