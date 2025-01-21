@@ -1,4 +1,5 @@
 {
-    "python.terminal.activateEnvInCurrentTerminal": true,
-    "python.defaultInterpreterPath": "/home/amal/Desktop/temp-codes/AJ-KNIGHT/EVENT-ORGANIZER/main/env2"
+  "python.defaultInterpreterPath": "C:\\Users\\AJ\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+  "python.terminal.activateEnvironment": true,
+  "python.terminal.executeInFileDir": true
 }

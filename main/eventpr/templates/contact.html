@@ -1,11 +1,16 @@
 {% extends 'base.html' %}
-{% load static %}  <!-- Add this line to load static files -->
+{% load static %}
 
 {% block title %}
 Contact Us
 {% endblock %}
 
 {% block content %}
+<!-- Top Image Section -->
+<div class="hero-image">
+    <img src="{% static 'images/pexel-contact.jpg' %}" alt="Contact Us" class="img-fluid w-100" style="max-height: 400px; object-fit: cover;">
+</div>
+
 <div class="container p-5" data-aos="fade-up">
     <h2 class="text-center text-primary mb-4">Contact Us</h2>
     
@@ -42,34 +47,14 @@ Contact Us
                 <li><strong>Phone:</strong> +1 (123) 456-7890</li>
                 <li><strong>Address:</strong> 123 Event St, Event City, EC 12345</li>
             </ul>
-            <img src="{% static 'images/contact-us.jpg' %}" alt="Contact Us" class="img-fluid rounded shadow-lg mt-4">
         </div>
     </div>
 </div>
 {% endblock %}
-
 <style>
-    .container {
-        max-width: 800px;
-    }
-
-    form {
-        border-radius: 10px;
-    }
-
-    .btn-success:hover {
-        transform: scale(1.05);
-    }
-
-    /* Optional: Custom styling for input and textarea */
-    .form-floating input,
-    .form-floating textarea {
-        border-radius: 8px;
-        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    }
-    
-    /* Add some spacing between elements for better layout */
-    .col-md-6 {
-        margin-bottom: 30px;
-    }
+.hero-image img {
+    width: 100%;
+    max-height: 400px;
+    object-fit: cover;
+}
 </style>

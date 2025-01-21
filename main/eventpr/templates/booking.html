@@ -2,7 +2,18 @@
 {% block title %}Book Event{% endblock %}
 
 {% block content %}
-<section class="booking-form py-5">
+<section
+    class="booking-form py-5"
+    data-bg-url="{% static 'images/booking-background.jpg' %}"
+    style="
+        padding-top: 70px;
+        padding-bottom: 70px;
+        background-size: cover;
+        background-position: center;
+        background-attachment: fixed;
+        background-repeat: no-repeat;
+        color: #fff;"
+>
     <div class="container">
         <h2 class="text-center mb-5 font-weight-bold text-success">Book Your Event</h2>
         <form method="POST" class="form-elegant">
@@ -132,136 +143,3 @@
     </div>
 </section>
 {% endblock %}
-
-<style>
-    /* Global styles */
-    body {
-        background-color: #f4f7fc;
-        font-family: 'Arial', sans-serif;
-        color: #333;
-        line-height: 1.6;
-    }
-
-    .container {
-        max-width: 850px;
-        background-color: #ffffff;
-        padding: 40px;
-        border-radius: 15px;
-        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
-        margin-top: 40px;
-    }
-
-    .font-weight-bold {
-        font-weight: 700;
-    }
-
-    .form-group label {
-        font-size: 1.1rem;
-        color: #555;
-        margin-bottom: 10px;
-        font-weight: 600;
-    }
-
-    /* Style for inputs */
-    .form-control {
-        border-radius: 8px;
-        background-color: #f9f9f9;
-        padding: 15px;
-        font-size: 1rem;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-        transition: all 0.3s ease;
-    }
-
-    .form-control:focus {
-        border-color: #28a745;
-        box-shadow: 0 0 10px rgba(40, 167, 69, 0.25);
-        outline: none;
-    }
-
-    .form-group .invalid-feedback {
-        display: block;
-        font-size: 0.875rem;
-        color: #dc3545;
-    }
-
-    .btn-success {
-        background-color: #28a745;
-        border-color: #28a745;
-        transition: all 0.3s ease;
-        font-size: 1.2rem;
-    }
-
-    .btn-success:hover {
-        background-color: #218838;
-        border-color: #1e7e34;
-        transform: scale(1.05);
-    }
-
-    /* Form container styles */
-    .booking-form {
-        padding-top: 70px;
-        padding-bottom: 70px;
-    }
-
-    /* Input focus animation */
-    .form-control:focus {
-        animation: focusEffect 0.5s ease;
-    }
-
-    @keyframes focusEffect {
-        0% {
-            border-color: #6c757d;
-        }
-
-        100% {
-            border-color: #28a745;
-        }
-    }
-
-    /* Button hover effect */
-    .btn-success:hover {
-        box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
-        transform: translateY(-2px);
-    }
-
-    /* Ensuring form layout is neat and aligned */
-    .row {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 20px;
-    }
-
-    .form-group {
-        margin-bottom: 20px;
-    }
-
-    .form-group .form-control {
-        margin-top: 5px;
-    }
-
-    /* Improved spacing between rows for a clean, airy feel */
-    .col-md-8 {
-        display: flex;
-        flex-direction: column;
-    }
-
-    /* Responsive styling */
-    @media (max-width: 768px) {
-        .col-md-8 {
-            width: 100%;
-        }
-
-        .container {
-            padding: 20px;
-        }
-
-        .form-control {
-            padding: 12px;
-        }
-
-        .btn-success {
-            font-size: 1rem;
-            padding: 12px 30px;
-        }
-    }
-</style>
