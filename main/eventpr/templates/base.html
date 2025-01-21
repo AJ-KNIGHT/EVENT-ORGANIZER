@@ -13,218 +13,74 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css" rel="stylesheet">
 
-    <!-- Inline Critical CSS for Fast Loading -->
     <style>
-        /* Body Background - Transparent */
-        body {
-            font-family: 'Poppins', sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: transparent;
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-            /* Transparent body background */
-        }
-
-        /* Custom Navbar Style - Foggy Effect */
+        /* Navbar Styling */
         .custom-navbar {
             position: fixed;
-            /* Fix the navbar to the top */
-            top: 0;
-            /* Ensure it stays at the top */
-            left: 0;
-            /* Align to the left */
-            width: 100%;
-            /* Take full width of the screen */
-            background-color: rgba(255, 255, 255, 0.1);
-            /* background-color: rgba(0, 0, 0, 0.7); */
-            /* Slightly opaque white */
-            backdrop-filter: blur(10px);
-            /* Foggy effect */
+            top: 10px;
+            right: 10px;
+            background-color: rgba(255, 255, 255, 0.8);
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-            /* Slight shadow */
-            border: none;
+            border-radius: 25px;
             z-index: 9999;
-            /* Ensure navbar stays on top */
-            padding: 10px 20px;
-            /* Add some padding for better visual */
+            padding: 5px 20px;
+            display: flex;
+            align-items: center;
         }
 
-        /* Logo and Profile separate from Navbar */
-        .navbar-brand {
-            position: absolute;
-            left: 20px;
-            top: 25px;
-            height: 50px;
+        .custom-navbar .navbar-brand img {
+            height: 30px;
         }
 
-        .navbar-toggler,
-        .navbar-nav {
-            position: absolute;
-            right: 20px;
-            top: 25px;
+        .custom-navbar .nav-link {
+            color: #080101 !important;
+            font-weight: 500;
+            padding: 0 10px;
         }
 
-        /* Make the rest of the page content start below the navbar */
+        .custom-navbar .nav-link:hover {
+            color: #ff4081 !important;
+        }
+
+        .custom-navbar .dropdown-menu {
+            background-color: rgba(255, 255, 255, 0.9);
+            border: none;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .custom-navbar .dropdown-item {
+            color: #080101 !important;
+        }
+
+        .custom-navbar .dropdown-item:hover {
+            background-color: #f1f1f1;
+        }
+
         main {
             padding-top: 0px;
-            /* Adjust based on the height of your navbar */
-            flex-grow: 1;
-            /* This makes the main content area flexible and fill any remaining space */
-
+            padding-right: 0px;
         }
 
-        /* Navbar Links */
-        .custom-navbar .nav-link {
-             /*color: #fff !important; */
-            color: #080101 !important;
-            /* White color for nav links */
-            font-weight: 600;
-            /* Slightly bolder text */
-        }
-
-        /* Hover effect for navbar links */
-        .custom-navbar .nav-link:hover {
-            color: #f1f1f1 !important;
-            /* Light color on hover */
-        }
-
-        /* Navbar Brand (Logo) */
-        .custom-navbar .navbar-brand img {
-            height: 50px;
-            /* Logo size */
-        }
-
-        /* Hamburger icon */
-        .custom-navbar .navbar-toggler-icon {
-            background-color: #fff;
-            /* White color for the toggle icon */
-        }
-
-        /* Hero Section */
-        .hero-section {
-            position: relative;
-            height: 100vh;
-            overflow: hidden;
-            text-align: center;
-        }
-
-        /* Video Background */
-        .hero-section video {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            z-index: -1;
-        }
-
-        /* Hero Content */
-        .hero-content {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            color: white;
-            text-shadow: 2px 2px 10px rgba(0, 0, 0, 0.7);
-        }
-
-        .hero-content h1 {
-            font-size: 4rem;
-            font-weight: bold;
-        }
-
-        .hero-content p {
-            font-size: 1.25rem;
-            margin-bottom: 1.5rem;
-        }
-
-        .hero-content .btn {
-            font-size: 1.25rem;
-            padding: 0.75rem 1.5rem;
-            border-radius: 50px;
-        }
-
-        /* Footer Styling */
+        /* Footer */
         footer {
-            background-color: #2c2c2c;
-            color: #fff;
-            padding: 15px 20px;
-            /* Reduced padding for a shorter footer */
-            text-align: center;
-            justify-content: space-around;
-            padding-left: 150px;
-            padding-right: 150px;
-            
+            background-color: #080101;
+            color: #f1f1f1;
+            padding: 20px 0;
         }
 
-        .footer-section h4 {
-            font-size: 16px;
-            margin-bottom: 10px;
-            color: #f1c40f;
-        }
-
-        .footer-links a {
-            color: #ffffff;
-            text-decoration: none;
-            transition: color 0.3s ease;
-            font-size: 14px;
-        }
-
-        .footer-links a:hover {
-            color: #f1c40f;
-            text-decoration: underline;
-        }
-
-        .social-icons .social-icon {
-            color: #fff;
+        footer .fab {
             font-size: 20px;
-            transition: color 0.3s ease, transform 0.3s ease;
+            color: #f1f1f1;
+            transition: color 0.3s;
         }
 
-        .social-icons .social-icon:hover {
-            color: #f1c40f;
-            transform: scale(1.1);
+        footer .fab:hover {
+            color: #ff4081;
         }
 
-
-        .dropdown-item {
-            color: whitesmoke;
-        }
-
-        .dropdown-item:hover {
-            background-color: transparent;
-            color: white;
-            border: solid greenyellow 5px;
-        }
-
-        .nav-item {
-            position: relative;
-        }
-
-        .nav-link {
-            position: relative;
-            text-decoration: none;
-        }
-
-        .nav-link::after {
-            content: '';
-            position: absolute;
-            width: 0;
-            /* Start with zero width */
-            height: 2px;
-            bottom: -3px;
-            /* Slight positioning below text */
-            left: 0;
-            background-color: yellowgreen;
-            transition: width 0.3s ease-in-out;
-        }
-
-        .nav-link:hover::after {
-            width: 100%;
-            /* Full width on hover */
+        footer p {
+            font-size: 14px;
+            margin: 0;
         }
     </style>
 
@@ -232,83 +88,70 @@
 </head>
 
 <body>
-    <!-- Navigation -->
     <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-light custom-navbar">
-        <a class="navbar-brand" href="/">
+    <nav class="custom-navbar">
+        <a class="navbar-brand me-3" href="/">
             <img src="{% static 'images/logo.webp' %}" alt="EventPro Logo">
         </a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
-            aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav ms-auto">
-                <li class="nav-item"><a class="nav-link" href="/">Home</a></li>
-                <li class="nav-item"><a class="nav-link" href="/events">Events</a></li>
-                <li class="nav-item"><a class="nav-link" href="/about">About Us</a></li>
-                <li class="nav-item"><a class="nav-link" href="/contact">Contact</a></li>
+        <ul class="navbar-nav d-flex flex-row">
+            <li class="nav-item">
+                <a class="nav-link {% if request.path == '/' %}active{% endif %}" href="/">Home</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if request.path == '/events' %}active{% endif %}" href="/events">Events</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if request.path == '/about' %}active{% endif %}" href="/about">About Us</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if request.path == '/contact' %}active{% endif %}" href="/contact">Contact</a>
+            </li>
 
-                {% if user.is_authenticated %}
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button"
-                        data-bs-toggle="dropdown" aria-expanded="false">
-                        {{ user.username }}
-                    </a>
-                    <ul class="dropdown-menu" aria-labelledby="navbarDropdown"
-                        style="background-color: transparent !important;">
-                        <li><a class="dropdown-item " href="{% url 'userapp:profile' %}">Profile</a></li>
-                        <li><a class="dropdown-item" href="{% url 'userapp:logout' %}">Logout</a></li>
-                    </ul>
-                </li>
-                {% else %}
-                <li class="nav-item"><a class="nav-link" href="{% url 'userapp:login' %}">Login</a></li>
-                <li class="nav-item"><a class="nav-link" href="{% url 'userapp:signup' %}">Sign Up</a></li>
-                {% endif %}
-            </ul>
-        </div>
+            {% if user.is_authenticated %}
+            <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown"
+                    aria-expanded="false">
+                    {{ user.username }}
+                </a>
+                <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+                    <li><a class="dropdown-item" href="{% url 'userapp:profile' %}">Profile</a></li>
+                    <li><a class="dropdown-item" href="{% url 'userapp:logout' %}">Logout</a></li>
+                </ul>
+            </li>
+            {% else %}
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'userapp:login' %}">Login</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'userapp:signup' %}">Sign Up</a>
+            </li>
+            {% endif %}
+        </ul>
     </nav>
 
+    <!-- Main Content -->
     <main>
         {% block content %}{% endblock %}
     </main>
 
     <!-- Footer -->
-    <footer>
-        <div class="footer-container d-flex justify-content-between align-items-center flex-wrap">
-            <!-- Quick Links Section -->
-            <div class="footer-section">
-                <h4>Quick Links</h4>
-                <ul class="footer-links d-flex list-unstyled gap-3 mb-0">
-                    <li><a href="/about">About Us</a></li>
-                    
-                    <li><a href="/privacy-policy">Privacy Policy</a></li>
-                    <li><a href="/terms-of-service">Terms of Service</a></li>
-                </ul>
-            </div>
-
-            <!-- Social Media Section -->
-            <div class="footer-section text-center">
-                <h4>Connect With Us</h4>
-                <div class="social-icons d-flex justify-content-center gap-3">
-                    <a href="#" class="social-icon" aria-label="Facebook">
-                        <i class="fab fa-facebook-f"></i>
-                    </a>
-                    <a href="#" class="social-icon" aria-label="Twitter">
-                        <i class="fab fa-twitter"></i>
-                    </a>
-                    <a href="#" class="social-icon" aria-label="Instagram">
-                        <i class="fab fa-instagram"></i>
-                    </a>
-                    <a href="#" class="social-icon" aria-label="LinkedIn">
-                        <i class="fab fa-linkedin-in"></i>
-                    </a>
-                </div>
-            </div>
+    <footer class="text-center py-3">
+        <div class="d-flex justify-content-center gap-3">
+            <a href="#" class="text-white">
+                <i class="fab fa-facebook-f"></i>
+            </a>
+            <a href="#" class="text-white">
+                <i class="fab fa-twitter"></i>
+            </a>
+            <a href="#" class="text-white">
+                <i class="fab fa-instagram"></i>
+            </a>
+            <a href="#" class="text-white">
+                <i class="fab fa-linkedin-in"></i>
+            </a>
         </div>
+        <p class="mt-2 text-white-50">© 2025 EventPro. All Rights Reserved.</p>
     </footer>
-
-
 
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>

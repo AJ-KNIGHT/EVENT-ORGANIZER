@@ -10,6 +10,7 @@
       <source src="{% static 'images/pexel-party.mp4' %}" type="video/mp4">
       Your browser does not support the video tag.
     </video>
+
   </div>
   <div class="hero-content">
     <div class="container">
@@ -29,9 +30,11 @@
         <div class="card h-100 shadow-sm">
           <!-- Event Image -->
           {% if event.img %}
-          <img src="{{ event.img.url }}" alt="{{ event.name }} Image" class="card-img-top" style="height: 200px; object-fit: cover;">
+          <img src="{{ event.img.url }}" alt="{{ event.name }} Image" class="card-img-top"
+            style="height: 200px; object-fit: cover;">
           {% else %}
-          <img src="{% static 'images/default-event.jpg' %}" alt="Default Image" class="card-img-top" style="height: 200px; object-fit: cover;">
+          <img src="{% static 'images/default-event.jpg' %}" alt="Default Image" class="card-img-top"
+            style="height: 200px; object-fit: cover;">
           {% endif %}
 
           <!-- Event Details -->
@@ -60,7 +63,58 @@
 
 <!-- Custom Styles -->
 <style>
+  /* Hero Section */
+  .hero-section {
+    position: relative;
+    height: 100vh;
+    /* Full viewport height */
+    overflow: hidden;
+  }
 
+  /* Video Container */
+  .video-container {
+    width: 100vw;
+    /* Full width of the viewport */
+    height: 100vh;
+    /* Full height of the viewport */
+    overflow: hidden;
+    /* Hide overflow if video exceeds container */
+    position: relative;
+  }
+
+  video {
+    width: 100%;
+    /* Ensures the video fills the container */
+    height: 100%;
+    /* Ensures the video covers the container */
+    object-fit: cover;
+    /* Scales without leaving blank spaces */
+  }
+
+  /* Hero Content */
+  .hero-content {
+    position: absolute;
+    top: 50%;
+    /* Vertically center */
+    left: 50%;
+    /* Horizontally center */
+    transform: translate(-50%, -50%);
+    /* Offset to truly center it */
+    color: white;
+    text-align: center;
+    z-index: 1;
+    /* Make sure content is above video */
+  }
+
+  .hero-content h1 {
+    font-size: 3rem;
+    font-weight: bold;
+  }
+
+  .hero-content p {
+    font-size: 1.25rem;
+    margin-bottom: 30px;
+  }
 
   /* Events Section */
   .events-section {

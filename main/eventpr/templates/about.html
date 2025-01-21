@@ -4,41 +4,49 @@
 {% block title %}About{% endblock %}
 
 {% block content %}
-<div class="container p-4">
-  <h2 class="text-center text-primary mb-4" data-aos="fade-up">About Us</h2>
+<section
+    class="about-page py-5"
+    style="
+        background-image: url('{% static 'images/pexel-about.jpg' %}');
+        background-size: cover;
+        background-position: center;
+        background-attachment: fixed;
+        padding-top: 70px;
+        padding-bottom: 70px;"
+>
+  <div class="container p-4 text-white">
+    <h2 class="text-center text-primary mb-4" data-aos="fade-up">About Us</h2>
+    
+    <div class="row mb-4">
+      <div class="col-md-6" data-aos="fade-right">
+        <h3 class="text-secondary">Who We Are</h3>
+        <p>We are a team of passionate individuals dedicated to creating seamless and unforgettable event experiences.</p>
+      </div>
+    </div>
   
-  <div class="row mb-4">
-    <div class="col-md-6" data-aos="fade-right">
-      <h3 class="text-secondary">Who We Are</h3>
-      <p>We are a team of passionate individuals dedicated to creating seamless and unforgettable event experiences.</p>
+    <div class="row mb-4">
+      <div class="col-md-12" data-aos="fade-up" data-aos-delay="100">
+        <h3 class="text-secondary">Our Mission</h3>
+        <p>Our mission is to provide an all-in-one platform that simplifies event management, helping organizers create amazing experiences while giving attendees the tools they need to find and enjoy events with ease.</p>
+      </div>
     </div>
-    <div class="col-md-6" data-aos="fade-left">
-      <img src="{% static 'images/about_us.jpg' %}" alt="About Us" class="img-fluid rounded" data-aos="zoom-in">
-    </div>
-  </div>
-
-  <div class="row mb-4">
-    <div class="col-md-12" data-aos="fade-up" data-aos-delay="100">
-      <h3 class="text-secondary">Our Mission</h3>
-      <p>Our mission is to provide an all-in-one platform that simplifies event management, helping organizers create amazing experiences while giving attendees the tools they need to find and enjoy events with ease.</p>
-    </div>
-  </div>
-
-  <div class="row" data-aos="fade-up" data-aos-delay="200">
-    <div class="col-md-12">
-      <h3 class="text-secondary">Contact Us</h3>
-      <ul>
-        <li><strong>Email:</strong> support@eventplatform.com</li>
-        <li><strong>Phone:</strong> +1 (123) 456-7890</li>
-        <li><strong>Address:</strong> 123 Event St, Event City, EC 12345</li>
-      </ul>
+  
+    <div class="row" data-aos="fade-up" data-aos-delay="200">
+      <div class="col-md-12">
+        <h3 class="text-secondary">Contact Us</h3>
+        <ul>
+          <li><strong>Email:</strong> support@eventplatform.com</li>
+          <li><strong>Phone:</strong> +1 (123) 456-7890</li>
+          <li><strong>Address:</strong> 123 Event St, Event City, EC 12345</li>
+        </ul>
+      </div>
     </div>
   </div>
-</div>
+</section>
 {% endblock %}
 
-<!-- Additional Styles -->
 <style>
+  
   h3 {
     font-size: 1.75rem;
     font-weight: 600;
