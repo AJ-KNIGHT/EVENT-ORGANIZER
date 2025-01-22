@@ -5,13 +5,15 @@
 
 {% block content %}
 <section class="hero-section">
+  <!-- Video Background -->
   <div class="video-container">
     <video autoplay loop muted>
       <source src="{% static 'images/pexel-party.mp4' %}" type="video/mp4">
       Your browser does not support the video tag.
     </video>
-
   </div>
+
+  <!-- Hero Content -->
   <div class="hero-content">
     <div class="container">
       <h1 class="display-4">Transforming Your Event Ideas into Reality</h1>
@@ -28,7 +30,6 @@
       {% for event in events %}
       <div class="col-md-6 col-lg-4 event-card" data-aos="fade-up">
         <div class="card h-100 shadow-sm">
-          <!-- Event Image -->
           {% if event.img %}
           <img src="{{ event.img.url }}" alt="{{ event.name }} Image" class="card-img-top"
             style="height: 200px; object-fit: cover;">
@@ -36,15 +37,11 @@
           <img src="{% static 'images/default-event.jpg' %}" alt="Default Image" class="card-img-top"
             style="height: 200px; object-fit: cover;">
           {% endif %}
-
-          <!-- Event Details -->
           <div class="card-body text-center">
             <h5 class="card-title text-primary">{{ event.name }}</h5>
             <p class="card-text text-muted">{{ event.desc|truncatewords:10 }}</p>
             <p class="card-text"><strong>${{ event.price }}</strong></p>
           </div>
-
-          <!-- Booking Button -->
           <div class="card-footer text-center">
             <a href="{% url 'booking' slug=event.slug %}" class="btn btn-primary">Book Now</a>
           </div>
@@ -58,7 +55,6 @@
     </div>
   </div>
 </section>
-
 {% endblock %}
 
 <!-- Custom Styles -->
@@ -66,44 +62,36 @@
   /* Hero Section */
   .hero-section {
     position: relative;
+    width: 100%;
     height: 100vh;
-    /* Full viewport height */
     overflow: hidden;
   }
 
   /* Video Container */
   .video-container {
-    width: 100vw;
-    /* Full width of the viewport */
-    height: 100vh;
-    /* Full height of the viewport */
-    overflow: hidden;
-    /* Hide overflow if video exceeds container */
-    position: relative;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
   }
 
-  video {
+  .video-container video {
     width: 100%;
-    /* Ensures the video fills the container */
     height: 100%;
-    /* Ensures the video covers the container */
     object-fit: cover;
-    /* Scales without leaving blank spaces */
   }
 
   /* Hero Content */
   .hero-content {
     position: absolute;
     top: 50%;
-    /* Vertically center */
     left: 50%;
-    /* Horizontally center */
     transform: translate(-50%, -50%);
-    /* Offset to truly center it */
+    z-index: 2;
     color: white;
     text-align: center;
-    z-index: 1;
-    /* Make sure content is above video */
   }
 
   .hero-content h1 {
@@ -114,6 +102,12 @@
   .hero-content p {
     font-size: 1.25rem;
     margin-bottom: 30px;
+  }
+
+  .hero-content .btn {
+    padding: 10px 20px;
+    font-size: 1.2rem;
+    font-weight: bold;
   }
 
   /* Events Section */
@@ -172,6 +166,14 @@
   @media (max-width: 768px) {
     .event-card {
       margin-bottom: 20px;
+    }
+
+    .hero-content h1 {
+      font-size: 2rem;
+    }
+
+    .hero-content p {
+      font-size: 1rem;
     }
   }
 </style>
