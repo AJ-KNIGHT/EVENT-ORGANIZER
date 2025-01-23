@@ -1,146 +1,106 @@
 {% extends 'base.html' %}
 {% load static %}
+
 {% block title %}Book Event{% endblock %}
 
 {% block content %}
-<section
-    class="booking-form py-5"
-    data-bg-url="{% static 'images/hero-bg.jpg' %}"
+<section 
+    class="booking-form py-5" 
     style="
-        padding-top: 70px;
-        padding-bottom: 70px;
+        background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), 
+                    url('{% static 'images/hero-bg.jpg' %}');
         background-size: cover;
         background-position: center;
         background-attachment: fixed;
-        background-repeat: no-repeat;
         color: #fff;"
 >
     <div class="container">
-        <h2 class="text-center mb-5 font-weight-bold text-success">Book Your Event</h2>
-        <form method="POST" class="form-elegant">
-            {% csrf_token %}
-            <div class="row justify-content-center">
-                <!-- First Column: Customer Info and Event Info -->
-                <div class="col-md-6">
-                    <!-- Customer Name -->
-                    <div class="form-group">
-                        <label for="{{ form.cus_name.id_for_label }}">Your Name</label>
-                        {{ form.cus_name }}
-                        {% if form.cus_name.errors %}
-                        <div class="invalid-feedback">
-                            {% for error in form.cus_name.errors %}
-                            <p>{{ error }}</p>
-                            {% endfor %}
-                        </div>
-                        {% endif %}
+        <div class="row justify-content-center">
+            <div class="col-md-10 col-lg-8">
+                <div class="card bg-transparent border-light">
+                    <div class="card-header text-center bg-transparent border-light">
+                        <h2 class="mb-0 text-white font-weight-bold">Book Your Event</h2>
                     </div>
+                    <div class="card-body">
+                        <form method="POST" class="booking-form">
+                            {% csrf_token %}
+                            
+                            <div class="row">
+                                <!-- Customer Information -->
+                                <div class="col-md-6 mb-3">
+                                    <div class="form-floating mb-3">
+                                        {{ form.cus_name }}
+                                        <label for="{{ form.cus_name.id_for_label }}">Full Name</label>
+                                        {% if form.cus_name.errors %}
+                                            <div class="text-danger">{{ form.cus_name.errors }}</div>
+                                        {% endif %}
+                                    </div>
 
-                    <!-- Phone Number -->
-                    <div class="form-group">
-                        <label for="{{ form.cus_ph.id_for_label }}">Phone Number</label>
-                        {{ form.cus_ph }}
-                        {% if form.cus_ph.errors %}
-                        <div class="invalid-feedback">
-                            {% for error in form.cus_ph.errors %}
-                            <p>{{ error }}</p>
-                            {% endfor %}
-                        </div>
-                        {% endif %}
-                    </div>
+                                    <div class="form-floating mb-3">
+                                        {{ form.cus_ph }}
+                                        <label for="{{ form.cus_ph.id_for_label }}">Phone Number</label>
+                                        {% if form.cus_ph.errors %}
+                                            <div class="text-danger">{{ form.cus_ph.errors }}</div>
+                                        {% endif %}
+                                    </div>
 
-                    <!-- Email Address -->
-                    <div class="form-group">
-                        <label for="{{ form.cus_email.id_for_label }}">Email Address</label>
-                        {{ form.cus_email }}
-                        {% if form.cus_email.errors %}
-                        <div class="invalid-feedback">
-                            {% for error in form.cus_email.errors %}
-                            <p>{{ error }}</p>
-                            {% endfor %}
-                        </div>
-                        {% endif %}
-                    </div>
+                                    <div class="form-floating mb-3">
+                                        {{ form.cus_email }}
+                                        <label for="{{ form.cus_email.id_for_label }}">Email Address</label>
+                                        {% if form.cus_email.errors %}
+                                            <div class="text-danger">{{ form.cus_email.errors }}</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
 
-                    <div class="form-group">
-                        <label>Event Name</label>
-                        <p>{{ event.name }}</p> <!-- Show event name -->
-                    </div>
-                    <div class="form-group">
-                        <label>Event Date</label>
-                        <p>{{ event.event_date|date:"F j, Y" }}</p> <!-- Show event date -->
-                    </div>
-                </div>
+                                <!-- Event Details -->
+                                <div class="col-md-6 mb-3">
+                                    <div class="form-floating mb-3">
+                                        {{ form.venue }}
+                                        <label for="{{ form.venue.id_for_label }}">Venue</label>
+                                        {% if form.venue.errors %}
+                                            <div class="text-danger">{{ form.venue.errors }}</div>
+                                        {% endif %}
+                                    </div>
 
-                <!-- Second Column: Venue, Date, Description, Requests -->
-                <div class="col-md-6">
-                    <!-- Venue -->
-                    <div class="form-group">
-                        <label for="{{ form.venue.id_for_label }}">Venue</label>
-                        {{ form.venue }}
-                        {% if form.venue.errors %}
-                        <div class="invalid-feedback">
-                            {% for error in form.venue.errors %}
-                            <p>{{ error }}</p>
-                            {% endfor %}
-                        </div>
-                        {% endif %}
-                    </div>
+                                    <div class="form-floating mb-3">
+                                        {{ form.booking_date }}
+                                        <label for="{{ form.booking_date.id_for_label }}">Preferred Date</label>
+                                        {% if form.booking_date.errors %}
+                                            <div class="text-danger">{{ form.booking_date.errors }}</div>
+                                        {% endif %}
+                                    </div>
 
-                    <!-- Preferred Booking Date -->
-                    <div class="form-group">
-                        <label for="{{ form.booking_date.id_for_label }}">Preferred Booking Date</label>
-                        {{ form.booking_date }}
-                        {% if form.booking_date.errors %}
-                        <div class="invalid-feedback">
-                            {% for error in form.booking_date.errors %}
-                            <p>{{ error }}</p>
-                            {% endfor %}
-                        </div>
-                        {% endif %}
-                    </div>
+                                    <div class="form-floating mb-3">
+                                        {{ form.description }}
+                                        <label for="{{ form.description.id_for_label }}">Event Description</label>
+                                        {% if form.description.errors %}
+                                            <div class="text-danger">{{ form.description.errors }}</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
 
-                    <!-- Event Description -->
-                    <div class="form-group">
-                        <label for="{{ form.description.id_for_label }}">Event Description</label>
-                        {{ form.description }}
-                        {% if form.description.errors %}
-                        <div class="invalid-feedback">
-                            {% for error in form.description.errors %}
-                            <p>{{ error }}</p>
-                            {% endfor %}
-                        </div>
-                        {% endif %}
-                    </div>
+                            <!-- Special Requests -->
+                            <div class="form-floating mb-3">
+                                {{ form.customer_request }}
+                                <label for="{{ form.customer_request.id_for_label }}">Special Requests</label>
+                                {% if form.customer_request.errors %}
+                                    <div class="text-danger">{{ form.customer_request.errors }}</div>
+                                {% endif %}
+                            </div>
 
-                    <!-- Special Requests -->
-                    <div class="form-group">
-                        <label for="{{ form.customer_request.id_for_label }}">Special Requests</label>
-                        {{ form.customer_request }}
-                        {% if form.customer_request.errors %}
-                        <div class="invalid-feedback">
-                            {% for error in form.customer_request.errors %}
-                            <p>{{ error }}</p>
-                            {% endfor %}
-                        </div>
-                        {% endif %}
+                            <!-- Submit Button -->
+                            <div class="text-center">
+                                <button type="submit" class="btn btn-success btn-lg px-5 rounded-pill">
+                                    Confirm Booking
+                                </button>
+                            </div>
+                        </form>
                     </div>
                 </div>
             </div>
-
-            <div class="text-center mt-4">
-                <button type="submit" class="btn btn-success btn-lg px-5 py-3 rounded-pill">Confirm Booking</button>
-            </div>
-
-            {% if form.errors %}
-            <div class="alert alert-danger">
-                <ul>
-                    {% for field, errors in form.errors.items %}
-                    <li><strong>{{ field }}</strong>: {{ errors|join:", " }}</li>
-                    {% endfor %}
-                </ul>
-            </div>
-            {% endif %}
-        </form>
+        </div>
     </div>
 </section>
 {% endblock %}
