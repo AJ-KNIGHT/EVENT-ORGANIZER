@@ -2,17 +2,19 @@
 {% load static %}
 
 {% block title %}Book Event{% endblock %}
-
+<head>
+<link rel="stylesheet" href="{% static 'css/styles.css' %}">
+</head>
 {% block content %}
 <section 
     class="booking-form py-5" 
     style="
         background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), 
-                    url('{% static 'images/hero-bg.jpg' %}');
+        url('{{ preloaded_assets.hero_image }}');
         background-size: cover;
         background-position: center;
         background-attachment: fixed;
-        color: #fff;"
+        color: #ffffff;"
 >
     <div class="container">
         <div class="row justify-content-center">
@@ -22,6 +24,14 @@
                         <h2 class="mb-0 text-white font-weight-bold">Book Your Event</h2>
                     </div>
                     <div class="card-body">
+                        {% if messages %}
+                            <div class="alert alert-info">
+                                {% for message in messages %}
+                                    <p>{{ message }}</p>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        
                         <form method="POST" class="booking-form">
                             {% csrf_token %}
                             
@@ -30,7 +40,7 @@
                                 <div class="col-md-6 mb-3">
                                     <div class="form-floating mb-3">
                                         {{ form.cus_name }}
-                                        <label for="{{ form.cus_name.id_for_label }}">Full Name</label>
+                                        <label for="{{ form.cus_name.id_for_label }}">{{ form.cus_name.label }}</label>
                                         {% if form.cus_name.errors %}
                                             <div class="text-danger">{{ form.cus_name.errors }}</div>
                                         {% endif %}
@@ -38,7 +48,7 @@
 
                                     <div class="form-floating mb-3">
                                         {{ form.cus_ph }}
-                                        <label for="{{ form.cus_ph.id_for_label }}">Phone Number</label>
+                                        <label for="{{ form.cus_email.id_for_label }}">{{ form.cus_email.label }}</label>
                                         {% if form.cus_ph.errors %}
                                             <div class="text-danger">{{ form.cus_ph.errors }}</div>
                                         {% endif %}
@@ -46,7 +56,7 @@
 
                                     <div class="form-floating mb-3">
                                         {{ form.cus_email }}
-                                        <label for="{{ form.cus_email.id_for_label }}">Email Address</label>
+                                        <label for="{{ form.cus_ph.id_for_label }}">{{ form.cus_ph.label }}</label>
                                         {% if form.cus_email.errors %}
                                             <div class="text-danger">{{ form.cus_email.errors }}</div>
                                         {% endif %}
@@ -57,7 +67,7 @@
                                 <div class="col-md-6 mb-3">
                                     <div class="form-floating mb-3">
                                         {{ form.venue }}
-                                        <label for="{{ form.venue.id_for_label }}">Venue</label>
+                                        
                                         {% if form.venue.errors %}
                                             <div class="text-danger">{{ form.venue.errors }}</div>
                                         {% endif %}
@@ -65,7 +75,7 @@
 
                                     <div class="form-floating mb-3">
                                         {{ form.booking_date }}
-                                        <label for="{{ form.booking_date.id_for_label }}">Preferred Date</label>
+                                        
                                         {% if form.booking_date.errors %}
                                             <div class="text-danger">{{ form.booking_date.errors }}</div>
                                         {% endif %}
@@ -73,7 +83,7 @@
 
                                     <div class="form-floating mb-3">
                                         {{ form.description }}
-                                        <label for="{{ form.description.id_for_label }}">Event Description</label>
+                                        <label for="{{ form.description.id_for_label }}">{{ form.description.label }}</label>
                                         {% if form.description.errors %}
                                             <div class="text-danger">{{ form.description.errors }}</div>
                                         {% endif %}
@@ -84,7 +94,7 @@
                             <!-- Special Requests -->
                             <div class="form-floating mb-3">
                                 {{ form.customer_request }}
-                                <label for="{{ form.customer_request.id_for_label }}">Special Requests</label>
+                                <label for="{{ form.customer_request.id_for_label }}">{{ form.customer_request.label }}</label>
                                 {% if form.customer_request.errors %}
                                     <div class="text-danger">{{ form.customer_request.errors }}</div>
                                 {% endif %}

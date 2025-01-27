@@ -12,4 +12,5 @@ from .models import CustomUser
 class CustomUserUpdateForm(forms.ModelForm):
     class Meta:
         model = CustomUser
-        fields = ['username', 'email']  # Add other fields you want the user to be able to update
+        fields = ['username', 'email', 'profile_picture']  # Add profile_picture here
+

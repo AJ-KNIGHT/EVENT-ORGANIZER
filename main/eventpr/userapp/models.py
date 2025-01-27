@@ -6,9 +6,11 @@ from eventapp.models import Booking  # Import Booking model directly, since you'
 class CustomUser(AbstractUser):
     phone_number = models.CharField(max_length=15, null=True, blank=True)
     address = models.TextField(null=True, blank=True)
+    profile_picture = models.ImageField(upload_to='profile_pics/', null=True, blank=True)  # New field
 
     def __str__(self):
         return f"{self.username} ({self.email})"
+
 
 class ChangeRequest(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)

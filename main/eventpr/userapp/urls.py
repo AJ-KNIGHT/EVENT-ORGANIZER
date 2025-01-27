@@ -1,4 +1,4 @@
-
+from django.contrib.auth import views as auth_views  # Add this import
 from django.urls import path
 from . import views
 
@@ -18,4 +18,10 @@ urlpatterns = [
     path('admin-dashboard/', views.admin_dashboard, name='admin_dashboard'),
     path('approve-change-request/<int:request_id>/', views.approve_change_request, name='approve_change_request'),
     path('reject-change-request/<int:request_id>/', views.reject_change_request, name='reject_change_request'),
+
+    # Password reset paths
+    path('password_reset/', auth_views.PasswordResetView.as_view(), name='password_reset'),
+    path('password_reset_done/', auth_views.PasswordResetDoneView.as_view(), name='password_reset_done'),
+    path('reset/<uidb64>/<token>/', auth_views.PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
+    path('password_reset_complete/', auth_views.PasswordResetCompleteView.as_view(), name='password_reset_complete'),
 ]

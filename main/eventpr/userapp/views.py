@@ -1,3 +1,4 @@
+
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login as auth_login, logout as auth_logout
 from django.contrib.auth.decorators import login_required
@@ -12,7 +13,15 @@ from eventpr.utils import send_html_email
 from django.contrib.admin.views.decorators import staff_member_required
 from .forms import CustomPasswordChangeForm, CustomUserUpdateForm
 
+from django.shortcuts import render, redirect
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from .forms import CustomPasswordChangeForm
 
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import render, redirect
+from .forms import CustomUserUpdateForm  # You need to create this form for updating user data
+from django.shortcuts import render
 
 # User registration
 def signup(request):
@@ -67,21 +76,26 @@ def login(request):
         username = request.POST.get('username')
         password = request.POST.get('password')
 
-        # Check if username and password are provided
         if not username or not password:
             messages.error(request, "Username and password are required.")
             return redirect('userapp:login')
 
-        # Authenticate the user
         user = authenticate(request, username=username, password=password)
 
         if user is not None:
-            auth_login(request, user)
-            messages.success(request, 'Login successful!')
-            return redirect('/')  # Redirect to homepage after login
+            if user.is_active:
+                auth_login(request, user)
+                messages.success(request, 'Login successful!')
+
+                # Redirect to next page or homepage
+                next_url = request.GET.get('next', '/')
+                return redirect(next_url)
+            else:
+                messages.error(request, 'Your account is inactive. Please contact support.')
         else:
             messages.error(request, 'Invalid username or password.')
-            return redirect('userapp:login')
+
+        return redirect('userapp:login')
 
     return render(request, 'login.html')
 
@@ -218,15 +232,11 @@ def reject_change_request(request, request_id):
     return redirect('userapp:admin_dashboard')
 
 
-from django.shortcuts import render
+
 
 def profile(request):
     return render(request, 'profile.html')
 
-from django.shortcuts import render, redirect
-from django.contrib.auth.decorators import login_required
-from django.contrib import messages
-from .forms import CustomPasswordChangeForm
 
 @login_required
 def change_password(request):
@@ -243,14 +253,12 @@ def change_password(request):
     
     return render(request, 'password_change_form.html', {'form': form})
 
-from django.contrib.auth.decorators import login_required
-from django.shortcuts import render, redirect
-from .forms import CustomUserUpdateForm  # You need to create this form for updating user data
+
 
 @login_required
 def update_profile(request):
     if request.method == 'POST':
-        form = CustomUserUpdateForm(request.POST, instance=request.user)
+        form = CustomUserUpdateForm(request.POST, request.FILES, instance=request.user)  # Include request.FILES
         if form.is_valid():
             form.save()
             messages.success(request, 'Your profile has been updated successfully!')
@@ -259,4 +267,5 @@ def update_profile(request):
         form = CustomUserUpdateForm(instance=request.user)
 
     return render(request, 'update_profile.html', {'form': form})
+
 

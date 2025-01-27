@@ -47,6 +47,7 @@ TEMPLATES = [
             "context_processors": [
                 "django.template.context_processors.debug",
                 "django.template.context_processors.request",
+                
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
             ],
@@ -77,9 +78,18 @@ USE_TZ = True
 
 STATIC_URL = "static/"
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
+
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')  # Add this line
+
 MEDIA_ROOT = BASE_DIR / 'pic'
 MEDIA_URL = '/media/'
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+# Enable caching headers for static files
+STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.ManifestStaticFilesStorage'
+
+# Cache timeout (set as per your preference)
+STATIC_CACHE_TIMEOUT = 86400  # 1 day (in seconds), can adjust this
+
 
 # Email configuration for notifications
 

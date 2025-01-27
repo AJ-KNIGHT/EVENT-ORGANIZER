@@ -1,0 +1,217 @@
+/* General Styles */
+body,
+html {
+  font-family: "Arial", sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: #f9f9f9; /* Light background */
+}
+
+/* Navbar Styling */
+
+.custom-navbar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0; /* Ensure the navbar spans the full width */
+    margin-top: 20px;
+    margin-left: 890px;  /* Pushes the navbar from the left side */
+    margin-right: auto; /* Pushes the navbar from the right side */
+    width: 100%; /* Ensures it takes up the full width of the container */
+    max-width: 600px; /* You can adjust this to set the maximum width of the navbar */
+    max-height: 45px;
+    z-index: 10;
+    background-color: rgba(255, 255, 255, 0.15) !important; /* Transparent white */
+    backdrop-filter: blur(10px); /* Blurring background */
+    border-radius: 15px;
+    border: 2px solid rgba(255, 255, 255, 0.15);
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
+    padding: 10px 0;
+}
+
+
+.custom-navbar .nav-link {
+  color: #333 !important;
+  font-size: 1rem;
+  font-weight: 500;
+  text-decoration: none;
+  margin: 0 10px;
+  transition: color 0.3s ease;
+}
+
+.custom-navbar .nav-link:hover {
+  color: #ff4081 !important;
+  
+}
+.custom-navbar .navbar-brand img {
+  height: 40px;
+  margin-right: 15px;
+}
+
+.custom-navbar .dropdown-menu {
+  border-radius: 10px;
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+  border: none;
+}
+
+.custom-navbar .active {
+  color: #ff4081 !important;
+  font-weight: bold;
+}
+
+/* Hero Section */
+.hero-section {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.video-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+}
+
+.video-container video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.hero-content {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 10;
+  color: white;
+  text-align: center;
+  background-color: transparent; /* rgba(0, 0, 0, 0.5) */
+  border-radius: 45px;
+  padding: 20px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+.hero-content h1 {
+  font-size: 3rem;
+  font-weight: bold;
+  text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.8);
+}
+
+.hero-content p {
+  font-size: 1.25rem;
+  margin-bottom: 30px;
+  text-shadow: 1px 1px 6px rgba(0, 0, 0, 0.8);
+}
+
+.hero-content .btn {
+  padding: 10px 20px;
+  font-size: 1.2rem;
+  font-weight: bold;
+  background-color: #ffffff24;
+  border: 1px solid white;
+  color: white;
+  text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.7);
+  transition: all 0.3s ease;
+}
+
+.hero-content .btn:hover {
+  background-color: #ffffff50;
+  border-color: #fff;
+  color: #000;
+}
+
+/* Events Section */
+.events-section {
+  padding: 60px 15px;
+  background-color: #f8f9fa;
+}
+
+.events-section .section-title {
+  font-size: 2.5rem;
+  margin-bottom: 40px;
+  text-align: center;
+  color: #333;
+}
+
+.event-card .card {
+  border: 1px solid #eaeaea;
+  border-radius: 10px;
+  overflow: hidden;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.event-card .card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+}
+
+.event-card .card-img-top {
+  border-bottom: 1px solid #eaeaea;
+}
+
+.event-card .card-title {
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+.event-card .card-text {
+  font-size: 1rem;
+  margin-bottom: 10px;
+}
+
+.event-card .card-footer {
+  background: none;
+  border-top: none;
+}
+
+.event-card .btn {
+  padding: 10px 20px;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+/* Footer */
+footer {
+  background-color: #222;
+  color: #fff;
+  padding: 20px 0;
+}
+
+footer a {
+  color: #ff4081;
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+footer a:hover {
+  color: #fff;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .custom-navbar {
+    width: 95%;
+  }
+
+  .custom-navbar .nav-link {
+    font-size: 0.9rem;
+  }
+
+  .hero-content h1 {
+    font-size: 2rem;
+  }
+
+  .hero-content p {
+    font-size: 1rem;
+  }
+
+  .event-card {
+    margin-bottom: 20px;
+  }
+}

@@ -19,55 +19,40 @@ class DateInput(forms.DateInput):
 class BookingForm(forms.ModelForm):
     class Meta:
         model = Booking
-        exclude = ['user','event_name','event_date']  # Exclude the user field
-        
+        exclude = ['user', 'event_name', 'event_date']
         fields = '__all__'
         widgets = {
-            'booking_date': forms.DateInput(attrs={'type': 'date'}),  # Custom booking date
-            'cus_name': forms.TextInput(attrs={'placeholder': 'Enter your name'}),
-            'cus_email': forms.EmailInput(attrs={'placeholder': 'Enter your email'}),
-            'cus_ph': forms.TextInput(attrs={'placeholder': 'Enter your phone number'}),
-            'venue': forms.TextInput(attrs={'placeholder': 'Preferred Event Venue'}),
-            'description': forms.Textarea(attrs={'rows': 4, 'placeholder': 'Enter event description'}),
-            'customer_request': forms.Textarea(attrs={'rows': 3, 'placeholder': 'Enter any special requests or changes'}),
-            #'event_date': forms.HiddenInput(),  # Hidden field for event_date,
-            #'event_name': forms.HiddenInput()  # Use HiddenInput for event_name field
+            'booking_date': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
+            'cus_name': forms.TextInput(attrs={'placeholder': 'Enter your name', 'class': 'form-control'}),
+            'cus_email': forms.EmailInput(attrs={'placeholder': 'Enter your email', 'class': 'form-control'}),
+            'cus_ph': forms.TextInput(attrs={'placeholder': 'Enter your phone number', 'class': 'form-control'}),
+            'venue': forms.TextInput(attrs={'placeholder': 'Preferred Event Venue', 'class': 'form-control'}),
+            'description': forms.Textarea(attrs={'rows': 4, 'placeholder': 'Enter event description', 'class': 'form-control'}),
+            'customer_request': forms.Textarea(attrs={'rows': 3, 'placeholder': 'Enter any special requests or changes', 'class': 'form-control'}),
         }
         labels = {
-            'cus_name': 'Customer Name:',
-            'cus_email': 'Customer Email:',
-            'cus_ph': 'Customer Phone:',
-            #'event_name': 'Event Name:',
-            #'event_date': 'Event Availability Date:',
-            'booking_date': 'Preferred Booking Date:',
-            'venue': 'Preferred Venue:',
-            'description': 'Event Description:',
-            'customer_request': 'Special Requests/Changes:'
+            'cus_name': 'Enter Your Full Name',
+            'cus_email': 'Enter Your Email',
+            'cus_ph': 'Enter Your Phone',
+            'booking_date': 'Preferred Booking Date',
+            'venue': 'Preferred Venue',
+            'description': 'Event Description',
+            'customer_request': 'Special Requests/Changes'
         }
 
     def __init__(self, *args, **kwargs):
-        # Assuming an event_instance is passed when initializing the form
-        event_instance = kwargs.pop('event_instance', None)  # Get event instance here
+        event_instance = kwargs.pop('event_instance', None)
         super().__init__(*args, **kwargs)
 
-        # Automatically set the event name and event date
         if event_instance:
-            #self.fields['event_name'].initial = event_instance.id
-            #self.fields['event_date'].initial = event_instance.event_date
             self.fields['venue'].initial = event_instance.location
-            # Always set the booking_date to the current date by default
             self.fields['booking_date'].initial = timezone.localdate()
-
-    
-
 
     def clean_booking_date(self):
         booking_date = self.cleaned_data.get('booking_date')
         if booking_date < date.today():
             raise forms.ValidationError("Booking date cannot be in the past.")
         return booking_date
-
-
 
     def clean_cus_email(self):
         email = self.cleaned_data.get('cus_email')
@@ -83,8 +68,9 @@ class BookingForm(forms.ModelForm):
         cus_ph = self.cleaned_data.get('cus_ph')
         cus_ph = cus_ph.strip()
         if not cus_ph.isdigit() or len(cus_ph) != 10:
-            raise forms.ValidationError("Please enter a valid 10-digit phone number (without any spaces or special characters).")
+            raise forms.ValidationError("Please enter a valid 10-digit phone number.")
         return cus_ph
+
 
 
 

@@ -18,6 +18,8 @@ from django.db.models import Count
 from django.utils.timezone import now
 from django.shortcuts import render
 from .models import Event
+from django.templatetags.static import static
+
 
 def index(request):
     # Get all events that are available and not in the past
@@ -29,14 +31,25 @@ def index(request):
     else:
         random_events = events.order_by('?')[:3]  # Randomly order and limit to 3 events
 
-    return render(request, 'index.html', {'events': random_events})
+    # Define preloaded assets for the index page
+    preloaded_assets = {
+        'video': static('images/pexel-party.mp4'),
+        
+    }
+
+    # Pass both the events and preloaded assets to the template
+    return render(request, 'index.html', {'events': random_events, 'preloaded_assets': preloaded_assets})
+
 
 
 
 
 # About view
 def about(request):
-    return render(request, 'about.html')
+    preloaded_assets ={
+        'about_image': static('images/pexel-about.jpg'),
+    }
+    return render(request, 'about.html', {'preloaded_assets': preloaded_assets})
 
 # Event list view (for pagination)
 def event_list(request):
@@ -110,8 +123,19 @@ def booking(request, slug=None):
             messages.error(request, "There was an error with your booking. Please check the form and try again.")
     else:
         form = BookingForm(event_instance=event)
+    
+    preloaded_assets = {
+        'hero_image': static('images/hero-bg.jpg'),
+    }
+    
+    context = {
+        'form': form,
+        'event': event,
+        'preloaded_assets': preloaded_assets,
+    }
 
-    return render(request, 'booking.html', {'form': form, 'event': event})
+    return render(request, 'booking.html', context)
+
 
 
 # Contact view
@@ -123,7 +147,10 @@ def contact(request):
         Contact.objects.create(name=name, email=email, message=message)
         messages.success(request, 'Thank you for reaching out! We will get back to you soon.')
         return redirect('contact')
-    return render(request, 'contact.html')
+    preloaded_assets ={
+        'contact_image': static('images/pexel-contact.jpg'),
+    }
+    return render(request, 'contact.html', {'preloaded_assets': preloaded_assets})
 
 
 from datetime import datetime
@@ -140,3 +167,9 @@ def privacy_policy(request):
     return render(request, 'privacy_policy.html')
 def terms_of_service(request):
     return render(request, 'terms_of_service.html')
+
+
+
+
+
+
