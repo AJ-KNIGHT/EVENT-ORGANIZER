@@ -104,7 +104,7 @@ EMAIL_HOST = "smtp.gmail.com"
 EMAIL_PORT = 587  # TLS port
 EMAIL_USE_TLS = True  # TLS must be enabled
 EMAIL_HOST_USER = 'eventpro49@gmail.com'
-EMAIL_HOST_PASSWORD = 'twzfcvlzbzyxqiuv'  # Make sure this is the correct app password
+EMAIL_HOST_PASSWORD = 'dpodrpzmufxecwny'  # Make sure this is the correct app password
 DEFAULT_FROM_EMAIL = 'eventpro49@gmail.com'
 ADMIN_EMAIL = 'amal183626@gmail.com'  # or the actual admin email
 

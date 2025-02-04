@@ -143,7 +143,7 @@ def submit_change_request(request, booking_id):
             send_html_email(
                 subject="Change Request Submitted",
                 recipient_list=['amal183626@gmail.com'],
-                template_name='emails/change_request_notification.html',
+                template_name='email/change_request_notification.html',
                 context=context,
             )
 
@@ -197,12 +197,12 @@ def approve_change_request(request, request_id):
     change_request.status = 'Approved'
     change_request.save()
 
-    # Send email notification
+    # Send   notification
     context = {'change_request': change_request}
     send_html_email(
         subject="Change Request Approved",
         recipient_list=[change_request.user.email],
-        template_name='emails/change_request_approved.html',
+        template_name='email/change_request_approved.html',
         context=context,
     )
 
@@ -224,7 +224,7 @@ def reject_change_request(request, request_id):
     send_html_email(
         subject="Change Request Rejected",
         recipient_list=[change_request.user.email],
-        template_name='emails/change_request_rejected.html',
+        template_name='email/change_request_rejected.html',
         context=context,
     )
 

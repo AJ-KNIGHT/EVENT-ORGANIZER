@@ -41,8 +41,8 @@
                                 </td>
                                 <td>{{ request.date_submitted }}</td>
                                 <td>
-                                    <a href="{% url 'approve_request' request.id %}" class="btn btn-success btn-sm">Approve</a>
-                                    <a href="{% url 'reject_request' request.id %}" class="btn btn-danger btn-sm">Reject</a>
+                                    <a href="{% url 'userapp:approve_change_request' request.id %}" class="btn btn-success btn-sm">Approve</a>
+                                    <a href="{% url 'userapp:reject_change_request' request.id %}" class="btn btn-danger btn-sm">Reject</a>
                                 </td>
                             </tr>
                         {% endfor %}
