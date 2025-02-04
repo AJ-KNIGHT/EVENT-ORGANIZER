@@ -90,6 +90,10 @@ STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.ManifestStaticFilesSto
 # Cache timeout (set as per your preference)
 STATIC_CACHE_TIMEOUT = 86400  # 1 day (in seconds), can adjust this
 
+# unauth user redirect
+LOGIN_URL = '/user/login/'
+LOGIN_REDIRECT_URL = '/' 
+LOGOUT_REDIRECT_URL = '/' 
 
 # Email configuration for notifications
 

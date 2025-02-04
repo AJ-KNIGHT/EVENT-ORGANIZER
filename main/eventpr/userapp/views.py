@@ -34,38 +34,38 @@ def signup(request):
         # Check if username and password are provided
         if not username or not password or not confirmpassword:
             messages.error(request, "Username and password are required.")
-            return redirect('signup')
+            return redirect('userapp:signup')
 
         # Check if the passwords match
         if password != confirmpassword:
             messages.error(request, "Passwords do not match.")
-            return redirect('signup')
+            return redirect('userapp:signup')
 
         # Check if username already exists
         if CustomUser.objects.filter(username=username).exists():
             messages.error(request, 'Username is already taken.')
-            return redirect('signup')
+            return redirect('userapp:signup')
 
         # Check if email is already taken
         elif CustomUser.objects.filter(email=email).exists():
             messages.error(request, 'Email is already registered.')
-            return redirect('signup')
+            return redirect('userapp:signup')
 
         # Validate password strength (minimum length of 8 characters)
         if len(password) < 8:
             messages.error(request, "Password must be at least 8 characters long.")
-            return redirect('signup')
+            return redirect('userapp:signup')
 
         try:
             # Create the user
             user_reg = CustomUser.objects.create_user(username=username, email=email, password=password)
             user_reg.save()
             messages.success(request, 'User successfully created! You can now log in.')
-            return redirect('login')  # Redirect to login after successful registration
+            return redirect('userapp:login')  # Redirect to login after successful registration
 
         except ValidationError as e:
             messages.error(request, f"Error: {e}")
-            return redirect('signup')
+            return redirect('userapp:signup')
 
     return render(request, 'signup.html')
 
@@ -233,7 +233,7 @@ def reject_change_request(request, request_id):
 
 
 
-
+@login_required
 def profile(request):
     return render(request, 'profile.html')
 

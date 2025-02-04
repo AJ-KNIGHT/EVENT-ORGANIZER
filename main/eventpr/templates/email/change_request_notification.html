@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Change Request Notification</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            line-height: 1.6;
+            color: #333333;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .header {
+            background-color: #2c3e50;
+            padding: 20px;
+            border-radius: 8px 8px 0 0;
+        }
+        .header-title {
+            color: #ffffff;
+            margin: 0;
+            font-size: 24px;
+        }
+        .content {
+            padding: 30px;
+        }
+        .details-list {
+            margin: 20px 0;
+            padding: 0;
+            list-style: none;
+        }
+        .details-list li {
+            margin-bottom: 15px;
+            padding: 12px;
+            background-color: #f8f9fa;
+            border-left: 4px solid #3498db;
+            border-radius: 4px;
+        }
+        .footer {
+            padding: 20px;
+            background-color: #f8f9fa;
+            border-radius: 0 0 8px 8px;
+            text-align: center;
+            font-size: 14px;
+            color: #666666;
+        }
+        .button {
+            display: inline-block;
+            padding: 12px 24px;
+            background-color: #3498db;
+            color: white !important;
+            text-decoration: none;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 class="header-title">Change Request Submitted</h1>
+        </div>
+        
+        <div class="content">
+            <p>Hello Admin,</p>
+            <p>A new change request has been submitted by <strong>{{ user.username }}</strong>. Please review the following details:</p>
+            
+            <ul class="details-list">
+                <li><strong>Event Name:</strong> {{ event.name }}</li>
+                <li><strong>New Date:</strong> {{ new_date }}</li>
+                <li><strong>New Venue:</strong> {{ new_venue }}</li>
+                <li><strong>Reason:</strong> {{ reason }}</li>
+            </ul>
+
+            <p style="margin-top: 25px;">Please review and take appropriate action through the admin panel:</p>
+            <a href="#" class="button">Review Request</a>
+        </div>
+
+        <div class="footer">
+            <p>This is an automated notification - please do not reply directly to this message.</p>
+            <p>© 2023 Your Company Name. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>

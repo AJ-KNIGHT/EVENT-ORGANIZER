@@ -15,10 +15,10 @@ html {
     left: 0;
     right: 0; /* Ensure the navbar spans the full width */
     margin-top: 20px;
-    margin-left: 890px;  /* Pushes the navbar from the left side */
+    margin-left: 800px;  /* Pushes the navbar from the left side */
     margin-right: auto; /* Pushes the navbar from the right side */
     width: 100%; /* Ensures it takes up the full width of the container */
-    max-width: 600px; /* You can adjust this to set the maximum width of the navbar */
+    max-width: 550px; /* You can adjust this to set the maximum width of the navbar */
     max-height: 45px;
     z-index: 10;
     background-color: rgba(255, 255, 255, 0.15) !important; /* Transparent white */
