@@ -269,3 +269,27 @@ def update_profile(request):
     return render(request, 'update_profile.html', {'form': form})
 
 
+from django.shortcuts import get_object_or_404, redirect
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from userapp.models import CustomUser  # Ensure this import is correct
+
+@login_required
+def delete_user(request, user_id):
+    if request.user.is_superuser:  # Allow only admins to delete users
+        try:
+            user = CustomUser.objects.get(id=user_id)
+            user.delete()
+            messages.success(request, "User deleted successfully.")
+        except CustomUser.DoesNotExist:
+            messages.error(request, "User not found.")
+    else:
+        messages.error(request, "You do not have permission to delete users.")
+    
+    return redirect('user_list')  # Ensure 'user_list' is correctly named in urls.py
+
+
+@login_required
+def user_list(request):
+    users = CustomUser.objects.all()  # Adjust this based on your user model
+    return render(request, 'user_list.html', {'users': users})

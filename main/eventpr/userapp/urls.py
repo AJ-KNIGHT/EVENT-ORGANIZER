@@ -1,6 +1,7 @@
 from django.contrib.auth import views as auth_views  # Add this import
 from django.urls import path
 from . import views
+from userapp.views import user_list, delete_user
 
 
 app_name = 'userapp'  # Make sure this matches the namespace used in the template
@@ -24,4 +25,7 @@ urlpatterns = [
     path('password_reset_done/', auth_views.PasswordResetDoneView.as_view(), name='password_reset_done'),
     path('reset/<uidb64>/<token>/', auth_views.PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
     path('password_reset_complete/', auth_views.PasswordResetCompleteView.as_view(), name='password_reset_complete'),
+
+    path('delete-user/<int:user_id>/', delete_user, name='delete_user'),
+    path('user-list/', user_list, name='user_list')
 ]
