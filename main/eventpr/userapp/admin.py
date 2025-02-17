@@ -3,6 +3,20 @@ from django.conf import settings
 from django.contrib import admin
 from .models import ChangeRequest
 
+from django.contrib import admin
+from django.contrib.auth.admin import UserAdmin
+from .models import CustomUser
+
+@admin.register(CustomUser)
+class CustomUserAdmin(UserAdmin):  # Use UserAdmin to manage user fields
+    list_display = ('username', 'email', 'phone_number', 'is_active', 'is_staff')
+    fieldsets = UserAdmin.fieldsets + (  # Extend default fields
+        ("Additional Info", {"fields": ("phone_number", "address", "profile_picture")}),
+    )
+
+# Alternative way (if @admin.register doesn't work)
+# admin.site.register(CustomUser, CustomUserAdmin)
+
 class ChangeRequestAdmin(admin.ModelAdmin):
     list_display = ('user', 'booking', 'request_type', 'new_value', 'status', 'created_at')
     list_filter = ('status', 'request_type')

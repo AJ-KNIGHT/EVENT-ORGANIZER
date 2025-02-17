@@ -19,7 +19,7 @@ class DateInput(forms.DateInput):
 class BookingForm(forms.ModelForm):
     class Meta:
         model = Booking
-        exclude = ['user', 'event_name', 'event_date']
+        exclude = ['user', 'event_name', 'event_date' , 'payment']
         fields = '__all__'
         widgets = {
             'booking_date': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
@@ -80,13 +80,16 @@ class ChangeRequestForm(forms.Form):
 
 
 # New SignupForm for user registration
+from django import forms
+from userapp.models import CustomUser  # Import your CustomUser model
+
 class SignupForm(forms.ModelForm):
     password = forms.CharField(widget=forms.PasswordInput(attrs={'placeholder': 'Password'}), label='Password')
     confirm_password = forms.CharField(widget=forms.PasswordInput(attrs={'placeholder': 'Confirm Password'}), label='Confirm Password')
 
     class Meta:
-        model = User
-        fields = ['username', 'email', 'password']
+        model = CustomUser  # Use CustomUser instead of User
+        fields = ['username', 'email', 'phone_number', 'password']  # Add phone_number
 
     def clean(self):
         cleaned_data = super().clean()
@@ -97,6 +100,14 @@ class SignupForm(forms.ModelForm):
             raise forms.ValidationError("Passwords do not match")
 
         return cleaned_data
+
+    def save(self, commit=True):
+        user = super().save(commit=False)
+        user.set_password(self.cleaned_data["password"])  # Hash the password
+        if commit:
+            user.save()
+        return user
+
 
 from django import forms
 from userapp.models import ChangeRequest

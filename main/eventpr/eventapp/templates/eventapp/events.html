@@ -28,9 +28,9 @@
             <select class="form-select" id="eventPriceFilter" onchange="filterEvents()">
                 <option value="">All Price Ranges</option>
                 <option value="free">Free</option>
-                <option value="low">Under $50</option>
-                <option value="medium">$50 - $100</option>
-                <option value="high">Above $100</option>
+                <option value="low">Under $5000</option>
+                <option value="medium">$500 - $1000</option>
+                <option value="high">Above $1000</option>
             </select>
         </div>
     </div>
@@ -56,7 +56,7 @@
                     <p class="text-muted"><strong>Date:</strong> {{ i.event_date }}</p>
                     <p class="card-text text-truncate">{{ i.desc }}</p>
                     <p><strong>Price:</strong> ${{ i.price }}</p>
-                    <a href="{% url 'event_detail' i.slug %}" class="btn btn-primary mt-auto">Learn More</a>
+                    <a href="{% url 'eventapp:event_detail' i.slug %}" class="btn btn-primary mt-auto">Learn More</a>
                 </div>
             </div>
         </div>

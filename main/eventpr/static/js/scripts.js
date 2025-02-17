@@ -31,3 +31,27 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 });
+
+function showAlert(message, type) {
+    // Create alert div
+    const alertDiv = document.createElement("div");
+    alertDiv.classList.add("alert-message", type); // Add type (success/error)
+    alertDiv.textContent = message;
+
+    // Append the alert to the container
+    const container = document.getElementById("alert-container");
+    container.appendChild(alertDiv);
+
+    // Show the alert
+    setTimeout(() => {
+        alertDiv.style.display = 'block';
+    }, 100);
+
+    // Hide the alert after 5 seconds
+    setTimeout(() => {
+        alertDiv.style.opacity = '0';
+        setTimeout(() => {
+            alertDiv.remove(); // Remove from DOM after animation
+        }, 500);
+    }, 5000);
+}

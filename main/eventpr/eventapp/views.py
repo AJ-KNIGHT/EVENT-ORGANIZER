@@ -25,6 +25,7 @@ def index(request):
     # Get all events that are available and not in the past
     events = Event.objects.filter(event_date__gte=now().date(), is_available=True)
 
+
     # If fewer than 3 events, show all of them, else show 3 random events
     if events.count() < 3:
         random_events = events
@@ -36,9 +37,10 @@ def index(request):
         'video': static('images/pexel-party.mp4'),
         
     }
+    
 
     # Pass both the events and preloaded assets to the template
-    return render(request, 'index.html', {'events': random_events, 'preloaded_assets': preloaded_assets})
+    return render(request, 'index.html', {'events': random_events, 'preloaded_assets': preloaded_assets,})
 
 
 
@@ -57,85 +59,72 @@ def event_list(request):
     paginator = Paginator(events, 6)  # Adjust the number of events per page
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
-    return render(request, 'events.html', {'page_obj': page_obj})
+    return render(request, 'eventapp/events.html', {'page_obj': page_obj})
 
 # Event detail view
 def event_detail(request, slug):
     event = get_object_or_404(Event, slug=slug)
     related_events = Event.objects.filter(event_type=event.event_type).exclude(id=event.id)[:3]
-    return render(request, 'event_details.html', {'event': event, 'related_events': related_events})
+    return render(request, 'eventapp/event_details.html', {'event': event, 'related_events': related_events})
 
 
 
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from django.templatetags.static import static
+from django.conf import settings
+from datetime import date
 
+from eventapp.models import Event, Booking
+from eventapp.forms import BookingForm
+from paymentapp.models import Payment  # Import Payment model
+from paymentapp.views import confirm_payment  # Import confirm_payment function
+from userapp.utils import send_html_email  # Import email function
 
 @login_required
 def booking(request, slug=None):
     event = get_object_or_404(Event, slug=slug)
 
     if event.event_date < date.today() or not event.is_available:
+        # Set the toast data (could be success, error, etc.)
+        request.toast_type = 'error'  # 'error', 'warning', 'info', etc.
+        request.toast_message = 'Sorry, this event is not available for booking yet!'
         messages.error(request, "Sorry, this event is not available for booking yet.")
-        return redirect('events')
+        return redirect('eventapp:events')
 
     if request.method == 'POST':
         form = BookingForm(request.POST)
         if form.is_valid():
-            booking = form.save(commit=False)
-            booking.user = request.user
-            booking.event_name = event
-            booking.event_date = event.event_date
-            booking.total_amount = event.price
-            booking.save()
-
-            # Email to user
-            user_email_context = {
-                'cus_name': booking.cus_name,
-                'event_name': event.name,
-                'event_date': event.event_date,
-                'venue': booking.venue,
-                'total_amount': booking.total_amount,
+            # ✅ Store booking data in session instead of creating it immediately
+            request.session['booking_data'] = {
+                'cus_name': form.cleaned_data['cus_name'],
+                'cus_email': form.cleaned_data['cus_email'],
+                'venue': form.cleaned_data['venue'],
+                'total_amount': str(event.price),
+                'event_id': event.id,  # Store event ID to retrieve later
             }
-            send_html_email(
-                subject=f"Booking Confirmation for {event.name}",
-                template_name='email/booking_confirmation_email.html',
-                context=user_email_context,
-                recipient_list=[booking.cus_email],
-            )
+            
+            return redirect('paymentapp:payment_page')  # ✅ Redirect to payment page
 
-            # Email to admin
-            admin_email_context = {
-                'event_name': event.name,
-                'event_date': event.event_date,
-                'cus_name': booking.cus_name,
-                'venue': booking.venue,
-                'total_amount': booking.total_amount,
-            }
-            send_html_email(
-                subject=f"New Booking for {event.name}",
-                template_name='email/new_booking_notification.html',
-                context=admin_email_context,
-                recipient_list=[settings.ADMIN_EMAIL],
-            )
-
-            messages.success(request, "Your event has been booked successfully!")
-            return redirect('userapp:booking_dashboard')
         else:
+            request.toast_type = 'error'  # 'error', 'warning', 'info', etc.
+            request.toast_message = 'There was an error with your booking. Please check the form and try again.!'
             messages.error(request, "There was an error with your booking. Please check the form and try again.")
+
     else:
         form = BookingForm(event_instance=event)
     
     preloaded_assets = {
         'hero_image': static('images/hero-bg.jpg'),
     }
-    
+
     context = {
         'form': form,
         'event': event,
-        'preloaded_assets': preloaded_assets,
+         'preloaded_assets': preloaded_assets,
     }
-
-    return render(request, 'booking.html', context)
-
+    return render(request, 'eventapp/booking.html', context)
 
 
 # Contact view
@@ -145,12 +134,17 @@ def contact(request):
         email = request.POST.get('email')
         message = request.POST.get('message')
         Contact.objects.create(name=name, email=email, message=message)
+        request.toast_type = 'success'  # 'error', 'warning', 'info', etc.
+        request.toast_message = 'Thank you for reaching out! We will get back to you soon.'
         messages.success(request, 'Thank you for reaching out! We will get back to you soon.')
         return redirect('contact')
+
+    # Now pass the messages_list to your template context
     preloaded_assets ={
         'contact_image': static('images/pexel-contact.jpg'),
     }
-    return render(request, 'contact.html', {'preloaded_assets': preloaded_assets})
+    return render(request, 'contact.html', {'preloaded_assets': preloaded_assets,})
+
 
 
 from datetime import datetime

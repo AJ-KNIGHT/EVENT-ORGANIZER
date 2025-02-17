@@ -13,7 +13,7 @@ ALLOWED_HOSTS = []
 INSTALLED_APPS = [
 
 
-    #'paymentapp',
+    'paymentapp',
     'eventapp',
     'userapp',
     "django.contrib.admin",
@@ -50,6 +50,12 @@ TEMPLATES = [
                 
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+
+                 # Your custom context processor
+                'userapp.context_processors.timestamp',  # Add this line
+                'django.template.context_processors.request',  # This is required for request-related data
+                'userapp.context_processors.toast_message',  # Add this line to include the toast message
+            
             ],
         },
     },
@@ -76,7 +82,7 @@ TIME_ZONE = "Asia/Kolkata"
 USE_I18N = True
 USE_TZ = True
 
-STATIC_URL = "static/"
+STATIC_URL = "/static/"
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')  # Add this line
@@ -110,3 +116,7 @@ ADMIN_EMAIL = 'amal183626@gmail.com'  # or the actual admin email
 
 AUTH_USER_MODEL = 'userapp.CustomUser'
 
+LOGOUT_REDIRECT_URL = "/user/login/"
+from django.urls import reverse_lazy
+
+LOGIN_REDIRECT_URL = reverse_lazy("eventapp:index")

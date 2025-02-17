@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+{% load static %}
+{% block extra_css %}{% endblock %}
+{% block title %}Admin Dashboard{% endblock title %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="mb-4">Admin Dashboard</h1>
+
+    <!-- Section: Pending Change Requests -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5>Pending Change Requests</h5>
+        </div>
+        <div class="card-body">
+            {% if pending_requests %}
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Booking ID</th>
+                        <th>Requested By</th>
+                        <th>Requested Changes</th>
+                        <th>Date Submitted</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for request in pending_requests %}
+                    <tr>
+                        <td>{{ request.id }}</td>
+                        <td>{{ request.booking.id }}</td>
+                        <td>{{ request.booking.user.username }}</td>
+                        <td>
+                            {% if request.request_type %}
+                            <strong>{{ request.request_type }}:</strong> {{ request.new_value }}
+                            {% else %}
+                            No specific changes mentioned.
+                            {% endif %}
+                        </td>
+                        <td>{{ request.created_at }}</td>
+                        <td>
+                            <a href="{% url 'userapp:approve_change_request' request.id %}" class="btn btn-success btn-sm">Approve</a>
+                            <a href="{% url 'userapp:reject_change_request' request.id %}" class="btn btn-danger btn-sm">Reject</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <p class="text-muted">No pending change requests.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Section: Statistics -->
+    <div class="card">
+        <div class="card-header">
+            <h5>Statistics</h5>
+        </div>
+        <div class="card-body">
+            <ul class="list-group">
+                <li class="list-group-item"><strong>Total Bookings:</strong> {{ total_bookings }}</li>
+                <li class="list-group-item"><strong>Confirmed Bookings:</strong> {{ confirmed_bookings }}</li>
+                <li class="list-group-item"><strong>Pending Bookings:</strong> {{ pending_bookings }}</li>
+                <li class="list-group-item"><strong>Canceled Bookings:</strong> {{ canceled_bookings }}</li>
+                <li class="list-group-item"><strong>Total Revenue:</strong> ₹{{ total_revenue }}</li>
+                <li class="list-group-item"><strong>Pending Change Requests:</strong> {{ pending_requests_count }}</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Section: User List as Rectangles -->
+    <div class="card mt-4">
+        <div class="card-header">
+            <h5>Registered Users</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                {% for user in users %}
+                <div class="col-md-3 mb-3">
+                    <a href="{% url 'userapp:user_details' user.id %}" class="text-decoration-none">
+                        <div class="card text-center shadow-sm">
+                            <div class="card-body">
+                                <img src="{{ user.profile_picture.url }}" alt="Profile" class="rounded-circle" width="60" height="60">
+                                <h6 class="mt-2">{{ user.username }}</h6>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                {% empty %}
+                <p class="text-muted">No registered users.</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}

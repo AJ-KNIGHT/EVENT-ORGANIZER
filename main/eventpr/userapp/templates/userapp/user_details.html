@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}User Details{% endblock %}
+
+{% block content %}
+<style>
+    .blur-background {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        backdrop-filter: blur(10px);
+        background: rgba(0, 0, 0, 0.5);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .user-details-card {
+        background: white;
+        padding: 30px;
+        border-radius: 10px;
+        width: 450px;
+        text-align: center;
+        box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .upcoming-event {
+        background: #f8f9fa;
+        padding: 10px;
+        margin-top: 15px;
+        border-radius: 8px;
+        text-align: left;
+    }
+
+    .event-title {
+        font-weight: bold;
+        color: #007bff;
+    }
+</style>
+
+<div class="blur-background">
+    <div class="user-details-card">
+        <img src="{{ user.profile_picture.url }}" alt="Profile" class="rounded-circle" width="80">
+        <h3>{{ user.username }}</h3>
+        <p><strong>Email:</strong> {{ user.email }}</p>
+        <p><strong>Phone:</strong> {{ user.phone_number|default:"N/A" }}</p>
+        <p><strong>Total Bookings:</strong> {{ total_bookings }}</p>
+
+        {% if upcoming_event %}
+        <div class="upcoming-event">
+            <p class="event-title">{{ upcoming_event.event.name }}</p>
+            <p><strong>Date:</strong> {{ upcoming_event.event_date }}</p>
+            <p><strong>Venue:</strong> {{ upcoming_event.venue }}</p>
+            {% if event_slug %}
+            <a href="{% url 'eventapp:event_detail' event_slug %}" class="btn btn-info btn-sm">View Event</a>
+            {% else %}
+            <p>No event details available.</p>
+            {% endif %}
+        </div>
+        {% else %}
+        <p>No upcoming events.</p>
+        {% endif %}
+
+
+
+        <br>
+        <a href="{% url 'admin:userapp_customuser_change' user.id %}" class="btn btn-primary">Edit</a>
+        <br>
+        <a href="{% url 'userapp:admin_dashboard' %}" class="btn btn-secondary">Back</a>
+    </div>
+</div>
+
+{% endblock %}

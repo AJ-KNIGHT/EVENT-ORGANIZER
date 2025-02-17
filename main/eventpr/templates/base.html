@@ -3,10 +3,11 @@
 
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="EventPro - Organize and manage your events with ease.">
+    <meta name="description" content="Happy Hours - Organize and manage your events with ease.">
     <title>{% block title %}EventPro{% endblock %}</title>
 
     <!-- Bootstrap CSS -->
@@ -17,54 +18,90 @@
 
 
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
-    
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}?v={{ timestamp }}">
+
+
+
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="{% static 'images/favicon.png' %}">
 
-     <!-- Preload images and video dynamically -->
+    <!-- Preload images and video dynamically -->
     {% if preloaded_assets %}
-        {% for key, value in preloaded_assets.items %}
-            {% if value|slice:"-4:" == ".jpg" or value|slice:"-4:" == ".png" %}
-                <link rel="preload" as="image" href="{{ value }}">
-            {% elif value|slice:"-4:" == ".mp4" %}
-                <link rel="preload" as="video" href="{{ value }}" type="video/mp4">
-            {% endif %}
-    
-        {% endfor %}
+    {% for key, value in preloaded_assets.items %}
+    {% if value|slice:"-4:" == ".jpg" or value|slice:"-4:" == ".png" %}
+    <link rel="preload" as="image" href="{{ value }}">
+    {% elif value|slice:"-4:" == ".mp4" %}
+    <link rel="preload" as="video" href="{{ value }}" type="video/mp4">
     {% endif %}
 
+    {% endfor %}
+    {% endif %}
+    {% block extra_css %} {% endblock %}
 
 </head>
+
 <body>
+    <!-- Display messages -->
+    <!-- Display messages (for alerts) -->
+    {% if messages %}
+    <div class="alert-container">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show custom-alert" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Display Toast notifications (for non-persistent messages) -->
+    <div class="toast-container top-0 end-0 p-3" id="toast-container">
+        {% for message in messages %}
+        <div class="toast show fade" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="toast-body">
+                <div class="d-flex gap-4">
+                    <span class="text-primary"><i class="fa-solid fa-circle-info fa-lg"></i></span>
+                    <div class="d-flex flex-grow-1 align-items-center">
+                        <span class="fw-semibold">{{ message }}</span>
+                        <button type="button" class="btn-close btn-close-sm btn-close-black ms-auto"
+                            data-bs-dismiss="toast" aria-label="Close"></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+
+
+
+
     <!-- Navbar -->
     <header>
+        <!-- Logo positioned separately from navbar -->
+        <img src="{% static 'images/happy-hours.jpeg' %}" alt="happy hours Logo" class="custom-logo">
+
         <nav class="navbar custom-navbar navbar-expand-lg">
             <div class="container">
-                <!-- Logo -->
-                <a class="navbar-brand" href="/">
-                    <img src="{% static 'images/logo.webp' %}" alt="EventPro Logo" style="height: 40px;">
-                </a>
-                <button
-                    class="navbar-toggler"
-                    type="button"
-                    data-bs-toggle="collapse"
-                    data-bs-target="#navbarNavDropdown"
-                    aria-controls="navbarNavDropdown"
-                    aria-expanded="false"
-                    aria-label="Toggle navigation"
-                >
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                    data-bs-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false"
+                    aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
                 <div class="collapse navbar-collapse" id="navbarNavDropdown">
                     <ul class="navbar-nav ms-auto">
-                        <li class="nav-item"><a class="nav-link {% if request.path == '/' %}active{% endif %}" href="/">Home</a></li>
-                        <li class="nav-item"><a class="nav-link {% if request.path == '/events' %}active{% endif %}" href="/events">Events</a></li>
-                        <li class="nav-item"><a class="nav-link {% if request.path == '/about' %}active{% endif %}" href="/about">About Us</a></li>
-                        <li class="nav-item"><a class="nav-link {% if request.path == '/contact' %}active{% endif %}" href="/contact">Contact</a></li>
+                        <li class="nav-item"><a class="nav-link {% if request.path == '/' %}active{% endif %}"
+                                href="/">Home</a></li>
+                        <li class="nav-item"><a class="nav-link {% if request.path == '/events' %}active{% endif %}"
+                                href="/events">Events</a></li>
+                        <li class="nav-item"><a class="nav-link {% if request.path == '/about' %}active{% endif %}"
+                                href="/about">About Us</a></li>
+                        <li class="nav-item"><a class="nav-link {% if request.path == '/contact' %}active{% endif %}"
+                                href="/contact">Contact</a></li>
                         {% if user.is_authenticated %}
                         <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button"
+                                data-bs-toggle="dropdown" aria-expanded="false">
                                 {{ user.username }}
                             </a>
                             <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
@@ -81,36 +118,47 @@
             </div>
         </nav>
     </header>
-    
-    <div id="page-loader" style="position: fixed; top: 0; left: 0; width: 100%; height: 100vh; background: black; display: flex; align-items: center; justify-content: center; z-index: 10000;">
+    <!-- 
+    <div id="page-loader"
+        style="position: fixed; top: 0; left: 0; width: 100%; height: 100vh; background: black; display: flex; align-items: center; justify-content: center; z-index: 10000;">
         <div class="loader">
             <div class="circle"></div>
             <p class="loader-text">Preparing Your Experience...</p>
         </div>
     </div>
-    
+ -->
     <style>
         /* Loader Container */
         #page-loader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #fff;
+            z-index: 9999;
             overflow: hidden;
+            opacity: 1;
+            transition: opacity 0.5s ease-out;
+            /* Add opacity transition */
         }
-    
+
         /* Circle Animation */
         .loader {
             text-align: center;
             color: white;
         }
-    
+
         .circle {
             width: 80px;
             height: 80px;
             border: 8px solid rgba(255, 255, 255, 0.2);
-            border-top: 8px solid #ff6b6b; /* Event theme color */
+            border-top: 8px solid #ff6b6b;
             border-radius: 50%;
             animation: spin 1.2s linear infinite;
             margin: 0 auto 20px;
         }
-    
+
         /* Text Styling */
         .loader-text {
             font-family: 'Poppins', sans-serif;
@@ -119,46 +167,115 @@
             letter-spacing: 1.5px;
             animation: fade 3s infinite alternate;
         }
-    
+
         /* Spin Animation */
         @keyframes spin {
             from {
                 transform: rotate(0deg);
             }
+
             to {
                 transform: rotate(360deg);
             }
         }
-    
+
         /* Text Fade Animation */
         @keyframes fade {
             from {
                 opacity: 0.5;
             }
+
             to {
                 opacity: 1;
             }
         }
     </style>
-    
+
     <script>
-        // Hide the loader after the page is fully loaded
+
+        function showToast(type, message) {
+            // Create a new toast div
+            var toast = document.createElement("div");
+            toast.classList.add("toast");
+            toast.setAttribute("role", "alert");
+            toast.setAttribute("aria-live", "assertive");
+            toast.setAttribute("aria-atomic", "true");
+            toast.style.position = "absolute";
+            toast.style.top = "20px";
+            toast.style.right = "20px";
+            toast.style.zIndex = "9999";
+            toast.style.minWidth = "200px";
+            toast.style.maxWidth = "300px";
+
+            // Set the background color based on the type
+            switch (type) {
+                case 'success':
+                    toast.classList.add("bg-success");  // Green background
+                    break;
+                case 'error':
+                    toast.classList.add("bg-danger");  // Red background
+                    break;
+                case 'warning':
+                    toast.classList.add("bg-warning"); // Yellow background
+                    break;
+                case 'info':
+                    toast.classList.add("bg-info");    // Blue background
+                    break;
+                default:
+                    toast.classList.add("bg-secondary"); // Default gray background
+            }
+
+            // Add a close button
+            var closeButton = document.createElement("button");
+            closeButton.classList.add("btn-close");
+            closeButton.setAttribute("type", "button");
+            closeButton.setAttribute("data-bs-dismiss", "toast");
+            closeButton.setAttribute("aria-label", "Close");
+
+            // Add content and close button to the toast
+            toast.innerHTML = message;
+            toast.appendChild(closeButton);
+
+            // Append the toast to the document body
+            document.body.appendChild(toast);
+
+            // Automatically hide the toast after a few seconds
+            setTimeout(function () {
+                toast.remove();
+            }, 5000);
+        }
+
+
+
         window.addEventListener("load", () => {
             const loader = document.getElementById("page-loader");
-            loader.style.transition = "opacity 0.5s ease-out";
-            loader.style.opacity = "0";
-            setTimeout(() => {
-                loader.style.display = "none";
-            }, 500); // Matches the transition duration
+
+            if (loader) {
+                loader.style.transition = "opacity 0.5s ease-out";
+                loader.style.opacity = "0";
+
+                setTimeout(() => {
+                    loader.style.display = "none";
+                }, 500);
+            } else {
+                console.log("Loader element not found.");
+            }
         });
-    </script>
-    
+
+
+
+        // Pass the Django messages as JSON to JavaScript
+
+
+
+
     <!-- Main Content -->
     <main>
         {% block content %}{% endblock %}
     </main>
 
     <!-- Footer -->
+    {% block footer %}
     <footer class="bg-dark text-white text-center py-4 mt-auto">
         <div class="container">
             <div class="d-flex justify-content-center mb-3">
@@ -166,12 +283,14 @@
                 <a href="https://twitter.com" class="text-white me-3"><i class="bi bi-twitter"></i></a>
                 <a href="https://instagram.com" class="text-white"><i class="bi bi-instagram"></i></a>
             </div>
-            <p class="mb-0">&copy; 2025 EventPro. All Rights Reserved.</p>
+            <p class="mb-0">&copy; 2025 Happy Hours. All Rights Reserved.</p>
         </div>
     </footer>
+    {% endblock %}
 
     <!-- Bootstrap JS Bundle -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="{% static 'js/scripts.js' %}"></script>
 </body>
+
 </html>

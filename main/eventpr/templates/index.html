@@ -19,7 +19,7 @@
   <div class="hero-content">
     <h1 class="display-4">Transforming Your Event Ideas into Reality</h1>
     <p class="lead">Flawless event planning with top-tier professionals. Let us bring your vision to life.</p>
-    <a href="{% url 'events' %}" class="btn btn-light btn-lg">Explore Events</a>
+    <a href="{% url 'eventapp:events' %}" class="btn btn-light btn-lg">Explore Events</a>
   </div>
 </section>
 
@@ -44,7 +44,7 @@
             <p class="card-text"><strong>${{ event.price }}</strong></p>
           </div>
           <div class="card-footer text-center">
-            <a href="{% url 'booking' slug=event.slug %}" class="btn btn-primary">Book Now</a>
+            <a href="{% url 'eventapp:booking' slug=event.slug %}" class="btn btn-primary">Book Now</a>
           </div>
         </div>
       </div>

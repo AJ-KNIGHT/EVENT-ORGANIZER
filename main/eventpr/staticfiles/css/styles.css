@@ -4,31 +4,40 @@ html {
   font-family: "Arial", sans-serif;
   margin: 0;
   padding: 0;
-  background-color: #f9f9f9; /* Light background */
+  background-color: #ffffff; /* Light background */
 }
 
-/* Navbar Styling */
+.custom-logo {
+  position: absolute;
+  top: 15px; /* Adjust based on preference */
+  left: 20px; /* Keep it aligned to the left */
+  height: 50px; /* Adjust size */
+  z-index: 1500; /* Ensure it appears above the navbar */
+}
 
+/* Center Navbar at the Top */
 .custom-navbar {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0; /* Ensure the navbar spans the full width */
-    margin-top: 20px;
-    margin-left: 890px;  /* Pushes the navbar from the left side */
-    margin-right: auto; /* Pushes the navbar from the right side */
-    width: 100%; /* Ensures it takes up the full width of the container */
-    max-width: 600px; /* You can adjust this to set the maximum width of the navbar */
-    max-height: 45px;
-    z-index: 10;
-    background-color: rgba(255, 255, 255, 0.15) !important; /* Transparent white */
-    backdrop-filter: blur(10px); /* Blurring background */
-    border-radius: 15px;
-    border: 2px solid rgba(255, 255, 255, 0.15);
-    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
-    padding: 10px 0;
+  position: fixed;
+  top: 10px; /* Adjust as needed */
+  left: 50%;
+  transform: translateX(-50%);
+  width: 850px; /* Set fixed width for better alignment */
+  max-height: 35px;
+  z-index: 1000;
+  background-color: rgba(255, 255, 255, 0.15) !important; /* Transparent white */
+  backdrop-filter: blur(10px); /* Blurring effect */
+  border-radius: 15px;
+  border: 2px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
+  padding: 10px 0;
 }
 
+/* Distribute navbar items evenly */
+.custom-navbar .navbar-nav {
+  display: flex;
+  justify-content: space-evenly;
+  width: 100%;
+}
 
 .custom-navbar .nav-link {
   color: #333 !important;
@@ -48,10 +57,11 @@ html {
   margin-right: 15px;
 }
 
+/* Center the dropdown in the navbar */
 .custom-navbar .dropdown-menu {
-  border-radius: 10px;
-  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-  border: none;
+  left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
 }
 
 .custom-navbar .active {
@@ -214,4 +224,96 @@ footer a:hover {
   .event-card {
     margin-bottom: 20px;
   }
+}
+/* General Styles for form inputs */
+.booking-form {
+  background-color: rgba(0, 0, 0, 0.6); /* Semi-transparent black for dark theme */
+  border-radius: 10px;
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
+}
+
+.booking-form .form-floating {
+  margin-bottom: 1rem;
+}
+
+/* Adjust padding for inputs */
+.form-floating input,
+.form-floating textarea {
+  padding: 1rem;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  font-size: 14px;
+}
+
+/* Form Control Focus */
+.form-control:focus {
+  border-color: #007bff;
+  box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+}
+
+/* Submit Button Styling */
+.btn.btn-success {
+  background-color: #28a745;
+  border-color: #28a745;
+  font-size: 1.2rem;
+  font-weight: bold;
+  padding: 10px 20px;
+  border-radius: 30px;
+}
+
+
+
+
+
+/* Glassmorphism effect for login card */
+.glass-effect {
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  padding: 30px;
+}
+
+/* Centered logo in login card */
+.login-logo {
+  width: 70px;
+  height: 70px;
+  object-fit: contain;
+}
+
+/* Styling for input groups */
+.input-group-text {
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  color: white;
+}
+
+/* Placeholder color */
+::placeholder {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+/* Make sure text is readable */
+.form-control {
+  background: transparent;
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+/* Focus styling */
+.form-control:focus {
+  background: transparent;
+  border-color: white;
+  box-shadow: none;
+}
+
+/* Login button */
+.btn-primary {
+  background: linear-gradient(45deg, #007bff, #6610f2);
+  border: none;
+  transition: all 0.3s ease-in-out;
+}
+
+.btn-primary:hover {
+  background: linear-gradient(45deg, #6610f2, #007bff);
+  transform: scale(1.05);
 }

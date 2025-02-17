@@ -90,3 +90,34 @@ body {
 script {
     color: #fff;
 }
+
+/* Add this to your main CSS file */
+
+/* Main alert message container styling */
+.alert-message {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: rgba(255, 255, 255, 0.8); /* Slightly transparent white */
+    padding: 15px 30px;
+    border-radius: 15px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+    z-index: 9999; /* Ensure it's always on top */
+    font-size: 16px;
+    display: none; /* Hidden by default */
+    opacity: 1;
+    transition: opacity 0.5s ease;
+}
+
+/* Success alert style */
+.alert-message.success {
+    background-color: rgba(76, 175, 80, 0.9); /* Green */
+    color: white;
+}
+
+/* Error alert style */
+.alert-message.error {
+    background-color: rgba(244, 67, 54, 0.9); /* Red */
+    color: white;
+}

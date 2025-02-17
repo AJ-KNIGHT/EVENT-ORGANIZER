@@ -39,6 +39,8 @@ from django.db import models
 from django.conf import settings
 from eventapp.models import Event
 
+
+
 class Booking(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='bookings')
     event_name = models.ForeignKey(Event, on_delete=models.CASCADE, related_name='bookings')
@@ -51,6 +53,9 @@ class Booking(models.Model):
     cus_email = models.EmailField()
     cus_ph = models.CharField(max_length=10)
     description = models.TextField(blank=True, null=True)
+    payment = models.OneToOneField('paymentapp.Payment', on_delete=models.CASCADE, related_name='booking_payment',null=True, blank=True, default=None)
+
+
     
     # Add total_amount field
     total_amount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)

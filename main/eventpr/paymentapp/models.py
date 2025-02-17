@@ -1,40 +1,23 @@
-""" from django.db import models
+from django.db import models
+from userapp.models import CustomUser  # Assuming you use CustomUser
+from eventapp.models import Booking  # Assuming Booking is in eventapp
 
 class Payment(models.Model):
-    PAYMENT_METHOD_CHOICES = [
-        ('UPI', 'UPI'),
-        ('Bank Transfer', 'Bank Transfer'),
-        ('Cash', 'Cash'),
-        ('Online', 'Online Payment Gateway'),
-        ('Razorpay', 'Razorpay'),
+    PAYMENT_METHODS = [
+        ('COD', 'Cash on Delivery'),
+        ('UPI', 'UPI (Not Available)'),
+        ('NB', 'Net Banking (Not Available)'),
+        ('CC', 'Credit Card (Not Available)'),
     ]
 
-    booking = models.ForeignKey(
-        'eventapp.Booking', related_name='payments', on_delete=models.CASCADE
-    )
-    razorpay_order_id = models.CharField(max_length=255, blank=True, null=True)  # Razorpay Order ID
-    razorpay_payment_id = models.CharField(max_length=255, blank=True, null=True)  # Razorpay Payment ID
-    razorpay_signature = models.CharField(max_length=255, blank=True, null=True)  # Razorpay Signature
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, null=True, blank=True, default=None)
 
-    proof_of_payment = models.ImageField(upload_to='pic/payment_proof/', blank=True, null=True)
-    payment_date = models.DateTimeField(auto_now_add=True)
-    status = models.CharField(
-        max_length=20,
-        choices=[('Pending', 'Pending'), ('Completed', 'Completed'), ('Verified', 'Verified')],
-        default='Pending'
-    )
-    amount = models.DecimalField(max_digits=10, decimal_places=2, default=0.0)
-    payment_method = models.CharField(
-        max_length=50, choices=PAYMENT_METHOD_CHOICES, default='Razorpay'
-    )
+    booking = models.OneToOneField('eventapp.Booking', on_delete=models.CASCADE, related_name='payment_booking')
+
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    payment_method = models.CharField(max_length=10, choices=PAYMENT_METHODS, default='COD')
+    is_paid = models.BooleanField(default=False)
+    timestamp = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"Payment for Booking #{self.booking.id} - Status: {self.status}"
-
-    def save(self, *args, **kwargs):
-        # Logic for updating booking payment status if needed
-        if self.status == 'Completed':
-            self.booking.payment_status = 'Paid'
-            self.booking.save()
-        super().save(*args, **kwargs)
- """
+        return f"Payment for Booking {self.booking.id} - {self.get_payment_method_display()}"
