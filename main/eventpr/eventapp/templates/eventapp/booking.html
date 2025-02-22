@@ -3,7 +3,7 @@
 
 {% block title %}Book Event{% endblock %}
 <head>
-<link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
 </head>
 {% block content %}
 <section 
@@ -49,16 +49,16 @@
                                     <div class="form-floating mb-3">
                                         {{ form.cus_email }}
                                         <label for="{{ form.cus_email.id_for_label }}">{{ form.cus_email.label }}</label>
-                                        {% if form.cus_ph.errors %}
-                                            <div class="text-danger">{{ form.cus_ph.errors }}</div>
+                                        {% if form.cus_email.errors %}
+                                            <div class="text-danger">{{ form.cus_email.errors }}</div>
                                         {% endif %}
                                     </div>
 
                                     <div class="form-floating mb-3">
                                         {{ form.cus_ph }}
                                         <label for="{{ form.cus_ph.id_for_label }}">{{ form.cus_ph.label }}</label>
-                                        {% if form.cus_email.errors %}
-                                            <div class="text-danger">{{ form.cus_email.errors }}</div>
+                                        {% if form.cus_ph.errors %}
+                                            <div class="text-danger">{{ form.cus_ph.errors }}</div>
                                         {% endif %}
                                     </div>
                                 </div>
@@ -67,7 +67,6 @@
                                 <div class="col-md-6 mb-3">
                                     <div class="form-floating mb-3">
                                         {{ form.venue }}
-                                        
                                         {% if form.venue.errors %}
                                             <div class="text-danger">{{ form.venue.errors }}</div>
                                         {% endif %}
@@ -75,7 +74,6 @@
 
                                     <div class="form-floating mb-3">
                                         {{ form.booking_date }}
-                                        
                                         {% if form.booking_date.errors %}
                                             <div class="text-danger">{{ form.booking_date.errors }}</div>
                                         {% endif %}

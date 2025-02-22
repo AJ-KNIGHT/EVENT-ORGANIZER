@@ -44,7 +44,7 @@
             <p class="card-text"><strong>${{ event.price }}</strong></p>
           </div>
           <div class="card-footer text-center">
-            <a href="{% url 'eventapp:booking' slug=event.slug %}" class="btn btn-primary">Book Now</a>
+            <a href="{% url 'eventapp:event_detail' slug=event.slug %}" class="btn btn-primary">Book Now</a>
           </div>
         </div>
       </div>

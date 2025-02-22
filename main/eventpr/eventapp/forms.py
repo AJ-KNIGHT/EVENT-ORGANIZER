@@ -16,10 +16,17 @@ from userapp.models import ChangeRequest
 class DateInput(forms.DateInput):
     input_type = 'date'
 
+from django import forms
+from django.core.exceptions import ValidationError
+from django.core.validators import validate_email
+from django.utils import timezone
+from datetime import date
+from .models import Booking
+
 class BookingForm(forms.ModelForm):
     class Meta:
         model = Booking
-        exclude = ['user', 'event_name', 'event_date' , 'payment']
+        exclude = ['user', 'event_name', 'event_date', 'payment']
         fields = '__all__'
         widgets = {
             'booking_date': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
@@ -70,7 +77,6 @@ class BookingForm(forms.ModelForm):
         if not cus_ph.isdigit() or len(cus_ph) != 10:
             raise forms.ValidationError("Please enter a valid 10-digit phone number.")
         return cus_ph
-
 
 
 

@@ -40,7 +40,7 @@ html {
 }
 
 .custom-navbar .nav-link {
-  color: #333 !important;
+  color: #fe578f ;
   font-size: 1rem;
   font-weight: 500;
   text-decoration: none;
@@ -59,11 +59,15 @@ html {
 
 /* Center the dropdown in the navbar */
 .custom-navbar .dropdown-menu {
+  background-color: rgba(255, 255, 255, 0.15) !important;
+  border-radius: 15px;
   left: 50%;
   transform: translateX(-50%);
   text-align: center;
 }
-
+.custom-navbar .dropdown-menu :hover{
+  background-color: rgba(255, 255, 255, 0.15) !important;
+}
 .custom-navbar .active {
   color: #ff4081 !important;
   font-weight: bold;
@@ -230,8 +234,14 @@ footer a:hover {
   background-color: rgba(0, 0, 0, 0.6); /* Semi-transparent black for dark theme */
   border-radius: 10px;
   box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
+  color: white 
 }
-
+.booking-form,textarea.form-control{
+  color: white
+}
+.booking-form,textarea.form-control:focus{
+  color: white
+}
 .booking-form .form-floating {
   margin-bottom: 1rem;
 }
@@ -377,4 +387,23 @@ footer a:hover {
 @keyframes fadeOut {
   from { opacity: 1; transform: translateY(0); }
   to { opacity: 0; transform: translateY(-10px); }
+}
+
+/* Input and Textarea Fields */
+input.form-control, textarea.form-control {
+  background-color: #ffffff30;  /* Light transparent background */
+  color: white;  /* Change text color to white */
+  border: 1px solid #ffffff70;  /* Light border */
+}
+
+/* Focused Input and Textarea Fields */
+input.form-control:focus, textarea.form-control:focus {
+  background-color: #ffffff40;  /* Slightly lighter background on focus */
+  border-color: #ffffff;  /* White border on focus */
+  color: white;  /* Ensure text stays white when focused */
+}
+
+/* Label styling */
+label {
+  color: white;  /* Make label text white */
 }
