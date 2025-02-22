@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Booking Cancellation Notification</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f9f9f9;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 {
+            color: #d9534f; /* Bootstrap danger color */
+            text-align: center;
+        }
+        p {
+            font-size: 16px;
+            margin-bottom: 20px;
+        }
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        li {
+            background-color: #fff;
+            margin: 10px 0;
+            padding: 15px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        strong {
+            color: #5bc0de; /* Bootstrap info color */
+        }
+    </style>
+</head>
+<body>
+    <h1>Booking Cancellation Notification</h1>
+    <p>The following booking has been canceled:</p>
+    <ul>
+        <li><strong>Booking ID:</strong> {{ booking_id }}</li>
+        <li><strong>User:</strong> {{ user.username }}</li>
+    </ul>
+</body>
+</html>

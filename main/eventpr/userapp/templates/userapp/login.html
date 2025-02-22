@@ -1,3 +1,9 @@
+{% extends 'base.html' %}
+
+{% block video_background %}{% endblock %} {# Prevents the video from appearing #}
+{% block navbar %}{% endblock %} {# Prevents the navbar from appearing #}
+
+{% block content %}
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
@@ -17,10 +23,15 @@
             {% endfor %}
         {% endif %}
 
-        <form method="POST">
+        <form method="POST" autocomplete="off">
             {% csrf_token %}
-            <input type="text" name="username" placeholder="Username" required>
-            <input type="password" name="password" placeholder="Password" required>
+            <input type="text" name="username" placeholder="Username" required autocomplete="off">
+
+            <div class="password-wrapper">
+                <input type="password" id="password" name="password" placeholder="Password" required autocomplete="new-password">
+                <button type="button" class="toggle-password" onclick="togglePasswordVisibility()">👁️</button>
+            </div>
+
             <button type="submit">Login</button>
         </form>
 
@@ -30,77 +41,128 @@
 
         <p>Don't have an account? <a href="{% url 'userapp:signup' %}">Sign up here</a></p>
     </div>
+
+    <script>
+        function togglePasswordVisibility() {
+            const passwordField = document.getElementById("password");
+            const toggleButton = document.querySelector(".toggle-password");
+
+            if (passwordField.type === "password") {
+                passwordField.type = "text";
+                toggleButton.textContent = "🙈"; // Change to hide icon
+            } else {
+                passwordField.type = "password";
+                toggleButton.textContent = "👁️"; // Change to show icon
+            }
+        }
+    </script>
+
+    <style>
+        /* Body Background */
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background: linear-gradient(135deg, #0052D4, #4364F7, #6FB1FC);
+            background-size: 400% 400%;
+            animation: gradientBG 10s ease infinite;
+            font-family: Arial, sans-serif;
+            color: white;
+        }
+
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* Login Container */
+        .login-container {
+            width: 350px;
+            padding: 25px;
+            border-radius: 15px;
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            text-align: center;
+            color: white;
+        }
+
+        h2 {
+            margin-bottom: 20px;
+            font-size: 28px;
+        }
+
+        /* Form Inputs */
+        input {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border: none;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.3);
+            color: #333;
+            outline: none;
+            font-size: 16px;
+        }
+
+        /* Password Wrapper */
+        .password-wrapper {
+            position: relative;
+        }
+
+        .toggle-password {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            color: #333;
+            font-size: 16px;
+            padding: 0;
+        }
+
+        /* Submit Button */
+        button[type="submit"] {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #FFC107, #FF9800);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            font-size: 16px;
+            margin-top: 10px;
+        }
+
+        button[type="submit"]:hover {
+            background: linear-gradient(135deg, #FF9800, #FFC107);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4);
+        }
+
+        /* Links */
+        a {
+            display: inline-block;
+            margin: 10px 0;
+            color: #fff;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+    </style>
 </body>
 </html>
+{% endblock %}
 
-<style>
-/* Apply the same vibrant blue gradient background */
-body {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    background: linear-gradient(135deg, #0052D4, #4364F7, #6FB1FC);
-    background-size: 400% 400%;
-    animation: gradientBG 10s ease infinite;
-}
-
-@keyframes gradientBG {
-    0% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
-}
-
-.login-container {
-    width: 350px;
-    padding: 20px;
-    border-radius: 15px;
-    background: rgba(255, 255, 255, 0.2); /* Glass effect */
-    backdrop-filter: blur(10px);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    text-align: center;
-    color: white;
-}
-
-h2 {
-    margin-bottom: 15px;
-}
-
-input {
-    width: 100%;
-    padding: 10px;
-    margin: 10px 0;
-    border: none;
-    border-radius: 5px;
-    background: rgba(255, 255, 255, 0.4);
-    color: #333;
-    outline: none;
-}
-
-button {
-    width: 100%;
-    padding: 10px;
-    background: linear-gradient(135deg, #FFC107, #FF9800);
-    border: none;
-    border-radius: 5px;
-    color: white;
-    cursor: pointer;
-    font-weight: bold;
-    transition: 0.3s;
-}
-
-button:hover {
-    background: linear-gradient(135deg, #FF9800, #FFC107);
-}
-
-a {
-    text-decoration: none;
-    color: #fff;
-    font-size: 14px;
-}
-
-a:hover {
-    text-decoration: underline;
-}
-</style>
+{% block footer %}{% endblock %}

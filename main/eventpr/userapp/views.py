@@ -101,12 +101,12 @@ def user_login(request):
 
         if user is not None:
             login(request, user)  # ✅ Correct usage
-            request.toast_type = 'error'
+            request.toast_type = 'warninh'
             request.toast_message = 'Login successful'
             messages.success(request, "Login successful!")
             return redirect("index")  # ✅ Redirect to the home page
         else:
-            request.toast_type = 'error'
+            request.toast_type = 'warning'
             request.toast_message = '"Invalid username or password. Forgot password?'
             messages.error(request, "Invalid username or password. Forgot password?")
             return render(request, "userapp/login.html", {"show_forgot_password": True})  # ✅ Pass variable
@@ -142,12 +142,27 @@ def booking_dashboard(request):
 @login_required
 def submit_change_request(request, booking_id):
     """
-    Handle the submission of a change request for a specific booking.
+    Handle the submission of a change request for a specific booking or booking cancellation.
     """
     booking = get_object_or_404(Booking, id=booking_id, user=request.user)
-    
 
     if request.method == 'POST':
+        if 'cancel_booking' in request.POST:
+            # Handle booking cancellation
+            booking.delete()
+
+            # Notify admin about cancellation
+            send_html_email(
+                subject="Booking Cancellation",
+                recipient_list=['amal183626@gmail.com'],
+                template_name='email/booking_cancellation_notification.html',
+                context={'booking_id': booking_id, 'user': request.user},
+            )
+
+            messages.success(request, "Your booking has been canceled successfully.")
+            return redirect('userapp:change_requests_dashboard')
+
+        # Handle change request
         form = ChangeRequestForm(request.POST)
         if form.is_valid():
             change_request = form.save(commit=False)
@@ -168,14 +183,14 @@ def submit_change_request(request, booking_id):
                 template_name='email/change_request_notification.html',
                 context=context,
             )
-            request.toast_type = 'success'
-            request.toast_message = 'Your change request has been submitted successfully.'
+
             messages.success(request, "Your change request has been submitted successfully.")
-            return redirect('userapp:change_requests_dashboard')  # Adjust the redirect as needed
+            return redirect('userapp:change_requests_dashboard')
     else:
         form = ChangeRequestForm()
 
-    return render(request, 'eventapp/submit_change_request.html', {'booking': booking, 'form': form,},context)
+    return render(request, 'eventapp/submit_change_request.html', {'booking': booking, 'form': form})
+
 
 
 @login_required
