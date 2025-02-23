@@ -2,7 +2,29 @@
 {% load static %}
 
 {% block extra_css %}
-    <link rel="stylesheet" href="{% static 'paymentapp/css/payment_styles.css' %}">
+<style>
+/* Background Styling Only */
+body {
+  font-family: Arial, sans-serif;
+  background: linear-gradient(135deg, #0052d4, #4364f7, #6fb1fc);
+  background-size: 400% 400%;
+  animation: gradientBG 10s ease infinite;
+  color: white;
+  margin: 0;
+  padding: 0;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+@keyframes gradientBG {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+</style>
+<link rel="stylesheet" href="{% static 'paymentapp/css/payment_styles.css' %}">
 {% endblock %}
 
 {% block content %}
@@ -38,7 +60,9 @@
     </form>
 </div>
 {% endblock %}
-{% block footer %}{% endblock %}
+
 {% block extra_js %}
-    <script src="{% static 'paymentapp/js/payment.js' %}"></script>
+<script src="{% static 'paymentapp/js/payment.js' %}"></script>
 {% endblock %}
+
+{% block footer %}{% endblock %}
