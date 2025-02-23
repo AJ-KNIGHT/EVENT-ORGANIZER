@@ -97,8 +97,8 @@ This project is licensed under the **MIT License**. Feel free to use and modify 
 
 ## 📞 Contact
 For any queries or suggestions, contact:
-- ✉️ Email: your-email@example.com
-- 🌐 Project GitHub: [https://github.com/yourusername/event-management-system](https://github.com/yourusername/event-management-system)
+- ✉️ Email: eventpro49@gmail.com
+- 🌐 Project GitHub: [https://github.com/AJ-KNIGHT/EVENT-ORGANIZER](https://github.com/AJ-KNIGHT/EVENT-ORGANIZER)
 
 ---
 🚀 Made with ❤️ by **Happy Hours**
