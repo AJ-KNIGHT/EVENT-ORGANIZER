@@ -4,6 +4,7 @@
 
 {% block content %}
 <style>
+    /* Background Styling */
     .blur-background {
         position: fixed;
         top: 0;
@@ -11,65 +12,105 @@
         width: 100%;
         height: 100%;
         backdrop-filter: blur(10px);
-        background: rgba(0, 0, 0, 0.5);
+        background: rgba(0, 0, 0, 0.6);
         display: flex;
         justify-content: center;
         align-items: center;
+        z-index: -1;
     }
 
+    /* Card Styling */
     .user-details-card {
-        background: white;
+        background: rgba(255, 255, 255, 0.85);
         padding: 30px;
-        border-radius: 10px;
-        width: 450px;
+        border-radius: 15px;
+        width: 500px;
         text-align: center;
-        box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+        animation: fadeIn 0.5s ease-in-out;
     }
 
+    /* Profile Picture */
+    .profile-picture {
+        border-radius: 50%;
+        border: 4px solid #007bff;
+        margin-bottom: 15px;
+    }
+
+    /* Event Section */
     .upcoming-event {
-        background: #f8f9fa;
-        padding: 10px;
-        margin-top: 15px;
-        border-radius: 8px;
+        background: #ffffff;
+        padding: 15px;
+        margin-top: 20px;
+        border-radius: 12px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         text-align: left;
+        animation: slideIn 0.5s ease;
     }
 
     .event-title {
         font-weight: bold;
         color: #007bff;
+        font-size: 18px;
+        margin-bottom: 8px;
+    }
+
+    /* Button Styling */
+    .custom-btn {
+        width: 100%;
+        padding: 10px 0;
+        border-radius: 8px;
+        margin: 8px 0;
+        transition: all 0.3s ease;
+    }
+
+    .custom-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+
+    /* Animations */
+    @keyframes fadeIn {
+        from { opacity: 0; transform: scale(0.9); }
+        to { opacity: 1; transform: scale(1); }
+    }
+
+    @keyframes slideIn {
+        from { opacity: 0; transform: translateY(-20px); }
+        to { opacity: 1; transform: translateY(0); }
     }
 </style>
 
 <div class="blur-background">
     <div class="user-details-card">
-        <img src="{{ user.profile_picture.url }}" alt="Profile" class="rounded-circle" width="80">
-        <h3>{{ user.username }}</h3>
+        <!-- Profile Section -->
+        <img src="{{ user.profile_picture.url }}" alt="Profile" class="profile-picture" width="90">
+        <h2>{{ user.username }}</h2>
         <p><strong>Email:</strong> {{ user.email }}</p>
         <p><strong>Phone:</strong> {{ user.phone_number|default:"N/A" }}</p>
         <p><strong>Total Bookings:</strong> {{ total_bookings }}</p>
 
+        <!-- Upcoming Event Section -->
         {% if upcoming_event %}
         <div class="upcoming-event">
             <p class="event-title">{{ upcoming_event.event.name }}</p>
             <p><strong>Date:</strong> {{ upcoming_event.event_date }}</p>
             <p><strong>Venue:</strong> {{ upcoming_event.venue }}</p>
             {% if event_slug %}
-            <a href="{% url 'eventapp:event_detail' event_slug %}" class="btn btn-info btn-sm">View Event</a>
+            <a href="{% url 'eventapp:event_detail' event_slug %}" class="btn btn-info btn-sm custom-btn">View Event</a>
             {% else %}
             <p>No event details available.</p>
             {% endif %}
         </div>
         {% else %}
-        <p>No upcoming events.</p>
+        <p>No upcoming events for this user.</p>
         {% endif %}
 
-
-
+        <!-- Action Buttons -->
         <br>
-        <a href="{% url 'admin:userapp_customuser_change' user.id %}" class="btn btn-primary">Edit</a>
-        <br>
-        <a href="{% url 'userapp:admin_dashboard' %}" class="btn btn-secondary">Back</a>
+        <a href="{% url 'admin:userapp_customuser_change' user.id %}" class="btn btn-primary custom-btn">Edit User</a>
+        <a href="{% url 'userapp:admin_dashboard' %}" class="btn btn-secondary custom-btn">Back to Dashboard</a>
     </div>
 </div>
-
 {% endblock %}
+{% block footer %}{% endblock %}

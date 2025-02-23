@@ -3,76 +3,167 @@
 {% block title %}{{ event.name }}{% endblock %}
 
 {% block content %}
-<section class="event-detail py-5">
-    <div class="container">
-        <!-- Event Title -->
-        <h1 class="text-center text-primary mb-4">{{ event.name }}</h1>
+<div class="event-page">
+    <div class="glassmorphic-canvas">
+        <h2 class="text-center">Event Details - {{ event.name }}</h2>
 
-        <!-- Event Details -->
-        <div class="row">
-            <div class="col-md-6 mb-4">
+        <div class="event-wrapper">
+            <!-- Sidebar for Event Image -->
+            <div class="event-sidebar">
                 {% if event.img %}
-                    <img src="{{ event.img.url }}" class="img-fluid rounded shadow" alt="{{ event.name }}">
+                    <img src="{{ event.img.url }}" alt="{{ event.name }}" class="event-img">
                 {% else %}
-                    <img src="{% static 'images/default_event.jpg' %}" class="img-fluid rounded shadow" alt="Default Event Image">
+                    <img src="{% static 'images/default_event.jpg' %}" alt="Default Event Image" class="event-img">
                 {% endif %}
             </div>
-            <div class="col-md-6">
-                <h4 class="text-secondary">Description</h4>
-                <p>{{ event.desc }}</p>
-                <h4 class="text-secondary">Event Date</h4>
-                <p><i class="bi bi-calendar-event"></i> {{ event.event_date }}</p>
-                <h4 class="text-secondary">Location</h4>
-                <p><i class="bi bi-geo-alt"></i> {{ event.location }}</p>
-                <h4 class="text-secondary">Price</h4>
-                <p><strong>${{ event.price }}</strong></p>
-                <a href="{% url 'eventapp:booking' event.slug %}" class="btn btn-success btn-lg mt-3">
-                    <i class="bi bi-ticket-fill"></i> Book This Event
-                </a>
+
+            <!-- Event Content -->
+            <div class="event-content">
+                <div class="glassmorphic-box">
+                    <h3>{{ event.name }}</h3>
+                    <p>{{ event.desc }}</p>
+                    <ul class="list-unstyled">
+                        <li><i class="bi bi-calendar-event"></i> <strong>Event Date:</strong> {{ event.event_date }}</li>
+                        <li><i class="bi bi-geo-alt"></i> <strong>Location:</strong> {{ event.location }}</li>
+                        <li><i class="bi bi-tag"></i> <strong>Price:</strong> ${{ event.price }}</li>
+                    </ul>
+                    <a href="{% url 'eventapp:booking' event.slug %}" class="btn btn-primary custom-btn mt-3">
+                        <i class="bi bi-ticket-fill"></i> Book This Event
+                    </a>
+                </div>
             </div>
         </div>
 
         <!-- Related Events Section -->
         <h3 class="mt-5 text-center">Related Events</h3>
-        <div class="row">
+        <div class="related-events">
             {% if related_events %}
                 {% for related_event in related_events %}
-                <div class="col-md-4 mb-4">
-                    <div class="card h-100 shadow-sm">
-                        {% if related_event.img %}
-                            <img src="{{ related_event.img.url }}" class="card-img-top" alt="{{ related_event.name }}">
-                        {% else %}
-                            <img src="{% static 'images/default_event.jpg' %}" class="card-img-top" alt="Default Image">
-                        {% endif %}
-                        <div class="card-body">
-                            <h5 class="card-title">{{ related_event.name }}</h5>
-                            <p class="text-muted"><i class="bi bi-calendar"></i> {{ related_event.event_date }}</p>
-                            <a href="{% url 'event_detail' slug=related_event.slug %}" class="btn btn-primary">
-                                <i class="bi bi-arrow-right-circle"></i> Learn More
-                            </a>
-                        </div>
-                    </div>
+                <div class="related-event-card">
+                    {% if related_event.img %}
+                        <img src="{{ related_event.img.url }}" alt="{{ related_event.name }}" class="related-event-img">
+                    {% else %}
+                        <img src="{% static 'images/default_event.jpg' %}" alt="Default Image" class="related-event-img">
+                    {% endif %}
+                    <h5>{{ related_event.name }}</h5>
+                    <p><i class="bi bi-calendar"></i> {{ related_event.event_date }}</p>
+                    <a href="{% url 'event_detail' slug=related_event.slug %}" class="btn btn-outline-primary btn-sm">
+                        <i class="bi bi-arrow-right-circle"></i> Learn More
+                    </a>
                 </div>
                 {% endfor %}
             {% else %}
-            <p class="text-center">No related events available at the moment.</p>
+                <p class="text-center">No related events available at the moment.</p>
             {% endif %}
         </div>
     </div>
-</section>
+</div>
 
-<!-- Styling for the template -->
+<!-- Custom Styling -->
 <style>
-    .event-detail h4 {
-        margin-top: 20px;
-    }
-    .btn-success {
-        background-color: #28a745;
-        border-color: #28a745;
-    }
-    .btn-success:hover {
-        background-color: #218838;
-        border-color: #1e7e34;
-    }
+body {
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.event-page {
+    flex: 1;
+    margin: 0;
+    padding: 0;
+    background: linear-gradient(135deg, #0052D4, #4364F7, #6FB1FC);
+    background-size: 400% 400%;
+    animation: gradientBG 15s ease infinite;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding-bottom: 30px;
+}
+
+@keyframes gradientBG {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+.glassmorphic-canvas {
+    margin: 80px auto;
+    width: 85%;
+    max-width: 1200px;
+    padding: 40px;
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 30px;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.event-wrapper {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.event-sidebar {
+    width: 100%;
+    max-width: 400px;
+    padding: 20px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 20px;
+    backdrop-filter: blur(10px);
+}
+
+.event-img {
+    width: 100%;
+    border-radius: 20px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+.event-content {
+    flex: 1;
+    padding: 20px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 20px;
+    backdrop-filter: blur(10px);
+    min-width: 300px;
+}
+
+.related-events {
+    display: flex;
+    gap: 20px;
+    overflow-x: auto;
+    padding: 10px 0;
+}
+
+.related-event-card {
+    min-width: 250px;
+    padding: 15px;
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 15px;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    text-align: center;
+}
+
+.related-event-img {
+    width: 100%;
+    border-radius: 10px;
+    margin-bottom: 10px;
+}
+
+.custom-btn {
+    border-radius: 30px;
+    transition: all 0.3s ease;
+}
+
+.custom-btn:hover {
+    transform: scale(1.1);
+}
+
+footer {
+    margin-top: auto;
+}
 </style>
 {% endblock %}

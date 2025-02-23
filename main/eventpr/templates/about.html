@@ -1,41 +1,40 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}About{% endblock %}
+{% block title %}About Us{% endblock %}
 
 {% block content %}
-<section
-    class="about-page py-5"
-    style="
-        background-image: url('{% static 'images/pexel-about.jpg' %}');
+<section class="about-page py-5" style="
+        background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('{{ preloaded_assets.about_image }}');
         background-size: cover;
         background-position: center;
         background-attachment: fixed;
         padding-top: 70px;
-        padding-bottom: 70px;"
->
+        padding-bottom: 70px;">
   <div class="container p-4 text-white">
-    <h2 class="text-center text-primary mb-4" data-aos="fade-up" style="color: rgb(255, 247, 247) !important;">About Us</h2>
-    
+    <link rel="preload" as="image" href="{% static 'images/pexel-about.jpg' %}">
+
+    <h2 class="text-center text-primary mb-4" data-aos="fade-up" style="color: #ffefef !important;">About Us</h2>
+
     <div class="row mb-4">
       <div class="col-md-6" data-aos="fade-right">
         <h3 class="text-secondary">Who We Are</h3>
         <p>We are a team of passionate individuals dedicated to creating seamless and unforgettable event experiences.</p>
       </div>
     </div>
-  
+
     <div class="row mb-4">
       <div class="col-md-12" data-aos="fade-up" data-aos-delay="100">
         <h3 class="text-secondary">Our Mission</h3>
         <p>Our mission is to provide an all-in-one platform that simplifies event management, helping organizers create amazing experiences while giving attendees the tools they need to find and enjoy events with ease.</p>
       </div>
     </div>
-  
+
     <div class="row" data-aos="fade-up" data-aos-delay="200">
       <div class="col-md-12">
         <h3 class="text-secondary">Contact Us</h3>
         <ul>
-          <li><strong>Email:</strong> support@eventplatform.com</li>
+          <li><strong>Email:</strong> <a href="mailto:support@eventplatform.com" style="color: #ffefef;">support@eventplatform.com</a></li>
           <li><strong>Phone:</strong> +1 (123) 456-7890</li>
           <li><strong>Address:</strong> 123 Event St, Event City, EC 12345</li>
         </ul>
@@ -43,18 +42,20 @@
     </div>
   </div>
 </section>
+
 {% endblock %}
 
 <style>
-  
   h3 {
     font-size: 1.75rem;
     font-weight: 600;
   }
+
   ul {
     list-style-type: none;
     padding-left: 0;
   }
+
   ul li {
     font-size: 1.1rem;
     margin-bottom: 10px;
@@ -68,9 +69,11 @@
   .fade-right {
     animation: fadeInRight 1s ease-in-out;
   }
+
   .fade-left {
     animation: fadeInLeft 1s ease-in-out;
   }
+
   .zoom-in {
     animation: zoomIn 1s ease-in-out;
   }
@@ -106,5 +109,5 @@
       opacity: 1;
       transform: scale(1);
     }
-  }
+}
 </style>

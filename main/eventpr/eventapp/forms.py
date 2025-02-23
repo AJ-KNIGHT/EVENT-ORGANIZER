@@ -81,8 +81,23 @@ class BookingForm(forms.ModelForm):
 
 
 
-class ChangeRequestForm(forms.Form):
-    customer_request = forms.CharField(widget=forms.Textarea(attrs={'placeholder': 'Please describe your change request...'}))
+from django import forms
+from userapp.models import ChangeRequest
+
+class ChangeRequestForm(forms.ModelForm):
+    customer_request = forms.CharField(
+        widget=forms.Textarea(attrs={'placeholder': 'Please describe your change request...', 'class': 'form-control'}),
+        required=False
+    )
+
+    class Meta:
+        model = ChangeRequest
+        fields = ['request_type', 'new_value', 'customer_request']
+        widgets = {
+            'request_type': forms.Select(attrs={'class': 'form-control'}),
+            'new_value': forms.TextInput(attrs={'class': 'form-control'}),
+        }
+
 
 
 # New SignupForm for user registration

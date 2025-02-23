@@ -24,7 +24,12 @@ html {
   width: 850px; /* Set fixed width for better alignment */
   max-height: 35px;
   z-index: 1000;
-  background-color: rgba(255, 255, 255, 0.15) !important; /* Transparent white */
+  background-color: rgba(
+    255,
+    255,
+    255,
+    0.15
+  ) !important; /* Transparent white */
   backdrop-filter: blur(10px); /* Blurring effect */
   border-radius: 15px;
   border: 2px solid rgba(255, 255, 255, 0.15);
@@ -40,7 +45,7 @@ html {
 }
 
 .custom-navbar .nav-link {
-  color: #fe578f ;
+  color: #fe578f;
   font-size: 1rem;
   font-weight: 500;
   text-decoration: none;
@@ -50,7 +55,6 @@ html {
 
 .custom-navbar .nav-link:hover {
   color: #ff4081 !important;
-  
 }
 .custom-navbar .navbar-brand img {
   height: 40px;
@@ -65,7 +69,7 @@ html {
   transform: translateX(-50%);
   text-align: center;
 }
-.custom-navbar .dropdown-menu :hover{
+.custom-navbar .dropdown-menu :hover {
   background-color: rgba(255, 255, 255, 0.15) !important;
 }
 .custom-navbar .active {
@@ -231,16 +235,23 @@ footer a:hover {
 }
 /* General Styles for form inputs */
 .booking-form {
-  background-color: rgba(0, 0, 0, 0.6); /* Semi-transparent black for dark theme */
+  background-color: rgba(
+    0,
+    0,
+    0,
+    0.6
+  ); /* Semi-transparent black for dark theme */
   border-radius: 10px;
   box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
-  color: white 
+  color: white;
 }
-.booking-form,textarea.form-control{
-  color: white
+.booking-form,
+textarea.form-control {
+  color: white;
 }
-.booking-form,textarea.form-control:focus{
-  color: white
+.booking-form,
+textarea.form-control:focus {
+  color: white;
 }
 .booking-form .form-floating {
   margin-bottom: 1rem;
@@ -270,10 +281,6 @@ footer a:hover {
   padding: 10px 20px;
   border-radius: 30px;
 }
-
-
-
-
 
 /* Glassmorphism effect for login card */
 .glass-effect {
@@ -379,31 +386,82 @@ footer a:hover {
 
 /* Fade-In Animation */
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(-10px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* Fade-Out Animation */
 @keyframes fadeOut {
-  from { opacity: 1; transform: translateY(0); }
-  to { opacity: 0; transform: translateY(-10px); }
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
 }
 
 /* Input and Textarea Fields */
-input.form-control, textarea.form-control {
-  background-color: #ffffff30;  /* Light transparent background */
-  color: white;  /* Change text color to white */
-  border: 1px solid #ffffff70;  /* Light border */
+input.form-control,
+textarea.form-control {
+  background-color: #ffffff30; /* Light transparent background */
+  color: white; /* Change text color to white */
+  border: 1px solid #ffffff70; /* Light border */
 }
 
 /* Focused Input and Textarea Fields */
-input.form-control:focus, textarea.form-control:focus {
-  background-color: #ffffff40;  /* Slightly lighter background on focus */
-  border-color: #ffffff;  /* White border on focus */
-  color: white;  /* Ensure text stays white when focused */
+input.form-control:focus,
+textarea.form-control:focus {
+  background-color: #ffffff40; /* Slightly lighter background on focus */
+  border-color: #ffffff; /* White border on focus */
+  color: white; /* Ensure text stays white when focused */
 }
 
 /* Label styling */
 label {
-  color: white;  /* Make label text white */
+  color: white; /* Make label text white */
+}
+
+/* Loader Style */
+/* Loader Styles */
+.loader {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(255, 255, 255, 0.9);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+.loader-spinner {
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #3498db;
+  border-radius: 50%;
+  width: 50px; /* Increased size for better visibility */
+  height: 50px; /* Increased size for better visibility */
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.hidden {
+  display: none;
 }

@@ -4,18 +4,76 @@
 {% block title %}Admin Dashboard{% endblock title %}
 
 {% block content %}
-<div class="container mt-4">
-    <h1 class="mb-4">Admin Dashboard</h1>
+<style>
+    .blur-background {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        backdrop-filter: blur(10px);
+        background: rgba(0, 0, 0, 0.5);
+        overflow-y: auto;
+        padding: 30px 0;
+    }
 
-    <!-- Section: Pending Change Requests -->
-    <div class="card mb-4">
-        <div class="card-header">
-            <h5>Pending Change Requests</h5>
-        </div>
-        <div class="card-body">
+    .dashboard-card {
+        background: rgba(255, 255, 255, 0.9);
+        padding: 30px;
+        border-radius: 15px;
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+        margin-bottom: 20px;
+        animation: fadeIn 0.5s ease;
+    }
+
+    .section-title {
+        color: #007bff;
+        font-weight: bold;
+        margin-bottom: 15px;
+    }
+
+    .user-card {
+        background: rgba(255, 255, 255, 0.8);
+        padding: 15px;
+        border-radius: 10px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s ease;
+        text-align: center;
+    }
+
+    .user-card:hover {
+        transform: translateY(-5px);
+    }
+
+    .profile-pic {
+        border-radius: 50%;
+        width: 60px;
+        height: 60px;
+        object-fit: cover;
+    }
+
+    .btn-custom {
+        padding: 5px 10px;
+        border-radius: 8px;
+        font-size: 14px;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: scale(0.9); }
+        to { opacity: 1; transform: scale(1); }
+    }
+</style>
+
+<div class="blur-background">
+    <div class="container">
+        <h1 class="text-center text-light mb-4">Admin Dashboard</h1>
+
+        <!-- Pending Change Requests -->
+        <div class="dashboard-card">
+            <h3 class="section-title">Pending Change Requests</h3>
             {% if pending_requests %}
-            <table class="table table-striped">
-                <thead>
+            <table class="table table-bordered table-hover">
+                <thead class="thead-dark">
                     <tr>
                         <th>ID</th>
                         <th>Booking ID</th>
@@ -40,8 +98,8 @@
                         </td>
                         <td>{{ request.created_at }}</td>
                         <td>
-                            <a href="{% url 'userapp:approve_change_request' request.id %}" class="btn btn-success btn-sm">Approve</a>
-                            <a href="{% url 'userapp:reject_change_request' request.id %}" class="btn btn-danger btn-sm">Reject</a>
+                            <a href="{% url 'userapp:approve_change_request' request.id %}" class="btn btn-success btn-custom">Approve</a>
+                            <a href="{% url 'userapp:reject_change_request' request.id %}" class="btn btn-danger btn-custom">Reject</a>
                         </td>
                     </tr>
                     {% endfor %}
@@ -51,40 +109,34 @@
             <p class="text-muted">No pending change requests.</p>
             {% endif %}
         </div>
-    </div>
 
-    <!-- Section: Statistics -->
-    <div class="card">
-        <div class="card-header">
-            <h5>Statistics</h5>
+        <!-- Statistics Section -->
+        <div class="dashboard-card">
+            <h3 class="section-title">Statistics</h3>
+            <div class="row">
+                <div class="col-md-6">
+                    <ul class="list-group">
+                        <li class="list-group-item"><strong>Total Bookings:</strong> {{ total_bookings }}</li>
+                        <li class="list-group-item"><strong>Confirmed Bookings:</strong> {{ confirmed_bookings }}</li>
+                        <li class="list-group-item"><strong>Pending Bookings:</strong> {{ pending_bookings }}</li>
+                        <li class="list-group-item"><strong>Canceled Bookings:</strong> {{ canceled_bookings }}</li>
+                        <li class="list-group-item"><strong>Total Revenue:</strong> ₹{{ total_revenue }}</li>
+                        <li class="list-group-item"><strong>Pending Change Requests:</strong> {{ pending_requests_count }}</li>
+                    </ul>
+                </div>
+            </div>
         </div>
-        <div class="card-body">
-            <ul class="list-group">
-                <li class="list-group-item"><strong>Total Bookings:</strong> {{ total_bookings }}</li>
-                <li class="list-group-item"><strong>Confirmed Bookings:</strong> {{ confirmed_bookings }}</li>
-                <li class="list-group-item"><strong>Pending Bookings:</strong> {{ pending_bookings }}</li>
-                <li class="list-group-item"><strong>Canceled Bookings:</strong> {{ canceled_bookings }}</li>
-                <li class="list-group-item"><strong>Total Revenue:</strong> ₹{{ total_revenue }}</li>
-                <li class="list-group-item"><strong>Pending Change Requests:</strong> {{ pending_requests_count }}</li>
-            </ul>
-        </div>
-    </div>
 
-    <!-- Section: User List as Rectangles -->
-    <div class="card mt-4">
-        <div class="card-header">
-            <h5>Registered Users</h5>
-        </div>
-        <div class="card-body">
+        <!-- Registered Users Section -->
+        <div class="dashboard-card">
+            <h3 class="section-title">Registered Users</h3>
             <div class="row">
                 {% for user in users %}
                 <div class="col-md-3 mb-3">
                     <a href="{% url 'userapp:user_details' user.id %}" class="text-decoration-none">
-                        <div class="card text-center shadow-sm">
-                            <div class="card-body">
-                                <img src="{{ user.profile_picture.url }}" alt="Profile" class="rounded-circle" width="60" height="60">
-                                <h6 class="mt-2">{{ user.username }}</h6>
-                            </div>
+                        <div class="user-card">
+                            <img src="{{ user.profile_picture.url }}" alt="{{ user.username }}" class="profile-pic">
+                            <h6 class="mt-2">{{ user.username }}</h6>
                         </div>
                     </a>
                 </div>
