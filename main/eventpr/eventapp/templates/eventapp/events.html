@@ -10,7 +10,8 @@
     <!-- Search and Filter Section -->
     <div class="row mb-4">
         <div class="col-md-6">
-            <input type="text" class="form-control" id="eventSearch" placeholder="Search events..." onkeyup="searchEvents()">
+            <input type="text" class="form-control" id="eventSearch" placeholder="Search events..."
+                onkeyup="searchEvents()">
         </div>
         <div class="col-md-3">
             <select class="form-select" id="eventTypeFilter" onchange="filterEvents()">
@@ -39,18 +40,18 @@
     <!-- Event Cards Grid -->
     <div class="row g-4" id="eventGrid">
         {% for i in page_obj %}
-        <div class="col-md-6 col-lg-4 event-card" 
-            data-event-type="{{ i.event_type }}" 
-            data-event-price="{{ i.price }}">
+        <div class="col-md-6 col-lg-4 event-card" data-event-type="{{ i.event_type }}" data-event-price="{{ i.price }}">
             <div class="card h-100 shadow-sm" data-aos="fade-up">
-                
+
                 <!-- Check if event has an image -->
                 {% if i.img %}
-                    <img src="{{ i.img.url }}" alt="{{ i.name }} Image" class="card-img-top" style="height: 200px; object-fit: cover;">
+                <img src="{{ i.img.url }}" alt="{{ i.name }} Image" class="card-img-top"
+                    style="height: 200px; object-fit: cover;">
                 {% else %}
-                    <img src="{% static 'images/crsl1.jpg' %}" alt="Default Event Image" class="card-img-top" style="height: 200px; object-fit: cover;">
+                <img src="{% static 'images/crsl1.jpg' %}" alt="Default Event Image" class="card-img-top"
+                    style="height: 200px; object-fit: cover;">
                 {% endif %}
-                
+
                 <div class="card-body d-flex flex-column">
                     <h5 class="card-title">{{ i.name }}</h5>
                     <p class="text-muted"><strong>Date:</strong> {{ i.event_date }}</p>
@@ -68,11 +69,12 @@
         <nav>
             <ul class="pagination justify-content-center">
                 {% if page_obj.has_previous %}
-                    <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a></li>
+                <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a>
+                </li>
                 {% endif %}
                 <li class="page-item active"><a class="page-link">{{ page_obj.number }}</a></li>
                 {% if page_obj.has_next %}
-                    <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a></li>
+                <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a></li>
                 {% endif %}
             </ul>
         </nav>
@@ -85,6 +87,15 @@
         transform: scale(1.05);
         transition: all 0.3s ease;
     }
+    #eventSearch {
+    color: #000; /* Set text color (black) */
+    background-color: #fff; /* Set background color (white) */
+    font-size: 16px; /* Ensure font size is readable */
+    opacity: 1; /* Ensure full opacity */
+    border: 1px solid #ccc; /* Optional: Add a border for visibility */
+    padding: 8px; /* Add padding for better appearance */
+}
+
 </style>
 
 <!-- JavaScript for Search and Filters -->
@@ -92,7 +103,7 @@
     function searchEvents() {
         const query = document.getElementById("eventSearch").value.toLowerCase();
         const events = document.querySelectorAll(".event-card");
-        
+
         events.forEach(event => {
             const title = event.querySelector(".card-title").textContent.toLowerCase();
             const description = event.querySelector(".card-text").textContent.toLowerCase();
@@ -114,10 +125,10 @@
             const eventPrice = parseFloat(event.getAttribute("data-event-price"));
 
             let priceMatch = false;
-            if (priceFilter === "free" && eventPrice === 0) priceMatch = true;
-            if (priceFilter === "low" && eventPrice > 0 && eventPrice <= 50) priceMatch = true;
-            if (priceFilter === "medium" && eventPrice > 50 && eventPrice <= 100) priceMatch = true;
-            if (priceFilter === "high" && eventPrice > 100) priceMatch = true;
+            if (priceFilter === "low" && eventPrice > 0 && eventPrice <= 5000) priceMatch = true;
+            if (priceFilter === "medium" && eventPrice > 500 && eventPrice <= 1000) priceMatch = true;
+            if (priceFilter === "high" && eventPrice > 1000) priceMatch = true;
+
             if (priceFilter === "") priceMatch = true;
 
             if ((eventType.includes(typeFilter) || !typeFilter) && priceMatch) {
