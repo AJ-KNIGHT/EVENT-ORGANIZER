@@ -91,6 +91,7 @@ Visit: [http://127.0.0.1:8000](http://127.0.0.1:8000)
 - **Django** - Backend Framework
 - **Bootstrap** - Frontend Styling
 - **Pexels** - Free background video assets
+- **Flaticons** - <a href="https://www.flaticon.com/free-animated-icons/chat-bot" title="chat bot animated icons">Chat bot animated icons created by Freepik - Flaticon</a>
 
 ## 📜 License
 This project is licensed under the **MIT License**. Feel free to use and modify it.
