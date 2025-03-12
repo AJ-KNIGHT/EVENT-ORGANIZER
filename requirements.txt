@@ -98,7 +98,6 @@ distlib==0.3.7
 distro==1.8.0
 Django==5.1.7
 django-import-export==4.3.7
-django-leaflet==0.31.0
 dnslib==0.9.23
 dnspython==2.4.2
 docopt==0.6.2
@@ -141,7 +140,6 @@ fonttools==4.38.0
 frozenlist==1.4.0
 fs==2.4.16
 future==0.18.2
-fuzzywuzzy==0.18.0
 gast==0.5.2
 GDAL==3.7.2
 gitdb==4.0.9
@@ -213,7 +211,6 @@ kivymd==1.1.1
 kiwisolver==0.0.0
 ldap3==2.9.1
 ldapdomaindump==0.9.3
-Levenshtein==0.27.1
 lightdm-gtk-greeter-settings==1.2.2
 limits==2.8.0
 llvmlite==0.40.1
@@ -386,7 +383,6 @@ python-engineio==4.3.4
 python-gnupg==0.4.9
 python-gvm==23.5.1
 python-jose==3.3.0
-python-Levenshtein==0.27.1
 python-magic==0.4.27
 python-multipart==0.0.5
 python-owasp-zap-v2.4==0.0.20
@@ -407,7 +403,6 @@ PyYAML==6.0.1
 qrcode==7.4.2
 QtPy==2.4.1
 Quamash==0.6.1
-RapidFuzz==3.12.2
 redis==4.3.4
 regex==2023.8.8
 repoze.lru==0.7

@@ -1,0 +1,41 @@
+<h2>Enter Event Location</h2>
+<form method="POST">
+    {% csrf_token %}
+    <label for="location">Location:</label>
+    <input type="text" name="location" id="location" placeholder="Enter location" required>
+    <button type="submit">Get Coordinates</button>
+</form>
+
+<div id="result"></div>
+
+<h3>Map</h3>
+<div id="map" style="height: 400px;"></div>
+
+<h3>Nearby Venues:</h3>
+<ul>
+    {% for venue in nearby_venues %}
+        <li>{{ venue.name }}</li>
+    {% empty %}
+        <li>No nearby venues found.</li>
+    {% endfor %}
+</ul>
+
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script>
+    // Initialize the map and set default view to New Delhi
+    var map = L.map('map').setView([28.6139, 77.2090], 13);  // Default to New Delhi
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    }).addTo(map);
+
+    // Display the user-entered location if it exists
+    {% if latitude and longitude %}
+    var lat = {{ latitude }};
+    var lon = {{ longitude }};
+    map.setView([lat, lon], 13);
+    L.marker([lat, lon]).addTo(map)
+        .bindPopup("Event Location")
+        .openPopup();
+    {% endif %}
+</script>

@@ -1,0 +1,179 @@
+<!-- chatbot.html -->
+{% load static %}
+<div id="chatbot" class="chatbot">
+    <div class="chatbot-header">
+        <h5>Event Buddy 🤖</h5>
+        <button id="closeChatbot" class="btn btn-sm btn-secondary">×</button>
+    </div>
+    <div id="chatbot-body" class="chatbot-body">
+        <div class="message bot">Hi! 👋 How can I help you today?</div>
+        <div class="quick-replies">
+            <button class="btn btn-sm btn-outline-primary quick-reply">How do I book an event?</button>
+            <button class="btn btn-sm btn-outline-primary quick-reply">What’s the price for a premium event?</button>
+            <button class="btn btn-sm btn-outline-primary quick-reply">How do I customize my event?</button>
+        </div>
+    </div>
+    <div class="chatbot-input">
+        <input type="text" id="chatbotInput" placeholder="Type your question..." class="form-control"
+            style="color: black;">
+        <button id="sendMessage" class="btn btn-primary">Send</button>
+    </div>
+    <div class="chatbot-feedback">
+        <small>Was this helpful?</small>
+        <button class="btn btn-sm btn-success feedback-btn">👍 Yes</button>
+        <button class="btn btn-sm btn-danger feedback-btn">👎 No</button>
+    </div>
+</div>
+
+<button id="openChatbot" class="chatbot-toggle">
+    <img src="{% static 'images/chat-bot.gif' %}" alt="Chat with Event Buddy" class="chatbot-icon">
+</button>
+<!-- Include CSS and JS for the chatbot -->
+<link rel="stylesheet" href="{% static 'css/chatbot.css' %}">
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const chatbot = document.getElementById('chatbot');
+        const openChatbot = document.getElementById('openChatbot');
+        const closeChatbot = document.getElementById('closeChatbot');
+        const chatbotBody = document.getElementById('chatbot-body');
+        const chatbotInput = document.getElementById('chatbotInput');
+        const sendMessage = document.getElementById('sendMessage');
+
+        console.log("Chatbot elements loaded:", { chatbot, openChatbot, closeChatbot, chatbotBody, chatbotInput, sendMessage });
+
+        // Open chatbot
+        openChatbot.addEventListener('click', function () {
+            chatbot.classList.add('open');
+            chatbot.style.display = 'block';
+            openChatbot.style.display = 'none';
+        });
+
+        // Close chatbot
+        closeChatbot.addEventListener('click', function () {
+            chatbot.classList.remove('open');
+            setTimeout(() => {
+                chatbot.style.display = 'none';
+            }, 300); // Match the transition duration
+            openChatbot.style.display = 'block';
+        });
+        // Quick reply buttons
+        document.querySelectorAll('.quick-reply').forEach(button => {
+            button.addEventListener('click', function () {
+                const question = this.textContent;
+                chatbotInput.value = question;
+                sendMessage.click();  // Trigger the send message event
+            });
+        });
+
+        // Feedback buttons
+        document.querySelectorAll('.feedback-btn').forEach(button => {
+            button.addEventListener('click', function () {
+                const feedback = this.textContent;
+                const feedbackMessage = document.createElement('div');
+                feedbackMessage.className = 'message feedback';
+                feedbackMessage.textContent = `You said: ${feedback}`;
+                chatbotBody.appendChild(feedbackMessage);
+
+                // Scroll to bottom
+                chatbotBody.scrollTop = chatbotBody.scrollHeight;
+            });
+        });
+
+        // Send message
+        sendMessage.addEventListener('click', function () {
+            const userMessage = chatbotInput.value.trim();
+            console.log("Send message clicked. User input:", userMessage);
+
+            if (userMessage) {
+                // Display user message
+                const userMessageDiv = document.createElement('div');
+                userMessageDiv.className = 'message user';
+                userMessageDiv.textContent = userMessage;
+                chatbotBody.appendChild(userMessageDiv);
+
+                // Clear input
+                chatbotInput.value = '';
+
+                // Simulate typing animation
+                simulateTyping("Typing...", () => {
+                    // Fetch bot response from Django backend
+                    fetch(`/chatbot-response/?input=${encodeURIComponent(userMessage)}`)
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error(`HTTP error! Status: ${response.status}`);
+                            }
+                            return response.json();
+                        })
+                        .then(data => {
+                            console.log("Bot response received:", data);
+                            const botMessageDiv = document.createElement('div');
+                            botMessageDiv.className = 'message bot';
+                            botMessageDiv.innerHTML = data.response;
+                            chatbotBody.appendChild(botMessageDiv);
+
+                            // Scroll to bottom
+                            chatbotBody.scrollTop = chatbotBody.scrollHeight;
+                        })
+                        .catch(error => {
+                            console.error("Error fetching bot response:", error);
+                            const errorMessageDiv = document.createElement('div');
+                            errorMessageDiv.className = 'message bot';
+                            errorMessageDiv.textContent = "An error occurred. Please try again later.";
+                            chatbotBody.appendChild(errorMessageDiv);
+                        });
+                });
+            } else {
+                console.log("User input is empty");
+            }
+        });
+
+        // Simulate typing animation
+        function simulateTyping(text, callback) {
+            const typingMessageDiv = document.createElement('div');
+            typingMessageDiv.className = 'message bot';
+            chatbotBody.appendChild(typingMessageDiv);
+
+            let i = 0;
+            const typingInterval = setInterval(() => {
+                if (i < text.length) {
+                    typingMessageDiv.textContent += text[i];
+                    i++;
+                } else {
+                    clearInterval(typingInterval);
+                    if (callback) callback();
+                }
+            }, 50);
+        }
+
+        // Load chat history from localStorage
+        function loadChatHistory() {
+            const chatHistory = JSON.parse(localStorage.getItem('chatHistory')) || [];
+            chatHistory.forEach(message => {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = message.className;
+                messageDiv.textContent = message.text;
+                chatbotBody.appendChild(messageDiv);
+            });
+        }
+
+        // Save chat history to localStorage
+        function saveChatHistory() {
+            const chatHistory = [];
+            document.querySelectorAll('.message').forEach(message => {
+                chatHistory.push({
+                    text: message.textContent,
+                    className: message.className
+                });
+            });
+            localStorage.setItem('chatHistory', JSON.stringify(chatHistory));
+        }
+
+        // Load chat history when the page loads
+        loadChatHistory();
+
+        // Save chat history after every message
+        sendMessage.addEventListener('click', function () {
+            saveChatHistory();
+        });
+    });
+</script>

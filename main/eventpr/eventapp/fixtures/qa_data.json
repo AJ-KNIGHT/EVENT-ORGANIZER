@@ -1,0 +1,110 @@
+[
+    {
+        "model": "eventapp.chatbotqa",
+        "pk": 14,
+        "fields": {
+            "question": "What is the maximum capacity for an event?",
+            "answer": "Our venues can accommodate up to 500 guests. For larger events, please contact our sales team.",
+            "keywords": "capacity,venue"
+        }
+    },
+    {
+        "model": "eventapp.chatbotqa",
+        "pk": 15,
+        "fields": {
+            "question": "Do you provide catering services?",
+            "answer": "Yes, we offer a variety of catering options, including vegetarian, vegan, and gluten-free menus.",
+            "keywords": "catering,food"
+        }
+    },
+    {
+        "model": "eventapp.chatbotqa",
+        "pk": 16,
+        "fields": {
+            "question": "Can I book a venue for a private party?",
+            "answer": "Yes, our venues are available for private parties. Please visit the 'Venues' page to book.",
+            "keywords": "private,party"
+        }
+    },
+    {
+        "model": "eventapp.chatbotqa",
+        "pk": 17,
+        "fields": {
+            "question": "What is the minimum booking duration?",
+            "answer": "The minimum booking duration is 4 hours. For shorter events, please contact our support team.",
+            "keywords": "duration,booking"
+        }
+    },
+    {
+        "model": "eventapp.chatbotqa",
+        "pk": 18,
+        "fields": {
+            "question": "Do you provide audio-visual equipment?",
+            "answer": "Yes, we provide audio-visual equipment, including microphones, projectors, and speakers.",
+            "keywords": "equipment,audio,visual"
+        }
+    },
+    {
+        "model": "eventapp.chatbotqa",
+        "pk": 19,
+        "fields": {
+            "question": "Can I book a photographer for my event?",
+            "answer": "Yes, we offer professional photography services. Please contact our event planners for details.",
+            "keywords": "photographer,photo"
+        }
+    },
+    {
+        "model": "eventapp.chatbotqa",
+        "pk": 20,
+        "fields": {
+            "question": "What is your privacy policy?",
+            "answer": "We take your privacy seriously. Please read our privacy policy on our website for more details.",
+            "keywords": "privacy,policy"
+        }
+    },
+    {
+        "model": "eventapp.chatbotqa",
+        "pk": 21,
+        "fields": {
+            "question": "How do I get to the event venue?",
+            "answer": "You can find directions to the venue on our website or contact support for assistance.",
+            "keywords": "directions,venue"
+        }
+    },
+    {
+        "model": "eventapp.chatbotqa",
+        "pk": 22,
+        "fields": {
+            "question": "Is parking available at the venue?",
+            "answer": "Yes, we provide free parking for all guests. Please check the venue details for parking instructions.",
+            "keywords": "parking,venue"
+        }
+    },
+    {
+        "model": "eventapp.chatbotqa",
+        "pk": 23,
+        "fields": {
+            "question": "Can I bring my own food and drinks?",
+            "answer": "Outside food and drinks are not allowed. We offer a variety of catering options for your event.",
+            "keywords": "food,drinks,catering"
+        }
+    },
+    {
+        "model": "eventapp.chatbotqa",
+        "pk": 24,
+        "fields": {
+            "question": "What is the dress code for the event?",
+            "answer": "The dress code is formal. Please check the event details for specific requirements.",
+            "keywords": "dress,code"
+        }
+    },
+    {
+        "model": "eventapp.chatbotqa",
+        "pk": 25,
+        "fields": {
+            "question": "Can I invite additional guests after booking?",
+            "answer": "Yes, you can add guests up to 3 days before the event. Please contact support for assistance.",
+            "keywords": "guests,booking"
+        }
+    }
+]

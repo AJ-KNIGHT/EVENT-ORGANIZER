@@ -22,8 +22,13 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "leaflet",
+    
 ]
-
+LEAFLET_CONFIG = {
+    'DEFAULT_CENTER': (28.6139, 77.2090),  # Default map center (New Delhi)
+    'DEFAULT_ZOOM': 13,
+}
 MIDDLEWARE = [
     
     "django.middleware.security.SecurityMiddleware",

@@ -1,0 +1,121 @@
+/* Overall Page Styling */
+.profile-page {
+    height: 100vh;
+    margin: 0;
+    padding: 0;
+    background: linear-gradient(135deg, #0052D4, #4364F7, #6FB1FC);
+    background-size: 400% 400%;
+    animation: gradientBG 15s ease infinite;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+@keyframes gradientBG {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+/* Glassmorphic Canvas */
+.glassmorphic-canvas {
+    width: 90%;
+    max-width: 1200px;
+    padding: 30px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 30px;
+    backdrop-filter: blur(25px);
+    -webkit-backdrop-filter: blur(25px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    align-items: flex-start;
+}
+
+/* Profile Sidebar */
+.profile-sidebar {
+    width: 30%;
+    min-width: 280px;
+    padding: 20px;
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 20px;
+    backdrop-filter: blur(15px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    text-align: center;
+}
+
+.profile-img {
+    width: 130px;
+    height: 130px;
+    object-fit: cover;
+    border: 4px solid rgba(255, 255, 255, 0.6);
+    border-radius: 50%;
+    transition: transform 0.3s ease;
+}
+
+.profile-img:hover {
+    transform: scale(1.1);
+}
+
+.profile-sidebar h3 {
+    font-size: 22px;
+    margin: 10px 0;
+    color: #fff;
+}
+
+.profile-sidebar p {
+    color: #ddd;
+    margin-bottom: 20px;
+}
+
+.custom-btn {
+    transition: all 0.3s ease;
+    font-weight: 500;
+    padding: 10px 15px;
+    border-radius: 12px;
+}
+
+.custom-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+/* Profile Content Section */
+.profile-content {
+    flex: 1;
+    padding: 20px;
+    background: rgba(255, 255, 255, 0.25);
+    border-radius: 20px;
+    backdrop-filter: blur(20px);
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+    min-height: 400px;
+    overflow-y: auto;
+}
+
+#content-area h4 {
+    font-size: 24px;
+    margin-bottom: 10px;
+    color: #fff;
+}
+
+#content-area p {
+    font-size: 16px;
+    color: #f0f0f0;
+}
+
+/* Responsive Design */
+@media (max-width: 992px) {
+    .glassmorphic-canvas {
+        flex-direction: column;
+        padding: 20px;
+    }
+
+    .profile-sidebar, .profile-content {
+        width: 100%;
+    }
+
+    .profile-sidebar {
+        padding: 15px;
+    }
+}

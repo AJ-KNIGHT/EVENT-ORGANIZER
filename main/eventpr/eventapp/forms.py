@@ -13,8 +13,7 @@ from datetime import datetime
 from userapp.models import ChangeRequest
 from .models import EventCustomization
 
-class DateInput(forms.DateInput):
-    input_type = 'date'
+
 
 from django import forms
 from django.core.exceptions import ValidationError
@@ -23,28 +22,40 @@ from django.utils import timezone
 from datetime import date
 from .models import Booking
 
+
+from django.core.validators import RegexValidator, ValidationError
+from django.utils import timezone
+from datetime import date
+from .models import Booking, EventCustomization
+from django import forms
+from .models import Booking, EventCustomization
+from django.utils import timezone
+from datetime import date
+from django.core.validators import validate_email
+from django.core.exceptions import ValidationError
+
+
 class BookingForm(forms.ModelForm):
     class Meta:
         model = Booking
-        exclude = ['user', 'event_name', 'event_date', 'payment']
-        fields = '__all__'
+        exclude = ['user', 'event', 'payment', 'total_amount']
         widgets = {
             'booking_date': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
             'cus_name': forms.TextInput(attrs={'placeholder': 'Enter your name', 'class': 'form-control'}),
             'cus_email': forms.EmailInput(attrs={'placeholder': 'Enter your email', 'class': 'form-control'}),
             'cus_ph': forms.TextInput(attrs={'placeholder': 'Enter your phone number', 'class': 'form-control'}),
             'venue': forms.TextInput(attrs={'placeholder': 'Preferred Event Venue', 'class': 'form-control'}),
-            'description': forms.Textarea(attrs={'rows': 4, 'placeholder': 'Enter event description', 'class': 'form-control'}),
-            'customer_request': forms.Textarea(attrs={'rows': 3, 'placeholder': 'Enter any special requests or changes', 'class': 'form-control'}),
+            'description': forms.Textarea(attrs={'rows': 4, 'placeholder': 'Event details', 'class': 'form-control'}),
+            'customer_request': forms.Textarea(attrs={'rows': 3, 'placeholder': 'Special requests or changes', 'class': 'form-control'}),
         }
         labels = {
-            'cus_name': 'Enter Your Full Name',
-            'cus_email': 'Enter Your Email',
-            'cus_ph': 'Enter Your Phone',
+            'cus_name': 'Full Name',
+            'cus_email': 'Email',
+            'cus_ph': 'Phone',
             'booking_date': 'Preferred Booking Date',
-            'venue': 'Preferred Venue',
-            'description': 'Event Description',
-            'customer_request': 'Special Requests/Changes'
+            'venue': 'Venue',
+            'description': 'Event Details',
+            'customer_request': 'Special Requests'
         }
 
     def __init__(self, *args, **kwargs):
@@ -52,7 +63,7 @@ class BookingForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
 
         if event_instance:
-            self.fields['venue'].initial = event_instance.location
+            self.fields['venue'].initial = event_instance.location if event_instance.location else "Custom Venue"
             self.fields['booking_date'].initial = timezone.localdate()
 
     def clean_booking_date(self):
@@ -72,32 +83,78 @@ class BookingForm(forms.ModelForm):
         return email
 
     def clean_cus_ph(self):
-        cus_ph = self.cleaned_data.get('cus_ph')
-        cus_ph = cus_ph.strip()
+        cus_ph = self.cleaned_data.get('cus_ph').strip()
         if not cus_ph.isdigit() or len(cus_ph) != 10:
-            raise forms.ValidationError("Please enter a valid 10-digit phone number.")
+            raise forms.ValidationError("Enter a valid 10-digit phone number.")
         return cus_ph
-
-class EventTypeForm(forms.Form):
-    event_type = forms.ChoiceField(
-        choices=[('wedding', 'Wedding'), ('birthday', 'Birthday'), ('corporate', 'Corporate'), ('concert', 'Concert')],
-        widget=forms.Select(attrs={'class': 'form-select'})
-    )
 
 
 class EventCustomizationForm(forms.ModelForm):
     class Meta:
         model = EventCustomization
-        fields = ['venue_size', 'catering', 'decorations', 'entertainment', 'seating_arrangement', 'photography', 'lighting_effects']  # Fixed typo here
+        fields = [
+            'tier', 'guest_count', 'venue_size', 'catering', 'decorations',
+            'entertainment', 'seating_arrangement', 'photography', 'lighting_effects',
+            'audio_visual', 'medical_support', 'event_manager', 'post_event_media' , 'cleanup_service', 'selected_location',  # Add the location field
+        ]
         widgets = {
+            'tier': forms.Select(attrs={'class': 'form-select'}),
+            'guest_count': forms.NumberInput(attrs={'class': 'form-control', 'min': 1, 'max': 200}),
             'venue_size': forms.Select(attrs={'class': 'form-select'}),
             'catering': forms.Select(attrs={'class': 'form-select'}),
             'decorations': forms.Select(attrs={'class': 'form-select'}),
             'entertainment': forms.Select(attrs={'class': 'form-select'}),
             'seating_arrangement': forms.Select(attrs={'class': 'form-select'}),
             'photography': forms.Select(attrs={'class': 'form-select'}),
-            'lighting_effects': forms.Select(attrs={'class': 'form-select'}),  # Fixed typo here
+            'lighting_effects': forms.Select(attrs={'class': 'form-select'}),
+            'audio_visual': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'medical_support': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'event_manager': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'post_event_media': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'cleanup_service':forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'selected_location': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter your custom venue location or select from map'})
         }
+
+    def clean_guest_count(self):
+        guest_count = self.cleaned_data.get('guest_count')
+        tier = self.cleaned_data.get('tier')
+
+        max_guests = {"Minimal": 50, "Medium": 100, "Premium": 200}
+        if guest_count > max_guests.get(tier, 50):
+            raise forms.ValidationError(f"Max guests allowed for {tier} is {max_guests[tier]}.")
+        return guest_count
+
+    def clean(self):
+        cleaned_data = super().clean()
+        tier = cleaned_data.get("tier")
+
+        # Restrictions based on tier
+        restrictions = {
+            "Minimal": {"decorations": ["Basic"], "entertainment": ["None"], "photography": ["None"]},
+            "Medium": {"decorations": ["Basic", "Themed"], "entertainment": ["None", "DJ"], "photography": ["None", "Basic"]},
+            "Premium": {"decorations": ["Basic", "Themed", "Luxury"], "entertainment": ["None", "DJ", "Live Band", "Projector"], "photography": ["None", "Basic", "Professional"]},
+        }
+
+        for field, allowed_values in restrictions[tier].items():
+            if cleaned_data.get(field) not in allowed_values:
+                raise forms.ValidationError({field: f"This feature is restricted in {tier} tier. Upgrade required."})
+
+        return cleaned_data
+
+
+class EventTypeForm(forms.Form):
+    EVENT_TYPES = [
+        ('wedding', 'Wedding'),
+        ('birthday', 'Birthday'),
+        ('corporate', 'Corporate'),
+        ('concert', 'Concert'),
+        ('exhibition', 'Exhibition'),
+    ]
+
+    event_type = forms.ChoiceField(
+        choices=EVENT_TYPES,
+        widget=forms.Select(attrs={'class': 'form-select'})
+    )
 
 
 from django import forms
@@ -148,6 +205,8 @@ class SignupForm(forms.ModelForm):
             user.save()
         return user
 
+class DateInput(forms.DateInput):
+    input_type = 'date'
 
 from django import forms
 from userapp.models import ChangeRequest
