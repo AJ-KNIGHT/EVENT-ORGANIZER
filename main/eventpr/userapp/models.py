@@ -14,7 +14,7 @@ class CustomUser(AbstractUser):
 
 class ChangeRequest(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
-    booking = models.ForeignKey(Booking, on_delete=models.CASCADE)
+    booking = models.ForeignKey('eventapp.Booking', on_delete=models.CASCADE)  # Use a string reference
     request_type = models.CharField(
         max_length=50,
         choices=[('Date', 'Date'), ('Venue', 'Venue')]

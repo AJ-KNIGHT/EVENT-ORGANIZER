@@ -48,7 +48,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib import messages
 from django.utils.timezone import now
 from django.contrib.auth.decorators import login_required
-
+import json
 from .models import Event, Booking, EventCustomization
 from .forms import BookingForm, EventCustomizationForm, EventTypeForm
 
@@ -150,6 +150,15 @@ def customize_event(request):
     customization, _ = EventCustomization.objects.get_or_create(booking=booking)
     
 
+    # If 'selected_options' field exists, it will be an empty dict by default
+    # If 'selected_options' field exists, it will be an empty dict by default
+    selected_options = customization.selected_options if customization.selected_options else {}
+
+    context = {
+        'customization': customization,
+        'selected_options_json': json.dumps(selected_options)  # Pass this to template
+    }
+
     if request.method == 'POST':
         form = EventCustomizationForm(request.POST, instance=customization)
         if form.is_valid():
@@ -161,8 +170,17 @@ def customize_event(request):
 
     else:
         form = EventCustomizationForm(instance=customization)
+   
 
-    return render(request, 'eventapp/customize_event.html', {'form': form, 'event': event})
+
+    return render(request, 'eventapp/customize_event.html', {
+        
+        'form': form, 
+        'event': event,
+        'customization': customization , # Pass the existing data to the template
+        **context  # Merge context here
+    })
+
 
 
 @login_required
@@ -180,52 +198,73 @@ def event_detail(request, slug):
     related_events = Event.objects.filter(event_type=event.event_type).exclude(id=event.id).order_by('?')[:3]
     return render(request, 'eventapp/event_details.html', {'event': event, 'related_events': related_events})
 
-import math
 import requests
-from django.shortcuts import render
+import math
+from django.shortcuts import render, redirect
 from django.http import JsonResponse
+from .models import Venue  # Assuming Venue model exists
 
-# Function to get latitude and longitude from location (OpenStreetMap API)
 def get_coordinates(location):
     url = f"https://nominatim.openstreetmap.org/search?q={location}&format=json"
-    response = requests.get(url)
-    data = response.json()
-    
-    if data:
-        latitude = data[0]["lat"]
-        longitude = data[0]["lon"]
-        return latitude, longitude
-    return None, None
+    headers = {"User-Agent": "EventOrganizerApp/1.0 (eventpro49@gmail.com)"}  # Replace with actual contact email
 
-# Haversine formula to calculate the distance between two coordinates
+    try:
+        response = requests.get(url, headers=headers)
+        data = response.json()
+
+        if not data:  # No results found
+            return None, None
+
+        lat = float(data[0]["lat"])  
+        lon = float(data[0]["lon"])  
+        return lat, lon
+
+    except requests.exceptions.RequestException as e:
+        print("Request Error:", e)
+        return None, None
+
 def haversine(lat1, lon1, lat2, lon2):
-    R = 6371  # Radius of the Earth in km
-    dlat = math.radians(lat2 - lat1)
-    dlon = math.radians(lon2 - lon1)
-    a = math.sin(dlat / 2) ** 2 + math.cos(math.radians(lat1)) * math.cos(math.radians(lat2)) * math.sin(dlon / 2) ** 2
+    """Calculate the great-circle distance between two points."""
+    R = 6371  
+    dlat = math.radians(float(lat2) - float(lat1))
+    dlon = math.radians(float(lon2) - float(lon1))
+    a = math.sin(dlat / 2) ** 2 + math.cos(math.radians(float(lat1))) * math.cos(math.radians(float(lat2))) * math.sin(dlon / 2) ** 2
     c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
-    return R * c  # Distance in km
+    return R * c  
 
-# Function to find nearby venues based on the user's location
-def find_nearby_venues(user_lat, user_lon, venues, radius=5):
-    nearby_venues = []
+def find_nearby_venues(user_lat, user_lon, venues):
+    user_lat, user_lon = float(user_lat), float(user_lon)  
+
+    nearby = []
     for venue in venues:
-        venue_lat, venue_lon = venue['lat'], venue['lon']
+        venue_lat, venue_lon = float(venue["lat"]), float(venue["lon"])
         distance = haversine(user_lat, user_lon, venue_lat, venue_lon)
-        if distance <= radius:
-            nearby_venues.append(venue)
-    return nearby_venues
 
-# View to handle location input and display nearby venues
+        if distance <= 10:  
+            nearby.append({**venue, "distance": round(distance, 2)})
+
+    return nearby
+
+from django.shortcuts import render, redirect
+from .models import EventLocation  # Import the model
+from .utils import get_coordinates  # Assuming this function gets lat/lon
+
 def event_location(request):
     nearby_venues = []
-    
+
     if request.method == 'POST':
         location = request.POST.get('location')
-        lat, lon = get_coordinates(location)
-        
-        if lat and lon:
-            # Example venues (replace this with your actual venue data)
+        lat = request.POST.get('latitude')
+        lon = request.POST.get('longitude')
+
+        if not lat or not lon:  # Fallback if lat/lon are missing
+            lat, lon = get_coordinates(location)
+
+        if lat is not None and lon is not None:
+            # Save location
+            event_location = EventLocation.objects.create(name=location, latitude=lat, longitude=lon)
+
+            # Get nearby venues
             venues = [
                 {'name': 'Venue 1', 'lat': 28.6100, 'lon': 77.2100},
                 {'name': 'Venue 2', 'lat': 28.6000, 'lon': 77.2000},
@@ -233,11 +272,21 @@ def event_location(request):
                 {'name': 'Venue 4', 'lat': 28.6200, 'lon': 77.2200}
             ]
             nearby_venues = find_nearby_venues(lat, lon, venues)
-            return render(request, 'event_location.html', {'latitude': lat, 'longitude': lon, 'nearby_venues': nearby_venues})
+
+            return render(request, 'eventapp/event_location.html', {
+                'latitude': lat,
+                'longitude': lon,
+                'nearby_venues': nearby_venues,
+                'saved_location': event_location  # Send saved location to template
+            })
         else:
-            return JsonResponse({'error': 'Location not found'}, status=400)
-    
-    return render(request, 'event_location.html', {'nearby_venues': nearby_venues})
+            return JsonResponse({'error': 'Could not find location, try again'}, status=400)
+
+    return render(request, 'eventapp/event_location.html', {'nearby_venues': nearby_venues})
+
+
+
+
 
 
 def index(request):

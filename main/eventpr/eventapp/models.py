@@ -3,10 +3,8 @@ from django.utils.text import slugify
 from django.conf import settings
 from django.core.validators import RegexValidator
 from decimal import Decimal
-from django.db import models
-from eventapp.models import Event
 
-# ✅ Define Event first, since other models depend on it
+# ✅ Define Event first
 class Event(models.Model):
     name = models.CharField(max_length=200)
     is_available = models.BooleanField(default=True)
@@ -32,9 +30,7 @@ class Event(models.Model):
         return self.name
 
 
-# ✅ Now Booking can safely reference Event
-
-
+# ✅ Booking Model
 class Booking(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='bookings')
     event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name='bookings')
@@ -75,6 +71,7 @@ class Booking(models.Model):
         super().save(*args, **kwargs)
 
 
+# ✅ EventCustomization Model
 class EventCustomization(models.Model):
     TIER_CHOICES = [("Minimal", "Minimal"), ("Medium", "Medium"), ("Premium", "Premium")]
 
@@ -82,10 +79,9 @@ class EventCustomization(models.Model):
     tier = models.CharField(max_length=10, choices=TIER_CHOICES, default="Minimal")
     guest_count = models.PositiveIntegerField(default=1)
 
+    selected_options = models.JSONField(default=dict) 
     selected_location = models.CharField(max_length=255, blank=True, null=True, default="")
-    def __str__(self):
-        return f"Customization for {self.booking.event.name} - Location: {self.selected_location}"
-
+    
     venue_size = models.CharField(
         max_length=10,
         choices=[("Small", "Small"), ("Medium", "Medium"), ("Large", "Large")],
@@ -158,9 +154,24 @@ class EventCustomization(models.Model):
     def save(self, *args, **kwargs):
         self.total_price = self.calculate_price()
         super().save(*args, **kwargs)
+class Venue(models.Model):
+    name = models.CharField(max_length=255)
+    latitude = models.FloatField()
+    longitude = models.FloatField()
+
+    def __str__(self):
+        return self.name
 
 
+class EventLocation(models.Model):
+    name = models.CharField(max_length=255, blank=True)  # Optional: store location name
+    latitude = models.FloatField()
+    longitude = models.FloatField()
 
+    def __str__(self):
+        return self.name if self.name else f"Lat: {self.latitude}, Lon: {self.longitude}"
+
+# ✅ Contact Model
 class Contact(models.Model):
     name = models.CharField(max_length=100)
     email = models.EmailField()
@@ -171,6 +182,7 @@ class Contact(models.Model):
         return f"{self.name} - {self.email}"
 
 
+# ✅ Chatbot Model
 class ChatbotQA(models.Model):
     question = models.CharField(max_length=255, unique=True)
     answer = models.TextField()
