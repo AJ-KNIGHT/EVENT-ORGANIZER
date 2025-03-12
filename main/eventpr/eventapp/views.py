@@ -19,31 +19,147 @@ from django.utils.timezone import now
 from django.shortcuts import render
 from .models import Event
 from django.templatetags.static import static
+from .forms import EventCustomizationForm , EventTypeForm
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from django.templatetags.static import static
+from django.conf import settings
+from datetime import date
+
+from eventapp.models import Event, Booking
+from eventapp.forms import BookingForm
+from paymentapp.models import Payment  # Import Payment model
+from paymentapp.views import confirm_payment  # Import confirm_payment function
+from userapp.utils import send_html_email  # Import email function
+
+
+
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from django.utils.timezone import now
+from decimal import Decimal
+from .models import Event, Booking, EventCustomization
+from .forms import BookingForm, EventCustomizationForm, EventTypeForm
+from django.templatetags.static import static
+
+
+@login_required
+def booking(request, slug=None):
+    event = get_object_or_404(Event, slug=slug)
+
+    if event.event_date < now().date() or not event.is_available:
+        messages.error(request, "This event is no longer available for booking.")
+        return redirect('event_detail', slug=slug)
+
+    if request.method == "POST":
+        booking_form = BookingForm(request.POST)
+        customization_form = EventCustomizationForm(request.POST)
+
+        if booking_form.is_valid() and customization_form.is_valid():
+            booking = booking_form.save(commit=False)
+            booking.user = request.user
+            booking.event = event  # ✅ Fixed mistake (event_name → event)
+            booking.event_date = event.event_date
+            booking.save()
+
+            # Create or update customization
+            customization, created = EventCustomization.objects.get_or_create(booking=booking)
+            customization_form = EventCustomizationForm(request.POST, instance=customization)
+            if customization_form.is_valid():
+                customization_form.save()
+
+            # Update total amount **before saving** (fix recursion issue)
+            booking.total_amount = customization.calculate_price()
+            booking.save(update_fields=['total_amount'])
+
+            messages.success(request, "Booking successful! Your customization has been applied.")
+            return redirect('booking_dashboard')
+
+    else:
+        booking_form = BookingForm()
+        customization_form = EventCustomizationForm()
+
+    return render(request, 'eventapp/booking.html', {
+        'booking_form': booking_form,
+        'customization_form': customization_form,
+        'event': event,
+    })
+
+
+@login_required
+def select_event_type(request):
+    event_slug = request.GET.get('event')
+    if event_slug:
+        request.session['event_slug'] = event_slug  # Store in session
+
+    if request.method == 'POST':
+        event_type = request.POST.get('event_type')
+        base_price = request.POST.get('base_price')
+
+        if event_type:
+            request.session['selected_event_type'] = event_type
+            request.session['base_price'] = base_price
+            return redirect('eventapp:customize_event')
+
+    return render(request, 'eventapp/select_event_type.html')
+
+
+@login_required
+def customize_event(request):
+    selected_event_type = request.session.get('selected_event_type')
+    event_slug = request.session.get('event_slug')  # Retrieve event
+
+    if not selected_event_type or not event_slug:
+        messages.error(request, "Please select an event type first.")
+        return redirect('eventapp:select_event_type')
+
+    event = get_object_or_404(Event, slug=event_slug)  # Get event instance
+
+    try:
+        booking = Booking.objects.filter(user=request.user, event=event).latest('booking_date')  # ✅ Fixed mistake
+    except Booking.DoesNotExist:
+        messages.error(request, "You have no active bookings to customize.")
+        return redirect('eventapp:select_event_type')
+
+    customization, created = EventCustomization.objects.get_or_create(booking=booking)
+
+    if request.method == 'POST':
+        form = EventCustomizationForm(request.POST, instance=customization)
+        if form.is_valid():
+            form.save()
+            booking.total_amount = customization.calculate_price()
+            booking.save(update_fields=['total_amount'])
+            messages.success(request, "Your event customization has been saved!")
+            return redirect('paymentapp:payment_page')
+    else:
+        form = EventCustomizationForm(instance=customization)
+
+    return render(request, 'eventapp/customize_event.html', {
+        'form': form,
+        'event': event,
+        'total_price': customization.total_price
+    })
+
+
+def event_detail(request, slug):
+    event = get_object_or_404(Event, slug=slug)
+    related_events = Event.objects.filter(event_type=event.event_type).exclude(id=event.id).order_by('?')[:3]
+    return render(request, 'eventapp/event_details.html', {'event': event, 'related_events': related_events})
 
 
 def index(request):
-    # Get all events that are available and not in the past
+    # Get all available future events
     events = Event.objects.filter(event_date__gte=now().date(), is_available=True)
 
+    # Fetch random events
+    random_events = events.order_by('?')[:3] if events.count() >= 3 else events
 
-    # If fewer than 3 events, show all of them, else show 3 random events
-    if events.count() < 3:
-        random_events = events
-    else:
-        random_events = events.order_by('?')[:3]  # Randomly order and limit to 3 events
+    # Preloaded assets for better UX
+    preloaded_assets = {'video': static('images/pexel-party.mp4')}
 
-    # Define preloaded assets for the index page
-    preloaded_assets = {
-        'video': static('images/pexel-party.mp4'),
-        
-    }
-    
-
-    # Pass both the events and preloaded assets to the template
-    return render(request, 'index.html', {'events': random_events, 'preloaded_assets': preloaded_assets,})
-
-
-
+    return render(request, 'index.html', {'events': random_events, 'preloaded_assets': preloaded_assets})
 
 
 # About view
@@ -60,72 +176,6 @@ def event_list(request):
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
     return render(request, 'eventapp/events.html', {'page_obj': page_obj})
-
-# Event detail view
-def event_detail(request, slug):
-    event = get_object_or_404(Event, slug=slug)
-    related_events = Event.objects.filter(event_type=event.event_type).exclude(id=event.id)[:3]
-    return render(request, 'eventapp/event_details.html', {'event': event, 'related_events': related_events})
-
-
-
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth.decorators import login_required
-from django.contrib import messages
-from django.templatetags.static import static
-from django.conf import settings
-from datetime import date
-
-from eventapp.models import Event, Booking
-from eventapp.forms import BookingForm
-from paymentapp.models import Payment  # Import Payment model
-from paymentapp.views import confirm_payment  # Import confirm_payment function
-from userapp.utils import send_html_email  # Import email function
-
-@login_required
-def booking(request, slug=None):
-    event = get_object_or_404(Event, slug=slug)
-
-    if event.event_date < date.today() or not event.is_available:
-        # Set the toast data (could be success, error, etc.)
-        request.toast_type = 'error'  # 'error', 'warning', 'info', etc.
-        request.toast_message = 'Sorry, this event is not available for booking yet!'
-        messages.error(request, "Sorry, this event is not available for booking yet.")
-        return redirect('eventapp:events')
-
-    if request.method == 'POST':
-        form = BookingForm(request.POST)
-        if form.is_valid():
-            # ✅ Store booking data in session instead of creating it immediately
-            request.session['booking_data'] = {
-                'cus_name': form.cleaned_data['cus_name'],
-                'cus_email': form.cleaned_data['cus_email'],
-                'venue': form.cleaned_data['venue'],
-                'total_amount': str(event.price),
-                'event_id': event.id,  # Store event ID to retrieve later
-            }
-            
-            return redirect('paymentapp:payment_page')  # ✅ Redirect to payment page
-
-        else:
-            request.toast_type = 'error'  # 'error', 'warning', 'info', etc.
-            request.toast_message = 'There was an error with your booking. Please check the form and try again.!'
-            messages.error(request, "There was an error with your booking. Please check the form and try again.")
-
-    else:
-        form = BookingForm(event_instance=event)
-    
-    preloaded_assets = {
-        'hero_image': static('images/hero-bg.jpg'),
-    }
-
-    context = {
-        'form': form,
-        'event': event,
-         'preloaded_assets': preloaded_assets,
-    }
-    return render(request, 'eventapp/booking.html', context)
-
 
 # Contact view
 def contact(request):
@@ -161,9 +211,3 @@ def privacy_policy(request):
     return render(request, 'privacy_policy.html')
 def terms_of_service(request):
     return render(request, 'terms_of_service.html')
-
-
-
-
-
-

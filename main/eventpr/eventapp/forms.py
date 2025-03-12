@@ -11,7 +11,7 @@ from django.utils import timezone
 from django.utils.timezone import make_aware
 from datetime import datetime
 from userapp.models import ChangeRequest
-
+from .models import EventCustomization
 
 class DateInput(forms.DateInput):
     input_type = 'date'
@@ -78,7 +78,26 @@ class BookingForm(forms.ModelForm):
             raise forms.ValidationError("Please enter a valid 10-digit phone number.")
         return cus_ph
 
+class EventTypeForm(forms.Form):
+    event_type = forms.ChoiceField(
+        choices=[('wedding', 'Wedding'), ('birthday', 'Birthday'), ('corporate', 'Corporate'), ('concert', 'Concert')],
+        widget=forms.Select(attrs={'class': 'form-select'})
+    )
 
+
+class EventCustomizationForm(forms.ModelForm):
+    class Meta:
+        model = EventCustomization
+        fields = ['venue_size', 'catering', 'decorations', 'entertainment', 'seating_arrangement', 'photography', 'lighting_effects']  # Fixed typo here
+        widgets = {
+            'venue_size': forms.Select(attrs={'class': 'form-select'}),
+            'catering': forms.Select(attrs={'class': 'form-select'}),
+            'decorations': forms.Select(attrs={'class': 'form-select'}),
+            'entertainment': forms.Select(attrs={'class': 'form-select'}),
+            'seating_arrangement': forms.Select(attrs={'class': 'form-select'}),
+            'photography': forms.Select(attrs={'class': 'form-select'}),
+            'lighting_effects': forms.Select(attrs={'class': 'form-select'}),  # Fixed typo here
+        }
 
 
 from django import forms

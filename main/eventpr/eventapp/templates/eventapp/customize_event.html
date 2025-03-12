@@ -1,0 +1,116 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-5">
+    <h2 class="text-center mb-4">Customize Your Event</h2>
+    <form id="customizationForm" method="POST" action="{% url 'eventapp:customize_event' %}">
+        {% csrf_token %}
+
+        <div class="row">
+            <!-- Guest Count -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Guest Count</h5>
+                        <img src="https://via.placeholder.com/150x100" class="img-fluid mb-2" alt="Guests">
+                        <input type="number" id="guestCount" name="guest_count" class="form-control" min="1" max="{{ max_guests }}" value="10">
+                        <small class="text-muted">Max guests for this tier: <b>{{ max_guests }}</b></small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Venue Size -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Venue Size</h5>
+                        <img src="https://via.placeholder.com/150x100" class="img-fluid mb-2" alt="Venue">
+                        {{ form.venue_size }}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Catering -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Catering</h5>
+                        <img src="https://via.placeholder.com/150x100" class="img-fluid mb-2" alt="Catering">
+                        {{ form.catering }}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Decorations -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Decorations</h5>
+                        <img src="https://via.placeholder.com/150x100" class="img-fluid mb-2" alt="Decorations">
+                        {{ form.decorations }}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Entertainment -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Entertainment</h5>
+                        <img src="https://via.placeholder.com/150x100" class="img-fluid mb-2" alt="Entertainment">
+                        {{ form.entertainment }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Total Price -->
+        <h3 class="mt-4">Total Price: ₹<span id="totalPrice">{{ base_price }}</span></h3>
+
+        <!-- Checkout Button -->
+        <button type="submit" class="btn btn-success mt-3">Save Customization</button>
+    </form>
+</div>
+
+<style>
+    .card {
+        margin-bottom: 20px;
+        transition: transform 0.3s, box-shadow 0.3s;
+    }
+    .card:hover {
+        transform: scale(1.02);
+        box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+    }
+</style>
+
+<script>
+    let basePrice = {{ base_price }};  // Base event price
+
+    function updatePrice() {
+        let total = basePrice;
+
+        // Add-on price mappings
+        const addOns = {
+            venue_size: { Small: 0, Medium: 500, Large: 1000 },
+            catering: { Standard: 0, Buffet: 300, "Multi-Course": 600, Custom: 800 },
+            decorations: { Basic: 0, Themed: 400, Luxury: 1000 },
+            entertainment: { None: 0, DJ: 300, "Live Band": 700, Projector: 500 }
+        };
+
+        for (const field in addOns) {
+            const selectElement = document.querySelector(`[name="${field}"]`);
+            if (selectElement) {
+                total += addOns[field][selectElement.value];
+            }
+        }
+
+        document.getElementById("totalPrice").innerText = total.toFixed(2);
+    }
+
+    document.querySelectorAll('select').forEach(select => {
+        select.addEventListener('change', updatePrice);
+    });
+
+    updatePrice();
+</script>
+{% endblock %}
+{% block footer %}{% endblock %}

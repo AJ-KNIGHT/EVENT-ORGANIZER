@@ -27,9 +27,10 @@
                         <li><i class="bi bi-geo-alt"></i> <strong>Location:</strong> {{ event.location }}</li>
                         <li><i class="bi bi-tag"></i> <strong>Price:</strong> ${{ event.price }}</li>
                     </ul>
-                    <a href="{% url 'eventapp:booking' event.slug %}" class="btn btn-primary custom-btn mt-3">
+                    <a href="{% url 'eventapp:select_event_type' %}?event={{ event.slug }}" class="btn btn-primary custom-btn mt-3">
                         <i class="bi bi-ticket-fill"></i> Book This Event
                     </a>
+                    
                 </div>
             </div>
         </div>
@@ -47,7 +48,7 @@
                     {% endif %}
                     <h5>{{ related_event.name }}</h5>
                     <p><i class="bi bi-calendar"></i> {{ related_event.event_date }}</p>
-                    <a href="{% url 'event_detail' slug=related_event.slug %}" class="btn btn-outline-primary btn-sm">
+                    <a href="{% url 'eventapp:event_detail' slug=related_event.slug %}" class="btn btn-outline-primary btn-sm">
                         <i class="bi bi-arrow-right-circle"></i> Learn More
                     </a>
                 </div>

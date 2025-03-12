@@ -1,0 +1,105 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-5">
+    <h2 class="text-center mb-4">Select Your Event Type</h2>
+    <form id="eventTypeForm" method="POST" action="{% url 'eventapp:select_event_type' %}">
+        {% csrf_token %}
+
+        <div class="row">
+            <!-- Minimal Event -->
+            <div class="col-md-4">
+                <div class="card event-card" onclick="selectEventType('Minimal', 0)">
+                    <img src="https://via.placeholder.com/300x200" class="card-img-top" alt="Minimal Event">
+                    <div class="card-body">
+                        <h5 class="card-title">Minimal Event</h5>
+                        <p class="card-text">
+                            ✅ Basic Setup, 🎉 Simple Decor, 🍛 Standard Cuisine <br>
+                            ❌ No Live Entertainment <br>
+                            👥 Up to <b>50 Guests</b>
+                        </p>
+                        <h6 class="text-primary">Base Price: ₹{{ event_prices.Minimal }}</h6>
+                        <button type="button" class="btn btn-outline-primary btn-sm" onclick="selectEventType('Minimal', 0)">Select</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Medium Event -->
+            <div class="col-md-4">
+                <div class="card event-card" onclick="selectEventType('Medium', 500)">
+                    <img src="https://via.placeholder.com/300x200" class="card-img-top" alt="Medium Event">
+                    <div class="card-body">
+                        <h5 class="card-title">Medium Event</h5>
+                        <p class="card-text">
+                            ✅ Themed Decor, 🍲 Regional & Int’l Cuisine, 🎵 DJ/Traditional Music <br>
+                            📸 Professional Photography (1 Photographer) <br>
+                            👥 Up to <b>100 Guests</b>
+                        </p>
+                        <h6 class="text-primary">Base Price: ₹{{ event_prices.Medium }}</h6>
+                        <button type="button" class="btn btn-outline-primary btn-sm" onclick="selectEventType('Medium', 500)">Select</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Premium Event -->
+            <div class="col-md-4">
+                <div class="card event-card" onclick="selectEventType('Premium', 1000)">
+                    <img src="https://via.placeholder.com/300x200" class="card-img-top" alt="Premium Event">
+                    <div class="card-body">
+                        <h5 class="card-title">Premium Event</h5>
+                        <p class="card-text">
+                            ⭐ Luxury Decor, 🍽️ Celebrity Chefs, 🎬 Multi-Angle Photography <br>
+                            🏆 VIP Experience, 🎭 Custom Themes <br>
+                            👥 <b>100+ Guests</b> (Custom Venue)
+                        </p>
+                        <h6 class="text-primary">Base Price: ₹{{ event_prices.Premium }}</h6>
+                        <button type="button" class="btn btn-outline-primary btn-sm" onclick="selectEventType('Premium', 1000)">Select</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <input type="hidden" name="event_type" id="selectedEventType">
+        <input type="hidden" name="base_price" id="basePrice">
+        <button type="submit" class="btn btn-primary mt-4">Next</button>
+    </form>
+</div>
+
+<style>
+    .event-card {
+        cursor: pointer;
+        transition: transform 0.3s, box-shadow 0.3s;
+    }
+    .event-card:hover, .event-card.selected {
+        transform: scale(1.05);
+        box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+        border: 2px solid #007bff;
+    }
+</style>
+
+<script>
+    function selectEventType(type, price) {
+        document.getElementById("selectedEventType").value = type;
+        document.getElementById("basePrice").value = price;
+
+        // Remove selection from all cards and buttons
+        document.querySelectorAll('.event-card').forEach(card => card.classList.remove('selected'));
+        document.querySelectorAll('.event-card button').forEach(button => {
+            button.classList.remove('btn-primary');
+            button.classList.add('btn-outline-primary');
+            button.innerText = "Select";
+        });
+
+        // Add selection to clicked card
+        let selectedCard = event.target.closest('.event-card');
+        selectedCard.classList.add('selected');
+
+        // Change button style inside selected card
+        let button = selectedCard.querySelector('button');
+        button.classList.remove('btn-outline-primary');
+        button.classList.add('btn-primary');
+        button.innerText = "Selected ✅";
+    }
+</script>
+
+{% endblock %}
+{% block footer %}{% endblock %}
