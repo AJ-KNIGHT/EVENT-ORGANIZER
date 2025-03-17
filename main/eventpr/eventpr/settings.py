@@ -125,3 +125,11 @@ LOGOUT_REDIRECT_URL = "/user/login/"
 from django.urls import reverse_lazy
 
 LOGIN_REDIRECT_URL = reverse_lazy("eventapp:index")
+
+
+# settings.py
+SESSION_COOKIE_AGE = 86400  # 1 day in seconds, adjust as necessary
+SESSION_EXPIRE_AT_BROWSER_CLOSE = False  # Keeps session alive between browser sessions
+
+# settings.py
+SESSION_ENGINE = "django.contrib.sessions.backends.db"

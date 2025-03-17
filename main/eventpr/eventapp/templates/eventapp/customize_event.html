@@ -1,176 +1,310 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Customize Event</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
-    <style>
-        /* Add your CSS styles here */
-    </style>
+  <meta charset="UTF-8">
+  <title>Customize Your Event</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+  <style>
+    /* Basic styling for overlay and popup */
+    .overlay {
+      position: fixed;
+      display: none;
+      width: 100%;
+      height: 100%;
+      top: 0;
+      left: 0;
+      background-color: rgba(0,0,0,0.5);
+      z-index: 999;
+    }
+    .overlay.active { display: block; }
+    .option-popup {
+      position: fixed;
+      display: none;
+      width: 600px;
+      max-width: 90%;
+      background: #fff;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 1000;
+      padding: 20px;
+      border-radius: 8px;
+    }
+    .option-popup.active { display: block; }
+    .option-card {
+      cursor: pointer;
+      transition: box-shadow 0.3s ease;
+    }
+    .option-card:hover { box-shadow: 0 0 8px rgba(0,0,0,0.2); }
+    .option-card.disabled { opacity: 0.4; cursor: not-allowed; }
+    .select-deselect { margin-top: 1rem; }
+  </style>
 </head>
-
 <body>
-    <div class="container mt-5">
-        <h2 class="text-center mb-4">Customize Your Event</h2>
-        <form action="/submit_customization/" method="POST">
-            {% csrf_token %}
 
-            <!-- Event Date & Venue -->
-            <div class="row">
-                <div class="col-md-6">
-                    <label>Event Date</label>
-                    <input type="date" class="form-control" name="event_date" required>
-                </div>
-                <div class="col-md-6">
-                    <label>Venue Selection</label>
-                    <select class="form-control" name="venue">
-                        <option value="custom">Custom Venue</option>
-                        <option value="default">Default Venue</option>
-                    </select>
-                </div>
-            </div>
+  {% if form.errors %}
+  <div class="alert alert-danger">
+    <strong>Please fix the following errors:</strong>
+    <ul>
+      {% for field in form %}
+        {% for error in field.errors %}
+          <li>{{ field.label }}: {{ error }}</li>
+        {% endfor %}
+      {% endfor %}
+      {% for error in form.non_field_errors %}
+        <li>{{ error }}</li>
+      {% endfor %}
+    </ul>
+  </div>
+  {% endif %}
 
-            <!-- Guest Count -->
-            <div class="row mt-3">
-                <div class="col-md-6">
-                    <label>Number of Guests</label>
-                    <input type="number" class="form-control" name="guest_count" id="guest_count" required
-                        onchange="updatePrice()">
-                    <small id="guest_error" class="text-danger d-none">Guest count exceeds tier limit!</small>
-                </div>
-            </div>
+  <!-- Hidden inputs to pass data to JavaScript -->
+  {{ form.tier }}
 
-            <!-- Customization Cards -->
-            <div class="row mt-3">
-                {% for option in customization_options %}
-                <div class="col-md-4">
-                    <div class="card option-card p-3 text-center" onclick="openPopup('{{ option.name }}')"
-                        data-tier="{{ option.tier }}">
-                        <h5>{{ option.display_name }}</h5>
-                        <img src="{{ option.image }}" alt="{{ option.name }}" class="img-fluid">
-                    </div>
-                </div>
-                {% endfor %}
-            </div>
+  <input type="hidden" id="selectedOptionsInput" value="{{ selected_options_json|default:'{}'|escapejs }}">
 
-            <!-- Price & Submit -->
-            <div class="mt-4">
-                <h4>Total Price: <span id="total_price">$0</span></h4>
-                <button type="submit" class="btn btn-success">Proceed to Payment</button>
-            </div>
-        </form>
-    </div>
+  <script>
+    const USER_TIER = "{{ tier }}";  // e.g. "Minimal", "Medium", "Premium"
+    const ADDON_CONFIG = {{ addon_config|safe }};
+  </script>
 
-    <!-- Popup for Customization Selection -->
-    <div class="overlay" id="overlay"></div>
-    <div class="option-popup" id="optionPopup">
-        <h4 id="popupTitle"></h4>
-        <div class="canvas-content" id="canvasContent">
-            <img id="popupImage" src="" alt="Option Image">
-            <p id="popupDescription"></p>
-            <button class="select-deselect" id="selectDeselectBtn" onclick="toggleSelection()">Select</button>
+  <div class="container mt-4 mb-5">
+    <h2 class="text-center mb-4">Customize Your Event</h2>
+    
+    <!-- Display chosen details if available -->
+    <div class="mb-4">
+      {% if selected_venue %}
+        <p><strong>Selected Venue:</strong> {{ selected_venue }}</p>
+      {% endif %}
+      <div class="row mb-3">
+        <div class="col-md-12">
+          <label class="form-label">Location</label>
+          {% if location_name %}
+            <p>
+              {{ location_name }}
+              <a href="{% url 'eventapp:event_location' %}?edit=true" class="btn btn-link">Edit Location</a>
+            </p>
+          {% else %}
+            <a href="{% url 'eventapp:event_location' %}" class="btn btn-link">Set Location</a>
+          {% endif %}
         </div>
-        <button class="btn btn-danger mt-3" onclick="closePopup()">Close</button>
+      </div>
+      
+      {% if venue_tier %}
+        <p><strong>Venue Tier:</strong> {{ venue_tier }}</p>
+      {% endif %}
     </div>
+    
+    <form method="POST" action="">
+      
+      {% csrf_token %}
+      {{ form.tier }}
 
-    {% include 'chatbot.html' %}
+      {{ form.non_field_errors }}
+      <!-- Event Date -->
+      <div class="row mb-3">
+        <div class="col-md-6">
+          <label class="form-label">Event Date</label>
+          <input type="date" class="form-control" name="event_date" required>
+        </div>
+      </div>
+      
+      <!-- Guest Count -->
+      <div class="row mb-3">
+        <div class="col-md-6">
+          <label class="form-label">Number of Guests</label>
+          <input type="number" class="form-control" name="guest_count" id="guest_count" required>
+          <small id="guest_error" class="text-danger d-none">Guest count exceeds tier limit!</small>
+        </div>
+      </div>
+      
+      <!-- Render add-on cards dynamically -->
+      <div class="row mt-3">
+        {% for option in customization_options %}
+          <div class="col-md-4 mb-3">
+            <div class="card option-card p-3 text-center"
+                 data-option="{{ option.name }}"
+                 data-tiers_allowed="{{ option.tiers_allowed|join:',' }}">
+              <h5>{{ option.display_name }}</h5>
+              {% if option.image %}
+                <img src="{{ option.image }}" alt="{{ option.display_name }}" class="img-fluid" style="max-height:120px;">
+              {% else %}
+                <img src="/static/eventapp/images/default.png" alt="Default Image" class="img-fluid" style="max-height:120px;">
+              {% endif %}
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+      
+      <!-- Price & Submit Section -->
+      <div class="mt-4">
+        <h4>Total Price: <span id="total_price">$0</span></h4>
+        <button type="submit" class="btn btn-success">Proceed to Payment</button>
+      </div>
+      
+      <!-- Hidden field for extra add-on details (populated by JS before submission) -->
+      {{ form.addon_details }}
+    </form>
+  </div>
 
-    <script>
-        let selectedOptions = JSON.parse('{{ selected_options_json|safe }}') || {};
-        console.log("Loaded Selected Options:", selectedOptions);  // Debugging
-        let basePrices = { 'minimal': 0, 'medium': 500, 'premium': 1000 };
-        let tier = new URLSearchParams(window.location.search).get('tier');
-        let maxGuests = tier === 'minimal' ? 50 : (tier === 'medium' ? 100 : 9999);
-        let totalPrice = basePrices[tier];
+  <!-- Overlay and Popup for add-on sub-options -->
+  <div class="overlay" id="overlay"></div>
+  <div class="option-popup" id="optionPopup">
+    <h4 id="popupTitle"></h4>
+    <div id="optionSpecificFields" class="mt-3"></div>
+    <button class="select-deselect btn btn-primary" id="selectDeselectBtn" onclick="toggleSelection()">Select</button>
+    <button class="btn btn-danger mt-3" onclick="closePopup()">Close</button>
+  </div>
 
-        function openPopup(optionName) {
-            const optionDetails = getOptionDetails(optionName);
-            document.getElementById('popupTitle').textContent = optionName;
-            document.getElementById('popupImage').src = optionDetails.image;
-            document.getElementById('popupDescription').textContent = optionDetails.description;
+  {% include 'chatbot.html' %}
 
-            let btn = document.getElementById('selectDeselectBtn');
-            btn.dataset.option = optionName;
-            btn.textContent = selectedOptions[optionName] ? 'Deselect' : 'Select';
-            btn.classList.toggle('deselect', selectedOptions[optionName]);
+  <!-- jQuery and Bootstrap JS -->
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      let tier = document.getElementById("tierInput").value;
+      let selectedOptions = {};
+      try {
+        selectedOptions = JSON.parse(document.getElementById("selectedOptionsInput").value) || {};
+      } catch (e) {
+        console.error("Failed to parse selectedOptions JSON:", e);
+      }
+      console.log("Loaded Selected Options:", selectedOptions);
+      console.log("Detected Tier:", tier);
 
-            document.getElementById('overlay').classList.add('active');
-            document.getElementById('optionPopup').classList.add('active');
+      const maxGuestsMap = { Minimal: 50, Medium: 100, Premium: 200 };
+      const maxGuests = maxGuestsMap[tier] || 50;
+      const guestCountInput = document.getElementById("guest_count");
+      const totalPriceEl = document.getElementById("total_price");
+      const guestErrorEl = document.getElementById("guest_error");
+
+      // Update price whenever guest count changes.
+      guestCountInput.addEventListener("change", updatePrice);
+      guestCountInput.addEventListener("blur", updatePrice);
+
+      // Initialize or update the dynamic add-ons.
+      document.querySelectorAll(".option-card").forEach((card) => {
+        let allowedTiersStr = card.getAttribute("data-tiers_allowed");
+        let allowedTiers = allowedTiersStr.split(",").map((s) => s.trim());
+        let optionName = card.dataset.option;
+        if (!allowedTiers.includes(tier)) {
+          card.classList.add("disabled");
+        } else {
+          card.addEventListener("click", () => openPopup(optionName));
         }
+      });
 
-        function getOptionDetails(optionName) {
-            const options = {
-                seating: { image: "{{ seating_image_url }}", description: "Seating arrangement for your event." },
-                photography: { image: "{{ photography_image_url }}", description: "Photography & Videography services." },
-                // Add other options here
-            };
-            return options[optionName] || { image: "", description: "Description for " + optionName + " goes here." };
-        }
-
-        function toggleSelection() {
-            let btn = document.getElementById('selectDeselectBtn');
-            let optionName = btn.dataset.option;
-
-            if (!optionName) {
-                console.error("Option name is undefined!");
-                return;
+      function renderOptionFields(optionName) {
+        const container = document.getElementById("optionSpecificFields");
+        let html = "";
+        if (ADDON_CONFIG[optionName] && ADDON_CONFIG[optionName].sub_options) {
+          const subOpts = ADDON_CONFIG[optionName].sub_options;
+          for (let key in subOpts) {
+            const opt = subOpts[key];
+            if (opt.type === "boolean") {
+              html += `
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" id="${optionName}_${key}" data-suboption="${key}">
+                  <label class="form-check-label" for="${optionName}_${key}">${opt.label}</label>
+                </div>
+              `;
+            } else if (opt.type === "choice") {
+              const allowed = opt.choices[tier] || [];
+              html += `<label class="form-label">${opt.label}</label><select class="form-select" id="${optionName}_${key}" data-suboption="${key}">`;
+              allowed.forEach((choice) => { html += `<option value="${choice}">${choice}</option>`; });
+              html += `</select>`;
             }
-
-            if (selectedOptions[optionName]) {
-                delete selectedOptions[optionName];
-            } else {
-                selectedOptions[optionName] = true;
-            }
-
-            btn.textContent = selectedOptions[optionName] ? 'Deselect' : 'Select';
-            btn.classList.toggle('deselect', selectedOptions[optionName]);
-            updatePrice();
+          }
         }
+        container.innerHTML = html;
+      }
 
-        function closePopup() {
-            document.getElementById('overlay').classList.remove('active');
-            document.getElementById('optionPopup').classList.remove('active');
-        }
-
-        function updatePrice() {
-            let guests = parseInt(document.getElementById('guest_count').value) || 0;
-
-            if (guests > maxGuests) {
-                document.getElementById('guest_error').classList.remove('d-none');
-                document.getElementById('total_price').textContent = `$0`;
-                return;
-            } else {
-                document.getElementById('guest_error').classList.add('d-none');
-            }
-
-            let basePrice = basePrices[tier];
-            let extraGuestCost = guests > 50 ? (guests - 50) * 10 : 0;
-            let customizationCost = Object.keys(selectedOptions).length * 50;
-
-            let finalCost = basePrice + extraGuestCost + customizationCost;
-            document.getElementById('total_price').textContent = `$${finalCost}`;
-        }
-
-        document.addEventListener("DOMContentLoaded", function () {
-            enforceTierRestrictions();
+      function updateAddonDetails() {
+        let addonDetails = {};
+        document.querySelectorAll("#optionSpecificFields [data-suboption]").forEach((input) => {
+          let parent = input.id.split("_")[0];
+          if (!addonDetails[parent]) { addonDetails[parent] = {}; }
+          if (input.type === "checkbox") {
+            addonDetails[parent][input.getAttribute("data-suboption")] = input.checked;
+          } else if (input.tagName === "SELECT") {
+            addonDetails[parent][input.getAttribute("data-suboption")] = input.value;
+          }
         });
+        let hiddenField = document.getElementById("id_addon_details");
+        if (hiddenField) { hiddenField.value = JSON.stringify(addonDetails); }
+      }
 
-        function enforceTierRestrictions() {
-            document.querySelectorAll(".option-card").forEach(card => {
-                let requiredTier = card.dataset.tier;
+      function openPopup(optionName) {
+        document.getElementById("popupTitle").textContent = optionName;
+        renderOptionFields(optionName);
+        let btn = document.getElementById("selectDeselectBtn");
+        btn.dataset.option = optionName;
+        btn.textContent = selectedOptions[optionName] ? "Deselect" : "Select";
+        document.getElementById("overlay").classList.add("active");
+        document.getElementById("optionPopup").classList.add("active");
+      }
 
-                if (requiredTier && requiredTier !== tier) {
-                    card.classList.add("disabled");
-                    card.onclick = null;
-                } else {
-                    card.classList.remove("disabled");
-                    card.onclick = function () { openPopup(card.dataset.optionName); };
-                }
-            });
+      window.closePopup = function () {
+        document.getElementById("overlay").classList.remove("active");
+        document.getElementById("optionPopup").classList.remove("active");
+      };
+
+      window.toggleSelection = function () {
+        let btn = document.getElementById("selectDeselectBtn");
+        let optionName = btn.dataset.option;
+        if (!optionName) return;
+        if (selectedOptions[optionName]) {
+          delete selectedOptions[optionName];
+          btn.textContent = "Select";
+        } else {
+          selectedOptions[optionName] = true;
+          btn.textContent = "Deselect";
         }
-    </script>
-</body>
+        console.log("Updated Selected Options:", selectedOptions);
+        updatePrice();
+      };
 
+      function updatePrice() {
+        let guests = parseInt(guestCountInput.value) || 0;
+        if (guests > maxGuests) {
+          guestErrorEl.classList.remove("d-none");
+          totalPriceEl.textContent = "$0";
+          return;
+        } else {
+          guestErrorEl.classList.add("d-none");
+        }
+        updateAddonDetails();
+        let csrfToken = document.querySelector("[name=csrfmiddlewaretoken]").value;
+        let selectedOptionsList = Object.keys(selectedOptions);
+        console.log("Sending selected options:", selectedOptionsList);
+
+        $.ajax({
+          url: "{% url 'eventapp:update_price' %}",
+          method: "POST",
+          data: {
+            tier: tier,
+            guest_count: guests,
+            "selected_options[]": selectedOptionsList,
+            csrfmiddlewaretoken: csrfToken,
+          },
+          success: function (response) {
+            console.log("AJAX response:", response);
+            if (response.total_price) {
+              totalPriceEl.textContent = `$${response.total_price}`;
+            } else if (response.error) {
+              alert(response.error);
+            }
+          },
+          error: function (err) {
+            console.error("Error updating price:", err);
+          },
+        });
+      }
+
+      updatePrice();
+    });
+  </script>
+</body>
 </html>

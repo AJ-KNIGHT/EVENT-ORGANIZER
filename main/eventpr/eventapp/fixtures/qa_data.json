@@ -106,5 +106,230 @@
             "answer": "Yes, you can add guests up to 3 days before the event. Please contact support for assistance.",
             "keywords": "guests,booking"
         }
+    },
+    {
+        "model": "eventapp.chatbotqa",
+        "pk": 26,
+        "fields": {
+            "question": "How far in advance should I book my event?",
+            "answer": "We recommend booking at least 3-6 months in advance for best venue availability. For last-minute events, contact our team for possibilities.",
+            "keywords": "timing,advance booking"
+        }
+    },
+    {
+        "model": "eventapp.chatbotqa",
+        "pk": 27,
+        "fields": {
+            "question": "Do you handle marriage license paperwork?",
+            "answer": "While we don't process legal documents, we can recommend local authorities and help coordinate timing with your ceremony.",
+            "keywords": "legal,marriage license"
+        }
+    },
+    {
+        "model": "eventapp.chatbotqa",
+        "pk": 28,
+        "fields": {
+            "question": "Can I bring my own decorations?",
+            "answer": "Yes, but all decorations must be approved by our safety team 2 weeks prior to the event. No open flames or permanent alterations allowed.",
+            "keywords": "decorations,safety"
+        }
+    },
+    {
+        "model": "eventapp.chatbotqa",
+        "pk": 29,
+        "fields": {
+            "question": "What's your alcohol policy?",
+            "answer": "We require licensed bartenders for all alcohol service. Last call is 30 minutes before event end time. ID checks are mandatory.",
+            "keywords": "alcohol,bar policy"
+        }
+    },
+    {
+        "model": "eventapp.chatbotqa",
+        "pk": 30,
+        "fields": {
+            "question": "Do you provide ADA-compliant facilities?",
+            "answer": "All our venues have wheelchair access, ADA restrooms, and assistive listening systems. Please notify us of any special needs during booking.",
+            "keywords": "accessibility,ADA"
+        }
+    },
+    {
+        "model": "eventapp.chatbotqa",
+        "pk": 31,
+        "fields": {
+            "question": "Can I host a hybrid virtual/in-person event?",
+            "answer": "Yes! We offer live streaming packages with professional camera crews and virtual event platforms.",
+            "keywords": "hybrid,virtual"
+        }
+    },
+    {
+        "model": "eventapp.chatbotqa",
+        "pk": 32,
+        "fields": {
+            "question": "What's included in your cleanup service?",
+            "answer": "Our full cleanup includes trash removal, floor cleaning, and returning the venue to its original state. Special cleaning needs available upon request.",
+            "keywords": "cleanup,waste"
+        }
+    },
+    {
+        "model": "eventapp.chatbotqa",
+        "pk": 33,
+        "fields": {
+            "question": "Do you provide event insurance?",
+            "answer": "We offer optional event insurance starting at $150, covering cancellation, property damage, and liability up to $1 million.",
+            "keywords": "insurance,liability"
+        }
+    },
+    {
+        "model": "eventapp.chatbotqa",
+        "pk": 34,
+        "fields": {
+            "question": "Can I store items at the venue overnight?",
+            "answer": "Secure storage is available for $50/night. All items must be pre-approved and properly labeled.",
+            "keywords": "storage,overnight"
+        }
+    },
+    {
+        "model": "eventapp.chatbotqa",
+        "pk": 35,
+        "fields": {
+            "question": "What's your bad weather contingency plan?",
+            "answer": "All outdoor events include a complimentary weather backup space. Decisions must be made 48 hours prior.",
+            "keywords": "weather,backup"
+        }
+    },
+    {
+        "model": "eventapp.chatbotqa",
+        "pk": 36,
+        "fields": {
+            "question": "Do you provide translation services?",
+            "answer": "We offer professional translation services for 25+ languages at $75/hour. Request during booking.",
+            "keywords": "translation,languages"
+        }
+    },
+    {
+        "model": "eventapp.chatbotqa",
+        "pk": 37,
+        "fields": {
+            "question": "Can I bring my pet to the event?",
+            "answer": "Service animals only. Emotional support animals require prior approval and documentation.",
+            "keywords": "pets,animals"
+        }
+    },
+    {
+        "model": "eventapp.chatbotqa",
+        "pk": 38,
+        "fields": {
+            "question": "What's your COVID-19 safety policy?",
+            "answer": "We follow local health guidelines - currently optional masking and available rapid testing stations upon request.",
+            "keywords": "covid,health"
+        }
+    },
+    {
+        "model": "eventapp.chatbotqa",
+        "pk": 39,
+        "fields": {
+            "question": "Do you offer military discounts?",
+            "answer": "Yes! Active/retired military receive 15% off venue rentals. Valid ID required.",
+            "keywords": "discount,military"
+        }
+    },
+    {
+        "model": "eventapp.chatbotqa",
+        "pk": 40,
+        "fields": {
+            "question": "Can I use confetti or glitter?",
+            "answer": "Biodegradable confetti allowed with $250 cleanup deposit. Glitter and sparkles prohibited.",
+            "keywords": "confetti,decorations"
+        }
+    },
+    {
+        "model": "eventapp.chatbotqa",
+        "pk": 41,
+        "fields": {
+            "question": "What's your cancellation policy?",
+            "answer": "Full refund 60+ days out, 50% refund 30-59 days out, no refund within 29 days. Insurance recommended.",
+            "keywords": "cancellation,refund"
+        }
+    },
+    {
+        "model": "eventapp.chatbotqa",
+        "pk": 42,
+        "fields": {
+            "question": "Do you provide childcare services?",
+            "answer": "We partner with licensed childcare providers at $25/hour per child. Advance notice required.",
+            "keywords": "childcare,kids"
+        }
+    },
+    {
+        "model": "eventapp.chatbotqa",
+        "pk": 43,
+        "fields": {
+            "question": "Can I host a fundraising event?",
+            "answer": "Absolutely! We offer special rates for registered non-profits. Provide 501(c)(3) documentation.",
+            "keywords": "fundraising,non-profit"
+        }
+    },
+    {
+        "model": "eventapp.chatbotqa",
+        "pk": 44,
+        "fields": {
+            "question": "What's your capacity for standing receptions?",
+            "answer": "Our spaces can accommodate 300-700 guests for standing cocktail-style events depending on venue.",
+            "keywords": "capacity,standing"
+        }
+    },
+    {
+        "model": "eventapp.chatbotqa",
+        "pk": 45,
+        "fields": {
+            "question": "Do you have charging stations?",
+            "answer": "Yes, we provide mobile device charging stations throughout all venues at no extra cost.",
+            "keywords": "charging,tech"
+        }
+    },
+    {
+        "model": "eventapp.chatbotqa",
+        "pk": 46,
+        "fields": {
+            "question": "Can I bring outside vendors?",
+            "answer": "Yes, but all vendors must provide proof of insurance and be approved by our team 30 days prior.",
+            "keywords": "vendors,external"
+        }
+    },
+    {
+        "model": "eventapp.chatbotqa",
+        "pk": 47,
+        "fields": {
+            "question": "What's your policy on smoking?",
+            "answer": "Smoking/vaping is only allowed in designated outdoor areas. $500 fine for violations.",
+            "keywords": "smoking,vaping"
+        }
+    },
+    {
+        "model": "eventapp.chatbotqa",
+        "pk": 48,
+        "fields": {
+            "question": "Do you provide transportation services?",
+            "answer": "We can arrange shuttle buses, luxury cars, or valet services starting at $500.",
+            "keywords": "transportation,shuttle"
+        }
+    },
+    {
+        "model": "eventapp.chatbotqa",
+        "pk": 49,
+        "fields": {
+            "question": "What's included in your premium package?",
+            "answer": "Premium includes dedicated planner, premium linens, upgraded menu, and 3 hours of photography.",
+            "keywords": "premium,package"
+        }
+    },
+    {
+        "model": "eventapp.chatbotqa",
+        "pk": 50,
+        "fields": {
+            "question": "Can I tour the venue beforehand?",
+            "answer": "Yes! Schedule tours M-F 10am-4pm. Evening/Saturday tours available for $150.",
+            "keywords": "tour,visit"
+        }
     }
 ]

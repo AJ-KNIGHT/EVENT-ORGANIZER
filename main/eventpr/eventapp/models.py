@@ -3,8 +3,10 @@ from django.utils.text import slugify
 from django.conf import settings
 from django.core.validators import RegexValidator
 from decimal import Decimal
+import json
 
-# ✅ Define Event first
+
+# Event Model
 class Event(models.Model):
     name = models.CharField(max_length=200)
     is_available = models.BooleanField(default=True)
@@ -26,14 +28,30 @@ class Event(models.Model):
             counter += 1
         return slug
 
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = self.get_unique_slug(slugify(self.name))
+        super().save(*args, **kwargs)
+
     def __str__(self):
         return self.name
 
+from decimal import Decimal
+from django.db import models
+from django.conf import settings
+from django.core.validators import RegexValidator
 
-# ✅ Booking Model
+# Assuming Event is defined elsewhere in your project
+# from your_app.models import Event
+
+
 class Booking(models.Model):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='bookings')
-    event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name='bookings')
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='bookings'
+    )
+    event = models.ForeignKey(
+        'Event', on_delete=models.CASCADE, related_name='bookings'
+    )
     event_date = models.DateField()
     custom_venue = models.BooleanField(default=False)
     venue = models.CharField(max_length=255, blank=True, null=True)
@@ -52,7 +70,6 @@ class Booking(models.Model):
         ('Cancelled', 'Cancelled'),
     ]
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Pending')
-
     description = models.TextField(blank=True, null=True)
     payment = models.OneToOneField(
         'paymentapp.Payment',
@@ -66,22 +83,55 @@ class Booking(models.Model):
         return f"Booking for {self.event.name} by {self.cus_name}"
 
     def save(self, *args, **kwargs):
-        customization, _ = EventCustomization.objects.get_or_create(booking=self)
-        self.total_amount = customization.calculate_price()
+        # First, save the Booking instance to ensure it has a primary key.
         super().save(*args, **kwargs)
+        # Now, get or create the related EventCustomization.
+        customization, created = EventCustomization.objects.get_or_create(booking=self)
+        # Update the total_amount based on the customization's calculated price.
+        self.total_amount = customization.calculate_price()
+        # Save again, updating only the total_amount field.
+        super().save(update_fields=['total_amount'])
 
 
-# ✅ EventCustomization Model
+class AddOn(models.Model):
+    name = models.CharField(max_length=100, unique=True)  # e.g. "catering"
+    display_name = models.CharField(max_length=100)         # e.g. "Catering"
+    is_per_guest = models.BooleanField(default=False)       # If true, cost is multiplied by guest count
+    # Options stored as: { "Standard": {"Minimal": 10, "Medium": 15, "Premium": 20}, ... }
+    options = models.JSONField()
+    # List of tier names allowed for this addon.
+    tiers_allowed = models.JSONField(default=list)
+
+    def __str__(self):
+        return self.display_name
+
+
+from decimal import Decimal
+import json
+from django.db import models
+
 class EventCustomization(models.Model):
-    TIER_CHOICES = [("Minimal", "Minimal"), ("Medium", "Medium"), ("Premium", "Premium")]
+    """
+    Stores user customization details for an event, including tier, guest count,
+    addon selections, extra sub‑options, and the computed total price.
+    """
+    TIER_CHOICES = [
+        ("Minimal", "Minimal"),
+        ("Medium", "Medium"),
+        ("Premium", "Premium"),
+    ]
 
-    booking = models.OneToOneField(Booking, on_delete=models.CASCADE, related_name="customization")
+    booking = models.OneToOneField(
+        'Booking', on_delete=models.CASCADE, related_name="customization"
+    )
     tier = models.CharField(max_length=10, choices=TIER_CHOICES, default="Minimal")
     guest_count = models.PositiveIntegerField(default=1)
 
-    selected_options = models.JSONField(default=dict) 
+    # Store base addon selections (the chosen option for each base field)
+    selected_options = models.JSONField(default=dict)
     selected_location = models.CharField(max_length=255, blank=True, null=True, default="")
-    
+
+    # Base event configuration fields.
     venue_size = models.CharField(
         max_length=10,
         choices=[("Small", "Small"), ("Medium", "Medium"), ("Large", "Large")],
@@ -89,71 +139,164 @@ class EventCustomization(models.Model):
         blank=True,
         null=True
     )
+    catering = models.CharField(
+        max_length=20,
+        choices=[
+            ("None", "None"),
+            ("Standard", "Standard"),
+            ("Buffet", "Buffet"),
+            ("Multi-Course", "Multi-Course"),
+            ("Custom", "Custom Menu")
+        ],
+        default="None",
+        blank=True,
+        null=True
+    )
+    decorations = models.CharField(
+        max_length=20,
+        choices=[
+            ("None", "None"),
+            ("Basic", "Basic"),
+            ("Themed", "Themed"),
+            ("Luxury", "Luxury")
+        ],
+        default="None",
+        blank=True,
+        null=True
+    )
+    entertainment = models.CharField(
+        max_length=20,
+        choices=[
+            ("None", "None"),
+            ("DJ", "DJ"),
+            ("Live Band", "Live Band"),
+            ("Projector", "Projector")
+        ],
+        default="None",
+        blank=True,
+        null=True
+    )
+    seating_arrangement = models.CharField(
+        max_length=20,
+        choices=[
+            ("None", "None"),
+            ("Formal", "Formal"),
+            ("Casual", "Casual"),
+            ("Custom", "Custom")
+        ],
+        default="None",
+        blank=True,
+        null=True
+    )
+    table_arrangements = models.CharField(
+        max_length=20,
+        choices=[
+            ("None", "None"),
+            ("Basic", "Basic"),
+            ("Themed", "Themed"),
+            ("Premium", "Premium")
+        ],
+        default="None",
+        blank=True,
+        null=True
+    )
+    photography = models.CharField(
+        max_length=20,
+        choices=[
+            ("None", "None"),
+            ("Basic", "Basic"),
+            ("Professional", "Professional")
+        ],
+        default="None",
+        blank=True,
+        null=True
+    )
+    lighting_effects = models.CharField(
+        max_length=20,
+        choices=[
+            ("None", "None"),
+            ("Basic", "Basic"),
+            ("Themed", "Themed"),
+            ("Premium", "Premium")
+        ],
+        default="None",
+        blank=True,
+        null=True
+    )
 
-    catering = models.CharField(max_length=20, choices=[
-        ("Standard", "Standard"), ("Buffet", "Buffet"),
-        ("Multi-Course", "Multi-Course"), ("Custom", "Custom Menu")
-    ], default="Standard")
-
-    decorations = models.CharField(max_length=20, choices=[
-        ("Basic", "Basic"), ("Themed", "Themed"), ("Luxury", "Luxury")
-    ], default="Basic")
-
-    entertainment = models.CharField(max_length=20, choices=[
-        ("None", "None"), ("DJ", "DJ"), ("Live Band", "Live Band"), ("Projector", "Projector")
-    ], default="None")
-
-    seating_arrangement = models.CharField(max_length=10, choices=[
-        ("Formal", "Formal"), ("Casual", "Casual"), ("Custom", "Custom")
-    ], default="Formal")
-
-    photography = models.CharField(max_length=20, choices=[
-        ("None", "None"), ("Basic", "Basic"), ("Professional", "Professional")
-    ], default="None")
-
-    lighting_effects = models.CharField(max_length=20, choices=[
-        ("Basic", "Basic"), ("Themed", "Themed"), ("Premium", "Premium")
-    ], default="Basic")
-
-    # New Fields
+    # Additional Boolean addons.
     audio_visual = models.BooleanField(default=False)
     medical_support = models.BooleanField(default=False)
     event_manager = models.BooleanField(default=False)
-    post_event_media = models.BooleanField(default=False)
     cleanup_service = models.BooleanField(default=False)
 
-    total_price = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    # Extra sub‑options for addons (e.g., {"catering": {"veg": true, "cuisine": "Italian"}, ...})
+    addon_details = models.JSONField(default=dict, blank=True, null=True)
+
+    total_price = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal('0.00'))
 
     def calculate_price(self):
+        # Start with the event's base price.
         base_price = self.booking.event.price or Decimal('0.00')
-        tier_pricing = {"Minimal": 0, "Medium": 500, "Premium": 1000}
-        base_price += Decimal(tier_pricing[self.tier])
+        tier_pricing = {"Minimal": Decimal('0'), "Medium": Decimal('500'), "Premium": Decimal('1000')}
+        base_price += tier_pricing.get(self.tier, Decimal('0'))
+        total = base_price
 
-        add_ons = {
-            "catering": {"Standard": 0, "Buffet": 300, "Multi-Course": 600, "Custom": 800},
-            "decorations": {"Basic": 0, "Themed": 400, "Luxury": 1000},
-            "entertainment": {"None": 0, "DJ": 300, "Live Band": 700, "Projector": 500},
-            "photography": {"None": 0, "Basic": 400, "Professional": 1000},
-            "lighting_effects": {"Basic": 0, "Themed": 300, "Premium": 700},
+        from .models import AddOn
+
+        addon_fields = {
+            'catering': self.catering,
+            'decorations': self.decorations,
+            'entertainment': self.entertainment,
+            'photography': self.photography,
+            'lighting_effects': self.lighting_effects,
         }
 
-        if not self.booking.custom_venue:
-            add_ons["venue_size"] = {"Small": 0, "Medium": 500, "Large": 1000}
+        for field, selected_option in addon_fields.items():
+            if selected_option and selected_option != 'None':
+                try:
+                    addon = AddOn.objects.get(name=field)
+                    # Ensure addon.options is a dictionary.
+                    if isinstance(addon.options, str):
+                        options_dict = json.loads(addon.options)
+                    else:
+                        options_dict = addon.options
+                    price_dict = options_dict.get(selected_option, {})
+                    price = price_dict.get(self.tier)
+                    if price is not None:
+                        price = Decimal(str(price))
+                        if addon.is_per_guest:
+                            total += price * self.guest_count
+                        else:
+                            total += price
+                except AddOn.DoesNotExist:
+                    continue
 
-        extra_cost = sum(add_ons[field][getattr(self, field)] for field in add_ons if hasattr(self, field))
+        # Additional Boolean addons.
+        total += Decimal('500') if self.audio_visual else Decimal('0')
+        total += Decimal('300') if self.medical_support else Decimal('0')
+        total += Decimal('700') if self.event_manager else Decimal('0')
+        total += Decimal('600') if self.cleanup_service else Decimal('0')
 
-        # New Feature Prices
-        extra_cost += 500 if self.audio_visual else 0
-        extra_cost += 300 if self.medical_support else 0
-        extra_cost += 700 if self.event_manager else 0
-        extra_cost += 400 if self.post_event_media else 0
-        extra_cost += 600 if self.cleanup_service else 0
+        # Process extra costs from addon_details (e.g., sub-options for catering).
+        details = self.addon_details or {}
+        catering_details = details.get("catering", {})
+        cuisine = catering_details.get("cuisine")
+        if self.tier == "Premium" and cuisine == "Italian":
+            total += Decimal("200")
 
-        return base_price + extra_cost
+        return total
 
     def save(self, *args, **kwargs):
         self.total_price = self.calculate_price()
         super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"Customization for Booking {self.booking.id} ({self.tier})"
+
+
+
+# Venue Model
 class Venue(models.Model):
     name = models.CharField(max_length=255)
     latitude = models.FloatField()
@@ -163,15 +306,23 @@ class Venue(models.Model):
         return self.name
 
 
+# EventLocation Model
+
+# EventLocation Model with linkage to Booking
 class EventLocation(models.Model):
-    name = models.CharField(max_length=255, blank=True)  # Optional: store location name
+    booking = models.OneToOneField(
+        Booking, on_delete=models.CASCADE, related_name="location", null=True, blank=True
+    )
+    name = models.CharField(max_length=255, blank=True)
     latitude = models.FloatField()
     longitude = models.FloatField()
 
     def __str__(self):
         return self.name if self.name else f"Lat: {self.latitude}, Lon: {self.longitude}"
 
-# ✅ Contact Model
+
+
+# Contact Model
 class Contact(models.Model):
     name = models.CharField(max_length=100)
     email = models.EmailField()
@@ -182,7 +333,7 @@ class Contact(models.Model):
         return f"{self.name} - {self.email}"
 
 
-# ✅ Chatbot Model
+# ChatbotQA Model
 class ChatbotQA(models.Model):
     question = models.CharField(max_length=255, unique=True)
     answer = models.TextField()

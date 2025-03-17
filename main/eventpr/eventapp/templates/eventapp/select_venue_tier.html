@@ -1,0 +1,262 @@
+{% extends "base.html" %} {% load static %} {% block content %}
+<div class="container mt-5">
+  <h2 class="mb-4">Select Your Venue Tier</h2>
+  <p>Main Event Tier: {{ selected_tier }}</p>
+  {% if event_location %}
+  <p>Your selected location: {{ event_location }}</p>
+  {% else %}
+  <p>
+    No location selected. Our team will contact you with the best venue options
+    near you.
+  </p>
+  {% endif %}
+
+  <form method="POST" action="">
+    {% csrf_token %}
+    <div class="row">
+      <!-- Minimal Venue Card -->
+      <div class="col-md-4">
+        <div
+          class="venue-card {% if 'Minimal' not in allowed_subtiers %}disabled{% endif %}"
+        >
+          <h3>Minimal Venue</h3>
+          <img
+            src="{% static 'eventapp/images/minimal_venue.jpg' %}"
+            alt="Minimal Venue"
+          />
+          <p>
+            Basic setup with a simple ambience – ideal for intimate gatherings.
+          </p>
+          {% if 'Minimal' in allowed_subtiers %}
+          <label>
+            <input type="radio" name="venue_subtier" value="Minimal" />
+            Select Minimal Venue
+          </label>
+          {% else %}
+          <p>Not available for your tier.</p>
+          {% endif %}
+        </div>
+      </div>
+      <!-- Medium Venue Card -->
+      <div class="col-md-4">
+        <div
+          class="venue-card {% if 'Medium' not in allowed_subtiers %}disabled{% endif %}"
+        >
+          <h3>Medium Venue</h3>
+          <img
+            src="{% static 'eventapp/images/medium_venue.jpg' %}"
+            alt="Medium Venue"
+          />
+          <p>
+            Spacious setup with moderate decor – perfect for mid-sized events.
+          </p>
+          {% if 'Medium' in allowed_subtiers %}
+          <label>
+            <input type="radio" name="venue_subtier" value="Medium" />
+            Select Medium Venue
+          </label>
+          {% else %}
+          <p>Not available for your tier.</p>
+          {% endif %}
+        </div>
+      </div>
+      <!-- Luxury Venue Card -->
+      <div class="col-md-4">
+        <div
+          class="venue-card {% if 'Luxury' not in allowed_subtiers %}disabled{% endif %}"
+        >
+          <h3>Luxury Venue</h3>
+          <img
+            src="{% static 'eventapp/images/luxury_venue.jpg' %}"
+            alt="Luxury Venue"
+          />
+          <p>High-end venue with lavish decor and premium amenities.</p>
+          {% if 'Luxury' in allowed_subtiers %}
+          <label>
+            <input type="radio" name="venue_subtier" value="Luxury" />
+            Select Luxury Venue
+          </label>
+          {% else %}
+          <p>Not available for your tier.</p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <hr>
+    <!-- Add class to custom venue section in your HTML -->
+    <div class="custom-venue-section">
+      <hr >
+      <h3>Or Request a Custom Venue</h3>
+      <label>
+        <input type="radio" name="venue_subtier" value="Custom" />
+        Custom Venue
+      </label>
+      <br ><br >
+      <textarea
+        name="custom_venue_description"
+        class="form-control"
+        rows="4"
+        placeholder="Describe your custom venue request"
+      ></textarea>
+    </div>
+    <button type="submit" class="btn btn-success">
+      Confirm Venue Selection
+    </button>
+  </form>
+</div>
+<style>
+  .container {
+    max-width: 1200px;
+    padding: 2rem 1rem;
+  }
+
+  h2 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #2d3748;
+    margin-bottom: 1.5rem;
+    text-align: center;
+  }
+
+  .venue-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+  }
+
+  .venue-card:hover:not(.disabled) {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  }
+
+  .venue-card.disabled {
+    opacity: 0.6;
+    background-color: #f7fafc;
+    cursor: not-allowed;
+  }
+
+  .venue-card img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    border-radius: 8px;
+    margin: 1rem 0;
+  }
+
+  .venue-card h3 {
+    font-size: 1.5rem;
+    color: #2d3748;
+    margin-bottom: 0.5rem;
+  }
+
+  .venue-card p {
+    color: #4a5568;
+    line-height: 1.6;
+    min-height: 80px;
+  }
+
+  .venue-card label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem;
+    background: #f7fafc;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.2s ease;
+  }
+
+  .venue-card label:hover {
+    background: #edf2f7;
+  }
+
+  input[type="radio"] {
+    width: 1.25rem;
+    height: 1.25rem;
+    accent-color: #48bb78;
+  }
+
+  .btn-success {
+    background: #48bb78;
+    padding: 0.75rem 2rem;
+    font-size: 1.1rem;
+    transition: transform 0.2s ease;
+  }
+
+  .btn-success:hover {
+    background: #38a169;
+    transform: translateY(-1px);
+  }
+
+  textarea {
+    width: 100%;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-top: 1rem;
+    transition: border-color 0.2s ease;
+  }
+
+  textarea:focus {
+    border-color: #48bb78;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(72, 187, 120, 0.1);
+  }
+
+  hr {
+    margin: 2rem 0;
+    border-color: #e2e8f0;
+  }
+
+  h3 {
+    color: #2d3748;
+    margin-bottom: 1rem;
+  }
+
+  /* Highlight selected card */
+  .venue-card:has(input[type="radio"]:checked) {
+    border-color: #48bb78 !important;
+    background-color: #48bb78;
+  }
+  /* Add these new styles */
+  .custom-venue-section h3 {
+      color: #2d3748 !important;
+  }
+
+  .custom-venue-section label {
+      color: #2d3748 !important;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.75rem 0;
+  }
+
+  textarea {
+      color: #2d3748 !important;
+      background: white !important;
+  }
+
+  textarea::placeholder {
+      color: #718096 !important;
+  }
+
+  /* Update existing button style */
+  .btn-success {
+      background: #48bb78;
+      color: white !important;  /* Ensure button text stays white */
+  }
+
+  /* Modify existing textarea focus state */
+  textarea:focus {
+      border-color: #48bb78;
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(72, 187, 120, 0.1);
+      background: white;
+  }
+</style>
+{% endblock content %}

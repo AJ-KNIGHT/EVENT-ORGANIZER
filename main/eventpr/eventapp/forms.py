@@ -38,6 +38,7 @@ from django.core.exceptions import ValidationError
 class BookingForm(forms.ModelForm):
     class Meta:
         model = Booking
+        
         exclude = ['user', 'event', 'payment', 'total_amount']
         widgets = {
             'booking_date': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
@@ -88,6 +89,33 @@ class BookingForm(forms.ModelForm):
             raise forms.ValidationError("Enter a valid 10-digit phone number.")
         return cus_ph
 
+import json
+from django import forms
+from .models import EventCustomization
+from .models import AddOn  # For dynamic choice population
+
+import json
+from django import forms
+from .models import EventCustomization, AddOn
+
+import json
+from django import forms
+from .models import EventCustomization, AddOn
+import json
+from django import forms
+from .models import EventCustomization, AddOn
+
+import json
+from django import forms
+from .models import EventCustomization, AddOn
+
+from django import forms
+import json
+from .models import EventCustomization, AddOn
+
+from django import forms
+import json
+from .models import EventCustomization, AddOn
 
 class EventCustomizationForm(forms.ModelForm):
     class Meta:
@@ -95,10 +123,11 @@ class EventCustomizationForm(forms.ModelForm):
         fields = [
             'tier', 'guest_count', 'venue_size', 'catering', 'decorations',
             'entertainment', 'seating_arrangement', 'photography', 'lighting_effects',
-            'audio_visual', 'medical_support', 'event_manager', 'post_event_media' , 'cleanup_service', 'selected_location',  # Add the location field
+            'table_arrangements', 'audio_visual', 'medical_support', 'event_manager',
+            'cleanup_service', 'selected_location',
         ]
         widgets = {
-            'tier': forms.Select(attrs={'class': 'form-select'}),
+            'tier': forms.HiddenInput(),  # Use hidden widget for tier
             'guest_count': forms.NumberInput(attrs={'class': 'form-control', 'min': 1, 'max': 200}),
             'venue_size': forms.Select(attrs={'class': 'form-select'}),
             'catering': forms.Select(attrs={'class': 'form-select'}),
@@ -107,38 +136,98 @@ class EventCustomizationForm(forms.ModelForm):
             'seating_arrangement': forms.Select(attrs={'class': 'form-select'}),
             'photography': forms.Select(attrs={'class': 'form-select'}),
             'lighting_effects': forms.Select(attrs={'class': 'form-select'}),
+            'table_arrangements': forms.Select(attrs={'class': 'form-select'}),
             'audio_visual': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
             'medical_support': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
             'event_manager': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
-            'post_event_media': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
-            'cleanup_service':forms.CheckboxInput(attrs={'class': 'form-check-input'}),
-            'selected_location': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter your custom venue location or select from map'})
+            'cleanup_service': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'selected_location': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Enter your custom venue location or select from map'
+            }),
         }
+
+    def __init__(self, *args, **kwargs):
+        selected_tier = kwargs.pop('selected_tier', 'Minimal')
+        super().__init__(*args, **kwargs)
+
+        # Set default initial value for tier if instance is not provided.
+        if not self.instance.pk:
+            self.initial.setdefault('tier', selected_tier)
+            self.initial.setdefault('catering', 'None')
+            self.initial.setdefault('decorations', 'None')
+            self.initial.setdefault('entertainment', 'None')
+            self.initial.setdefault('seating_arrangement', 'None')
+            self.initial.setdefault('photography', 'None')
+            self.initial.setdefault('lighting_effects', 'None')
+            self.initial.setdefault('table_arrangements', 'None')
+
+        # Explicitly mark addon fields as not required.
+        for field in ['catering', 'decorations', 'entertainment', 'seating_arrangement',
+                      'photography', 'lighting_effects', 'table_arrangements']:
+            self.fields[field].required = False
+
+        for field in ['audio_visual', 'medical_support', 'event_manager', 'cleanup_service']:
+            self.fields[field].required = False
+
+        # Pre-load all AddOn objects into a cache to optimize DB queries.
+        dynamic_fields = ['catering', 'decorations', 'entertainment', 'photography', 'lighting_effects', 'table_arrangements']
+        addon_cache = {addon.name: addon for addon in AddOn.objects.filter(name__in=dynamic_fields)}
+
+        for field in dynamic_fields:
+            try:
+                addon = addon_cache.get(field)
+                if addon:
+                    options_dict = addon.options if isinstance(addon.options, dict) else json.loads(addon.options)
+                    choices = [
+                        (option, option)
+                        for option, prices in options_dict.items()
+                        if selected_tier in prices and prices[selected_tier] is not None
+                    ]
+                    self.fields[field].choices = [('None', 'None')] + choices
+                else:
+                    self.fields[field].choices = [('None', 'Not Available')]
+            except Exception as e:
+                self.fields[field].choices = [('None', 'Error Loading Options')]
 
     def clean_guest_count(self):
         guest_count = self.cleaned_data.get('guest_count')
         tier = self.cleaned_data.get('tier')
-
         max_guests = {"Minimal": 50, "Medium": 100, "Premium": 200}
-        if guest_count > max_guests.get(tier, 50):
-            raise forms.ValidationError(f"Max guests allowed for {tier} is {max_guests[tier]}.")
+        if tier and guest_count > max_guests.get(tier, 50):
+            raise forms.ValidationError(f"Max guests allowed for {tier} tier is {max_guests[tier]}.")
         return guest_count
 
     def clean(self):
         cleaned_data = super().clean()
         tier = cleaned_data.get("tier")
+        if not tier:
+            return cleaned_data
 
-        # Restrictions based on tier
         restrictions = {
-            "Minimal": {"decorations": ["Basic"], "entertainment": ["None"], "photography": ["None"]},
-            "Medium": {"decorations": ["Basic", "Themed"], "entertainment": ["None", "DJ"], "photography": ["None", "Basic"]},
-            "Premium": {"decorations": ["Basic", "Themed", "Luxury"], "entertainment": ["None", "DJ", "Live Band", "Projector"], "photography": ["None", "Basic", "Professional"]},
+            "Minimal": {
+                "decorations": ["Basic", "None"],
+                "entertainment": ["None"],
+                "photography": ["None"]
+            },
+            "Medium": {
+                "decorations": ["Basic", "Themed", "None"],
+                "entertainment": ["None", "DJ"],
+                "photography": ["None", "Basic"]
+            },
+            "Premium": {
+                "decorations": ["Basic", "Themed", "Luxury", "None"],
+                "entertainment": ["None", "DJ", "Live Band", "Projector"],
+                "photography": ["None", "Basic", "Professional"]
+            },
         }
 
-        for field, allowed_values in restrictions[tier].items():
-            if cleaned_data.get(field) not in allowed_values:
-                raise forms.ValidationError({field: f"This feature is restricted in {tier} tier. Upgrade required."})
-
+        tier_restrictions = restrictions.get(tier)
+        if tier_restrictions:
+            for field, allowed_values in tier_restrictions.items():
+                field_value = cleaned_data.get(field)
+                if field_value and field_value not in allowed_values:
+                    self.add_error(field, f"The selected {field} option '{field_value}' is not allowed for the {tier} tier. Allowed options: {', '.join(allowed_values)}.")
         return cleaned_data
 
 
@@ -150,11 +239,7 @@ class EventTypeForm(forms.Form):
         ('concert', 'Concert'),
         ('exhibition', 'Exhibition'),
     ]
-
-    event_type = forms.ChoiceField(
-        choices=EVENT_TYPES,
-        widget=forms.Select(attrs={'class': 'form-select'})
-    )
+    event_type = forms.ChoiceField(choices=EVENT_TYPES, widget=forms.Select(attrs={'class': 'form-select'}))
 
 
 from django import forms

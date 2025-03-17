@@ -1,107 +1,77 @@
-<h2>Enter Event Location</h2>
-<form method="POST" id="location-form">
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Enter Event Location</title>
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <style>
+    #map { height: 400px; margin-bottom: 1rem; }
+  </style>
+</head>
+<body class="container mt-4">
+  <h2>Enter Event Location</h2>
+  <form method="POST" id="location-form">
     {% csrf_token %}
-    <label for="location">Search Location:</label>
-    <input type="text" name="location" id="location" placeholder="Enter location">
-    <button type="button" onclick="searchLocation()">Get Coordinates</button>
-
+    <div class="mb-3">
+      <label for="location" class="form-label">Search Location:</label>
+      <input type="text" name="location" id="location" class="form-control" placeholder="Enter location">
+      <button type="button" class="btn btn-secondary mt-2" onclick="searchLocation()">Get Coordinates</button>
+    </div>
+    <!-- Hidden fields for latitude and longitude -->
     <input type="hidden" id="latitude" name="latitude">
     <input type="hidden" id="longitude" name="longitude">
-    
-    <button type="submit">Save Location</button> <!-- Keep form submission here -->
-</form>
+    <p>Selected Location: <span id="selected-location">None</span></p>
+    <button type="submit" class="btn btn-primary">Save Location</button>
+  </form>
 
+  <h3>Map</h3>
+  <div id="map"></div>
 
-<p>Selected Location: <span id="selected-location">None</span></p>
-<input type="hidden" id="latitude" name="latitude">
-<input type="hidden" id="longitude" name="longitude">
-
-<button type="submit" form="location-form">Save Location</button>
-
-<h3>Map</h3>
-<div id="map" style="height: 400px;"></div>
-
-<h3>Nearby Venues:</h3>
-<ul id="venue-list">
-    {% for venue in nearby_venues %}
-        <li>{{ venue.name }} - {{ venue.distance }} km away</li>
-    {% empty %}
-        <li>No nearby venues found.</li>
-    {% endfor %}
-</ul>
-{% if saved_location %}
-    <h3>Saved Location:</h3>
-    <p>{{ saved_location.name }} ({{ saved_location.latitude }}, {{ saved_location.longitude }})</p>
-{% endif %}
-
-
-<!-- Leaflet CSS -->
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-<!-- Leaflet JS -->
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
-<script>
-    var map = L.map('map').setView([20.5937, 78.9629], 5); // Default: India
-
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script>
+    // Initialize map at default coordinates (center of India)
+    var map = L.map('map').setView([20.5937, 78.9629], 5);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; OpenStreetMap contributors'
+      attribution: '&copy; OpenStreetMap contributors'
     }).addTo(map);
 
     var marker;
+    // When the user clicks on the map, update the marker and hidden fields.
+    map.on('click', function(e) {
+      var lat = e.latlng.lat;
+      var lon = e.latlng.lng;
+      if (marker) { map.removeLayer(marker); }
+      marker = L.marker([lat, lon]).addTo(map).bindPopup("Selected Location").openPopup();
+      document.getElementById("latitude").value = lat;
+      document.getElementById("longitude").value = lon;
+      document.getElementById("selected-location").innerText = "Lat: " + lat + ", Lon: " + lon;
+    });
 
-    // Function to handle map click
-    function onMapClick(e) {
-        var lat = e.latlng.lat;
-        var lon = e.latlng.lng;
-
-        // Remove old marker
-        if (marker) {
-            map.removeLayer(marker);
-        }
-
-        // Add new marker
-        marker = L.marker([lat, lon]).addTo(map)
-            .bindPopup("Selected Location").openPopup();
-
-        // Update hidden fields and display
-        document.getElementById("latitude").value = lat;
-        document.getElementById("longitude").value = lon;
-        document.getElementById("selected-location").innerText = `Lat: ${lat}, Lon: ${lon}`;
-    }
-
-    map.on('click', onMapClick);
-
-    // Function to search for a location
+    // Search location via Nominatim
     function searchLocation() {
-        var location = document.getElementById("location").value;
-        if (!location) {
-            alert("Please enter a location");
-            return;
-        }
-
-        fetch(`https://nominatim.openstreetmap.org/search?q=${location}&format=json`)
-            .then(response => response.json())
-            .then(data => {
-                if (data.length > 0) {
-                    var lat = parseFloat(data[0].lat);
-                    var lon = parseFloat(data[0].lon);
-
-                    // Move map and place marker
-                    map.setView([lat, lon], 12);
-                    if (marker) {
-                        map.removeLayer(marker);
-                    }
-                    marker = L.marker([lat, lon]).addTo(map)
-                        .bindPopup("Searched Location").openPopup();
-
-                    // Update hidden fields and display
-                    document.getElementById("latitude").value = lat;
-                    document.getElementById("longitude").value = lon;
-                    document.getElementById("selected-location").innerText = `Lat: ${lat}, Lon: ${lon}`;
-                } else {
-                    alert("Location not found");
-                }
-            })
-            .catch(error => console.error("Error:", error));
+      var loc = document.getElementById("location").value;
+      if (!loc) { alert("Please enter a location"); return; }
+      fetch(`https://nominatim.openstreetmap.org/search?q=${loc}&format=json`)
+        .then(response => response.json())
+        .then(data => {
+          if (data.length > 0) {
+            var lat = parseFloat(data[0].lat);
+            var lon = parseFloat(data[0].lon);
+            map.setView([lat, lon], 12);
+            if (marker) { map.removeLayer(marker); }
+            marker = L.marker([lat, lon]).addTo(map).bindPopup("Searched Location").openPopup();
+            document.getElementById("latitude").value = lat;
+            document.getElementById("longitude").value = lon;
+            document.getElementById("selected-location").innerText = "Lat: " + lat + ", Lon: " + lon;
+          } else {
+            alert("Location not found");
+          }
+        })
+        .catch(error => console.error("Error:", error));
     }
-</script>
+  </script>
+</body>
+</html>

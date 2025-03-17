@@ -10,9 +10,9 @@ def payment_page(request):
     """ Renders the payment options page with booking details """
     booking_data = request.session.get("booking_data")
     if not booking_data:
+        print("Session expired or booking data missing!")  # Add debug log
         request.toast_type = 'warning'  # 'error', 'warning', 'info', etc.
         request.toast_message = 'Your session expired. Please book again!'
-
         messages.error(request, "Your session expired. Please book again.")
         return redirect("eventapp:events")
 
@@ -21,9 +21,8 @@ def payment_page(request):
     context = {
         "event": event,
         "booking_data": booking_data,
-        
     }
-    return render(request, "paymentapp/payment_options.html", context,)
+    return render(request, "paymentapp/payment_options.html", context)
 
 
 def confirm_payment(request):
@@ -33,7 +32,6 @@ def confirm_payment(request):
         if not booking_data:
             request.toast_type = 'error'  # 'error', 'warning', 'info', etc.
             request.toast_message = 'Invalid session. Please try again!'
-
             messages.error(request, "Invalid session. Please try again.")
             return redirect("eventapp:events")
 
@@ -43,12 +41,12 @@ def confirm_payment(request):
         # ✅ Create Booking only AFTER payment selection
         booking = Booking.objects.create(
             user=request.user,
-            event_name=event,
+            event=event,  # Correct field
             event_date=event.event_date,
             cus_name=booking_data["cus_name"],
             cus_email=booking_data["cus_email"],
             venue=booking_data["venue"],
-            booking_date=date.today(),  # Set the current date,
+            booking_date=date.today(),  # Set the current date
             total_amount=booking_data["total_amount"],
         )
 
@@ -82,16 +80,15 @@ def confirm_payment(request):
         # ✅ Remove session data after booking
         del request.session["booking_data"]
         request.toast_type = 'success'  # 'error', 'warning', 'info', etc.
-        request.toast_message = f"Booking confirmed! Payment selected: ' { selected_payment_method}"
-
+        request.toast_message = f"Booking confirmed! Payment selected: '{ selected_payment_method}'"
         messages.success(request, "Booking confirmed! Payment selected: " + selected_payment_method)
 
-        
+        return redirect("paymentapp:payment_success")  # Redirect to success page
 
-        return redirect("paymentapp:payment_success", )  # Redirect to success page
-        
-        
-    return redirect("paymentapp:payment_page" , )
+    return redirect("paymentapp:payment_page")
+
+
+
 
 def payment_success(request):
     """ Payment success confirmation page """
