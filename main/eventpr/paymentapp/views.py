@@ -7,29 +7,50 @@ from django.conf import settings
 from datetime import date
 from eventapp.utils import calculate_total_price
 from django.contrib.auth.decorators import login_required
+import logging
+from django.shortcuts import render, redirect
+from django.contrib import messages
+from eventapp.models import Event
+
+# Set up logger
+logger = logging.getLogger(__name__)
 
 def payment_page(request):
     """ Renders the payment options page with booking details """
+    
+    # Log session data before trying to fetch booking_data
+    logger.debug(f"Session data at payment_page: {request.session.items()}")
+
     # Check for booking data in session
     booking_data = request.session.get("booking_data")
-    
+
+    # If booking data is not found, log the error and redirect
     if not booking_data:
-        print("Session expired or booking data missing!")  # Debugging log
+        logger.error(f"Booking data is missing in session. Current session data: {request.session.items()}")
         request.toast_type = 'warning'  # 'error', 'warning', 'info', etc.
         request.toast_message = 'Your session expired. Please book again!'
         messages.error(request, "Your session expired. Please book again.")
         return redirect("eventapp:events")
 
-    # Fetch the event associated with the booking data
-    event = Event.objects.get(id=booking_data['event_id'])
+    # If booking data is found, log it for verification
+    logger.debug(f"Booking data found in session: {booking_data}")
 
-    # Pass relevant context for the payment page
-    context = {
-        "event": event,
-        "booking_data": booking_data,
-        "total_amount": booking_data.get("total_amount", 0),
-    }
-    return render(request, "paymentapp/payment_options.html", context)
+    try:
+        # Fetch the event associated with the booking data
+        event = Event.objects.get(id=booking_data['event_id'])
+
+        # Pass relevant context for the payment page
+        context = {
+            "event": event,
+            "booking_data": booking_data,
+            "total_amount": booking_data.get("total_amount", 0),
+        }
+        return render(request, "paymentapp/payment_options.html", context)
+    
+    except Event.DoesNotExist:
+        logger.error(f"Event with ID {booking_data['event_id']} not found.")
+        messages.error(request, "The event associated with this booking is no longer available.")
+        return redirect("eventapp:events")
 
 
 @login_required

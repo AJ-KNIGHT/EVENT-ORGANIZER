@@ -32,7 +32,8 @@
                             </div>
                         {% endif %}
                         
-                        <form method="POST" class="booking-form">
+                        <form method="POST" action="{% url 'eventapp:select_event_type' slug=event.slug %}">
+
                             {% csrf_token %}
                             
                             <div class="row">

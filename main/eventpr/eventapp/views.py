@@ -260,79 +260,75 @@ from .models import Event, Booking, EventLocation
 from .utils import get_session_booking  # Import session helper
 from .utils import log_session_data
 
+
+
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib import messages
+from django.utils import timezone
+from .forms import BookingForm
+from .models import Booking, Event
+import logging
+
+
+
 logger = logging.getLogger(__name__)
+
 @login_required
 def booking(request, slug=None):
+    # Fetch the event using the slug
     event = get_object_or_404(Event, slug=slug)
-    print("Received slug:", slug)
-
-    # Save event slug in session at the beginning of the booking view
-    request.session['event_slug'] = slug  # Save the event slug in the session
     logger.debug(f"Received event slug: {slug}")
+
+    # Save event slug in session at the start
+    request.session['event_slug'] = slug
     logger.debug(f"Event slug stored in session: {request.session.get('event_slug')}")
-    logger.debug(f"Booking ID stored in session: {request.session.get('booking_id')}")
 
-
-
-    # Retrieve booking instance from session
+    # Retrieve or create booking instance from session
     booking_id = request.session.get('booking_id')
     booking_instance = None
     if booking_id:
         booking_instance = Booking.objects.filter(id=booking_id, user=request.user).first()
 
-    # Retrieve or create customization instance
-    customization_instance = None
-    if booking_instance:
-        customization_instance = EventCustomization.objects.filter(booking=booking_instance).first()
-
     if request.method == "POST":
-        customization_form = EventCustomizationForm(request.POST, instance=customization_instance)
+        # Handle booking form submission
+        form = BookingForm(request.POST)
+        if form.is_valid():
+            # Save booking instance
+            booking_instance = form.save(commit=False)
+            booking_instance.user = request.user
+            booking_instance.event = event
+            booking_instance.save()
 
-        if customization_form.is_valid():
-            with transaction.atomic():
-                # Ensure booking instance has an event_date
-                if not booking_instance:
-                    selected_event_date = request.session.get('selected_event_date')
-                    if not selected_event_date:
-                        messages.error(request, "Please select an event date.")
-                        return redirect('eventapp:select_event_date')
+            # Save complete booking data to session for later use
+            booking_data = {
+                'booking_id': booking_instance.id,
+                'event_slug': event.slug,
+                'selected_tier': request.session.get('selected_tier', 'Minimal'),
+                'selected_event_date': request.session.get('selected_event_date', ''),
+                'event_location': request.session.get('event_location', {}),
+                'venue_subtier': request.session.get('venue_subtier', ''),
+                'cus_name': form.cleaned_data['cus_name'],
+                'cus_email': form.cleaned_data['cus_email'],
+                'cus_ph': form.cleaned_data['cus_ph'],
+            }
+            request.session['booking_data'] = booking_data
+            logger.debug(f"Booking data saved to session: {request.session.get('booking_data')}")
 
-                    booking_instance = Booking.objects.create(
-                        user=request.user,
-                        event=event,
-                        event_date=selected_event_date
-                    )
-                    request.session['booking_id'] = booking_instance.id
+            # Optionally log the session to verify
+            logger.debug(f"Session data after booking creation: {request.session.items()}")
 
-                # Save customization form
-                customization = customization_form.save(commit=False)
-                customization.booking = booking_instance
-                customization.save()
-                logger.debug(f"Customization data saved in session: {request.session.get('customization')}")
-
-
-                # Save booking-related data to session
-                request.session['booking_data'] = {
-                    'event_id': event.id,
-                    'cus_name': request.user.get_full_name(),
-                    'cus_email': request.user.email,
-                    'venue': customization.selected_location or "Custom Venue",
-                    'total_amount': float(booking_instance.total_amount) if booking_instance.total_amount else 0.0,
-                    
-                }
-                logger.debug(f"Customization data saved in session: {request.session.get('customization')}")
-
-
-            messages.success(request, "Booking successful! Your customization has been applied.")
-            return redirect('paymentapp:payment_page')
+            messages.success(request, "Booking successful! Please proceed to the next step for customization.")
+            return redirect('eventapp:event_customization', booking_id=booking_instance.id)
 
     else:
-        customization_form = EventCustomizationForm(instance=customization_instance)
+        form = BookingForm()
 
     return render(request, 'eventapp/booking.html', {
-        'customization_form': customization_form,
+        'form': form,
         'event': event,
     })
+
+
 
 @login_required
 def select_event_type(request, slug):
@@ -447,10 +443,6 @@ def customize_event(request):
     request.session.setdefault('customization', {})
     customization_data = request.session['customization']
     logger.debug(f"Customization data in session: {customization_data}")
-    logger.debug(f"Event slug from session: {event_slug}")
-    logger.debug(f"Selected tier from session: {selected_tier}")
-    logger.debug(f"Selected event date from session: {selected_event_date}")
-
 
     # Prepare add-on configurations (all Boolean add-ons now)
     addon_config_json = json.dumps(ADDON_CONFIG)
@@ -470,53 +462,36 @@ def customize_event(request):
 
     # Generate customization options based on selected tier (only boolean add-ons)
     customization_options = []
-    logger.debug(f"🔍 Available add-ons in config: {list(ADDON_CONFIG.keys())}")
-
     for key, addon in ADDON_CONFIG.items():
         if selected_tier not in addon.get("tiers_allowed", ["Minimal", "Medium", "Premium"]):
             continue
 
         option_data = {
-        "name": key,
-        "display_name": addon.get("label", key.capitalize()),
-        "image": f"/static/eventapp/images/{key}.jpeg",
-        "tiers_allowed": addon.get("tiers_allowed", ["Minimal", "Medium", "Premium"]),
-        "type": addon.get("type", "boolean"),  
-        "price": addon.get("price", 0),  
-        "per_guest": addon.get("per_guest", False),  # Include per_guest flag
-    
+            "name": key,
+            "display_name": addon.get("label", key.capitalize()),
+            "image": f"/static/eventapp/images/{key}.jpeg",
+            "tiers_allowed": addon.get("tiers_allowed", ["Minimal", "Medium", "Premium"]),
+            "type": addon.get("type", "boolean"),
+            "price": addon.get("price", 0),
+            "per_guest": addon.get("per_guest", False),  # Include per_guest flag
         }
 
         customization_options.append(option_data)
-
-    logger.debug(f"Customization options for {selected_tier}: {len(customization_options)} options available.")
-    logger.debug(f"Customization data updated in session: {request.session.get('customization')}")
-    logger.debug(f"Customization options generated: {customization_options}")
-    logger.debug(f"Session data at customize_event view: {request.session.items()}")
-
-
-
 
     # Build context for rendering
     context = {
         'form': form,
         'selected_tier': selected_tier,
         'selected_event_date': selected_event_date,
-        'selected_options_json': json.dumps(customization_data),
         'customization_options': customization_options,
         'tier': selected_tier,
-        'selected_venue': request.session.get('selected_venue', ''),
-        'location_name': request.session.get('event_location', ''),
-        'venue_tier': request.session.get('selected_venue_tier', ''),
         'max_guests': {"Minimal": 50, "Medium": 100, "Premium": 200}.get(selected_tier, 50),
         'today': date.today(),
         'addon_config': addon_config_json,
-        'customization_options_json': json.dumps(customization_options),
     }
 
     logger.debug("Rendering 'customize_event.html' with provided context.")
     return render(request, 'eventapp/customize_event.html', context)
-
 
 
 logger = logging.getLogger("eventapp.customization")
@@ -909,7 +884,13 @@ def base(request):
 def event_detail(request, slug):
     event = get_object_or_404(Event, slug=slug)
     related_events = Event.objects.filter(event_type=event.event_type).exclude(id=event.id).order_by('?')[:3]
+    
+    # Redirect users to the booking page
+    if request.method == "POST":
+        return redirect('eventapp:booking', slug=slug)
+
     return render(request, 'eventapp/event_details.html', {'event': event, 'related_events': related_events})
+
 
 def privacy_policy(request):
     return render(request, 'privacy_policy.html')

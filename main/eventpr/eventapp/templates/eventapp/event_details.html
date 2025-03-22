@@ -27,8 +27,9 @@
                         <li><i class="bi bi-geo-alt"></i> <strong>Location:</strong> {{ event.location }}</li>
                         <li><i class="bi bi-tag"></i> <strong>Price:</strong> ${{ event.price }}</li>
                     </ul>
-                    <a href="{% url 'eventapp:select_event_type' slug=event.slug %}" class="btn btn-primary custom-btn mt-3">
-                        <i class="bi bi-ticket-fill"></i> Book This Event
+                    <a href="{% url 'eventapp:booking' slug=event.slug %}" class="btn btn-primary"><i class="bi bi-ticket-fill"></i> Book This Event</a>
+
+                        
                     </a>
                     
                     
