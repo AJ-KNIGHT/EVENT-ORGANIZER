@@ -81,6 +81,7 @@ def calculate_total_price(customization):
 
 import logging
 from django.conf import settings
+import logging
 
 # Set up a logger to output to terminal
 logger = logging.getLogger('django')
@@ -91,19 +92,29 @@ logger.setLevel(logging.DEBUG)
 
 def log_session_data(request):
     """
-    Logs all session data to the terminal and optionally saves it in a file named after session_key.
+    Logs all session data to the terminal, along with the current view name,
+    and optionally saves it in a file named after session_key.
     """
+    # Get the current view name
+    view_name = request.resolver_match.view_name if request.resolver_match else 'Unknown View'
+
+    # Get session data
     session_data = request.session.items()
+
+    # Create a structured log entry with session and view information
     session_log = {
+        "view_name": view_name,
         "session_key": request.session.session_key,
         "session_data": dict(session_data)
     }
-    logger.debug(f"Session data: {request.session.items()}")
-    # Log to terminal
-    logger.debug("Session Data: %s", session_log)
+
+    # Log session data and view name to terminal
+    logger.debug(f"View: {view_name}")
+    logger.debug(f"Session data: {session_data}")
 
     # Optionally, log to a file with the session_key
     with open(f"session_{request.session.session_key}.log", 'a') as log_file:
-        log_file.write(f"{session_log}\n")
+        log_file.write(f"View: {view_name}\n")
+        log_file.write(f"Session Data: {session_log}\n")
 
     return session_log

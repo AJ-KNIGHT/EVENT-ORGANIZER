@@ -30,9 +30,19 @@ body {
 {% block content %}
 <div class="payment-container">
     <h2>Complete Your Payment</h2>
-    <p>Event: {{ booking_data.event_name }}</p>
-    <p>Venue: {{ booking_data.venue }}</p>
-    <p>Total Amount: ₹{{ booking_data.total_amount }}</p>
+
+    {% comment %}
+        Retrieve session data for event, venue, and total amount
+    {% endcomment %}
+    {% with event_name=request.session.booking_data.event_name %}
+    <p>Event: {{ event_name }}</p>
+    {% endwith %}
+    {% with venue=request.session.booking_data.venue %}
+    <p>Venue: {{ venue }}</p>
+    {% endwith %}
+    {% with total_amount=request.session.booking_data.total_amount %}
+    <p>Total Amount: ₹{{ total_amount }}</p>
+    {% endwith %}
 
     <h3>Select Payment Method:</h3>
     <form method="POST" action="{% url 'paymentapp:confirm_payment' %}">

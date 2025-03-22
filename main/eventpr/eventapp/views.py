@@ -492,6 +492,8 @@ def customize_event(request):
     logger.debug(f"Customization options for {selected_tier}: {len(customization_options)} options available.")
     logger.debug(f"Customization data updated in session: {request.session.get('customization')}")
     logger.debug(f"Customization options generated: {customization_options}")
+    logger.debug(f"Session data at customize_event view: {request.session.items()}")
+
 
 
 
@@ -536,6 +538,11 @@ def update_price(request):
         if not event_slug:
             logger.error("❌ No event selected in session.")
             return JsonResponse({"error": "No event selected."}, status=400)
+        # Confirming slug retrieval before price calculation
+        logger.debug(f"Retrieved event_slug for price update: {event_slug}")
+
+        # Confirming slug retrieval before price calculation
+        logger.debug(f"Retrieved event_slug for price update: {event_slug}")
 
         # Ensure guest count does not exceed tier limit
         max_guests = {"Minimal": 50, "Medium": 100, "Premium": 200}.get(selected_tier, 50)
@@ -561,7 +568,7 @@ def update_price(request):
 
         # Calculate total price with event's base price
         total_price = calculate_dynamic_price(selected_tier, guest_count, total_addon_price, event_slug)
-
+        log_session_data(request)
         # Update session safely
         customization_data = request.session.get("customization", {})
         customization_data.update({"guest_count": guest_count, "selected_options": selected_options})
@@ -569,6 +576,8 @@ def update_price(request):
         request.session.modified = True
 
         logger.debug(f"✅ Calculated price: {total_price} for customization: {json.dumps(selected_options, indent=2)}")
+        logger.debug(f"Session data at customize_event view: {request.session.items()}")
+
         
 
         return JsonResponse({
@@ -604,9 +613,11 @@ def calculate_dynamic_price(tier, guest_count, total_addon_price, event_slug):
         
         logger.debug(f"🔹 Calculating total price with base event slug: {event_slug}")
         logger.debug(f"Guest count: {guest_count}, Addon price: {total_addon_price}")
+        
 
         # Fetch event's base estimated price
-        event = Event.objects.get(slug=event_slug)
+        event = get_object_or_404(Event, slug=event_slug)
+
         base_price = Decimal(event.estimated_price)  # Event base price
         
         logger.debug(f"Base price of event '{event_slug}': {base_price}")
@@ -659,11 +670,14 @@ def customization_summary(request, booking_id):
     event_location_name = request.session.get('event_location', '')
     customization = request.session.get('customization', {})
     event_slug = request.session.get('event_slug', '')  # Ensure this is a string
+    selected_tier = request.session.get('selected_tier', '')  # Ensure this is retrieved as well
     
     logger.debug(f"Retrieved customization from session: {customization}")
     logger.debug(f"Selected venue from session: {selected_venue}")
     logger.debug(f"Event slug from session: {event_slug}")
-    logger.debug(f"Calculating price with params: event_slug={event_slug}, tier={selected_tier}, guest_count={customization.get('guest_count', 0)}")
+    logger.debug(f"Selected tier from session: {selected_tier}")
+    logger.debug(f"Session data at customize_event view: {request.session.items()}")
+
     
     # Get the event_slug from session (no need to fetch from booking)
     if not event_slug:

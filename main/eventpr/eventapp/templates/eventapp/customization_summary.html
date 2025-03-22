@@ -3,16 +3,20 @@
 {% block content %}
 <h2>Customization Summary</h2>
 
-<p><strong>Event:</strong> {{ customization.event_name }}</p>
-<p><strong>Venue:</strong> {{ selected_venue }}</p>
-<p><strong>Location:</strong> {{ event_location }}</p>
-<p><strong>Event Tier:</strong> {{ venue_tier }}</p>
-<p><strong>Guests:</strong> {{ guest_count }}</p>
+<p><strong>Event:</strong> {{ request.session.event_slug }}</p>  <!-- Display event_slug from session -->
+<p><strong>Event Type:</strong> {{ request.session.selected_event_type | capfirst }}</p>  <!-- Display event type from session -->
+<p><strong>Venue:</strong> {{ request.session.selected_venue | capfirst }}</p>  <!-- Display selected venue from session -->
+<p><strong>Venue Tier:</strong> {{ request.session.selected_tier | capfirst }}</p>  <!-- Display venue tier from session -->
+<p><strong>Location:</strong> {{ request.session.event_location.full_address }}</p>  <!-- Display event location from session -->
+<p><strong>Event Date:</strong> {{ request.session.selected_event_date }}</p>  <!-- Display selected event date from session -->
+
+<h3>Guest Count:</h3>
+<p>{{ request.session.customization.guest_count }}</p>  <!-- Display guest count from session -->
 
 <h3>Selected Add-ons:</h3>
 <ul>
-    {% for addon in selected_addons %}
-        <li>{{ addon }} (₹ {{ addon.price }})</li>
+    {% for addon in request.session.customization.selected_options %}
+        <li>{{ addon.name | capfirst }} (₹ {{ addon.price }})</li>  <!-- Display selected add-ons from session -->
     {% endfor %}
 </ul>
 
