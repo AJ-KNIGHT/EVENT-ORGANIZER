@@ -4,3 +4,4 @@ env2/
 .venv/
 __pycache__/
 .vscode/
+.qodo

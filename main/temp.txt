@@ -22,3 +22,23 @@ chatgpt : https://chatgpt.com/share/67629026-3a28-8009-aeef-671b6f05d1f6
 
 
 twilio (sendgrid) tfa ()
+
+okay i will clear a few things for you , we are using opensource maps and stuff like leaflet .
+the gmaps or other maps that are paid . the opensource maps however isnt detailed and we cant get stuff like venue and all from it . so we are telling the users that you can choose youre preffered location and our team will get the closest venue you want based on the details we get from venue page .
+After the user clicks on book this event from event details page they are taken to the event tier page 
+where they will choose from essential , premium and luxury tiers .these tiers will further dicatate the rest of the customizations the user gets.after selecting event tier its saved and the user is send to a location page and from there the user selects the location they want the event to take place in.gets the complete address with map picked/searched location (the template has been already been made  for event location now we just need to store location both as text complete address and in whatever other way to  give a reverse location link that can be opened in any location app/site  ). the text based complete location is shown in other places since that is better . 
+saves the location and goes to the venue tier page , there the user can select minimal/medium/luxury venues and if they want a custom venue . all venue tiers arent available for all event tiers , only people of the highest event tier can choose from all three venues . we also allow a custom venue option. 
+we are using opensource maps so we cannot neither collect data to show pre made real venue options or scrap nearby venue data from the net.
+so we tell the user something like our team will get the closest venue you want based on the details we get from venue tier and event location pages (unless they are choosing custom venue , then its on the user we dont need to care).
+after the venue tier we have necessary data and we take them to event customization page and there we  show them all the data from addon config .py where different addons with  suboptions are shown and other boolean addons that just has an image and description are shown. the addons and its suboptions are all under control of tier and some are only available for higher tiers.all of the addons will be in cards and the addons can be opened in a popup where details likethe suboptions (if it has any) are shown or just the description and heading. the page also shows summary like event tier , venue tier , event name  and options to go back to the venue page or location page or event tier page (since we are restricting a lot of the customization with tiers the user will be drawn to update the and edit a lot since they feel fear of missing out).and on the right side there will be selected addons , the date the user wants to book the event for (if booking date less than event availability date then you cant book it for that date , its shown in a little hover box when user tries to do so tool tip or something)and ofcource there will be guest number which is also controlled by tier enforcing .
+the price is calculated on time based on stuff like per guest or not(set in addon py) since some addons like for example catering needs to have its price calculation based on the number of guests chosen.
+most of the handling should be handled in backend since javascript returns a lot of errors and dosent work well most of the time. javascript and ajax can be used to reference functions definfined in backend to simplify a lot of process handling and to lighten up the front end.
+after price calculation the user goes to a quick customization summary dedicated page where they will see everything til now to make sure they want to proceed to checkout(if not they can edit , we have to give option)and after clicking proceed they are taken to payment page .
+over there at payment page we can only show template and store the price related stuff in paymentapp since we cant use the options like paypal or razorpay or any thirdparty they are paid to register options now.
+we show a page which says some specific price related details and a cashondelivary already selected option (options like upi and netbanking will be shown but will be disabled saying not available now since dont have payment gateways).
+then we send necessry mails and thats it for booking workflow .
+
+
+<svg class="arrow-icon" viewBox="0 0 24 24">
+                                <path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/>
+                            </svg>

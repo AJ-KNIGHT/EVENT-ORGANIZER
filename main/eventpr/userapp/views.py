@@ -347,8 +347,8 @@ def user_details(request, user_id):
     event_slug = None
 
     # Check if there's an upcoming event and if it has a valid slug
-    if upcoming_event and upcoming_event.event_name and upcoming_event.event_name.slug:
-        event_slug = upcoming_event.event_name.slug
+    if upcoming_event and upcoming_event.event and upcoming_event.event.slug:
+        event_slug = upcoming_event.event.slug
 
     print(upcoming_event)  # Debugging: Print the upcoming_event
 

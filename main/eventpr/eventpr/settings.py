@@ -38,8 +38,31 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    
+    # Custom middleware for logging session data
+    'eventapp.middleware.SessionLoggerMiddleware',
 
 ]
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'file': {
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': 'session_debug.log',
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['file'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+    },
+}
+
 
 ROOT_URLCONF = "eventpr.urls"
 
@@ -121,6 +144,7 @@ ADMIN_EMAIL = 'amal183626@gmail.com'  # or the actual admin email
 
 AUTH_USER_MODEL = 'userapp.CustomUser'
 
+
 LOGOUT_REDIRECT_URL = "/user/login/"
 from django.urls import reverse_lazy
 
@@ -132,4 +156,4 @@ SESSION_COOKIE_AGE = 86400  # 1 day in seconds, adjust as necessary
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False  # Keeps session alive between browser sessions
 
 # settings.py
-SESSION_ENGINE = "django.contrib.sessions.backends.db"
+SESSION_ENGINE = "django.contrib.sessions.backends.db"  # or cache-based storage

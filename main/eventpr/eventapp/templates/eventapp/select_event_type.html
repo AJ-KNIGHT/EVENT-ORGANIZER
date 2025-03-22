@@ -1,43 +1,343 @@
 {% extends "base.html" %}
 {% load static %}
 {% block content %}
-<div class="container mt-5">
-    <h2 class="text-center mb-4">Select Your Event Type</h2>
-    <div class="row">
-        <!-- Minimal Tier -->
-        <div class="col-md-4">
-            <div class="card tier-card p-3">
-                <h4>Minimal Tier</h4>
-                <p>Basic setup, simple decorations, max 50 guests.</p>
-                <p class="price-label">Base Price: $0</p>
-                <button class="btn btn-primary btn-select" onclick="selectTier('Minimal')">Select</button>
+<div class="tier-container">
+    <div class="selection-wrapper">
+        <h2 class="selection-header">Create Your Perfect Event</h2>
+
+        <form id="eventTypeForm" method="post" class="event-form">
+            {% csrf_token %}
+
+            <div class="form-group custom-select">
+                <label for="{{ form.event_type.id_for_label }}">Event Category</label>
+                <div class="select-wrapper">
+                    {{ form.event_type }}
+                    <svg class="select-arrow" viewBox="0 0 24 24">
+                        <path d="M7 10l5 5 5-5z" />
+                    </svg>
+                </div>
             </div>
-        </div>
-        <!-- Medium Tier -->
-        <div class="col-md-4">
-            <div class="card tier-card p-3">
-                <h4>Medium Tier</h4>
-                <p>Themed decorations, DJ, up to 100 guests.</p>
-                <p class="price-label">Base Price: $500</p>
-                <button class="btn btn-primary btn-select" onclick="selectTier('Medium')">Select</button>
+
+            <div class="tier-grid">
+                <!-- Minimal Tier -->
+                <div class="tier-card minimal-tier">
+                    <div class="tier-content">
+                        <h3 class="tier-title">Essential Package</h3>
+                        <div class="tier-details">
+                            <ul class="tier-features">
+                                <li>✓ Basic event setup</li>
+                                <li>✓ Standard seating</li>
+                                <li>✓ Up to 50 guests</li>
+                                <li>✓ Basic sound system</li>
+                            </ul>
+                            <div class="price-box">
+                                <span class="price">$0</span>
+                                <span class="price-note">starter package</span>
+                            </div>
+                        </div>
+                        <button onclick="selectTier('Minimal', event)" class="tier-select-btn">
+                            Choose Essential
+                            <svg class="arrow-icon" viewBox="0 0 24 24">
+                                <path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Medium Tier -->
+                <div class="tier-card medium-tier">
+                    <div class="tier-content">
+                        <h3 class="tier-title">Premium Experience</h3>
+                        <div class="tier-details">
+                            <ul class="tier-features">
+                                <li>✓ Themed decorations</li>
+                                <li>✓ Professional DJ setup</li>
+                                <li>✓ Up to 100 guests</li>
+                                <li>✓ Premium catering</li>
+                            </ul>
+                            <div class="price-box">
+                                <span class="price">$500</span>
+                                <span class="price-note">most popular</span>
+                            </div>
+                        </div>
+                        <button onclick="selectTier('Medium', event)" class="tier-select-btn">
+                            Choose Premium
+                            <svg class="arrow-icon" viewBox="0 0 24 24">
+                                <path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Premium Tier -->
+                <div class="tier-card premium-tier">
+                    <div class="tier-content">
+                        <h3 class="tier-title">Luxury Celebration</h3>
+                        <div class="tier-details">
+                            <ul class="tier-features">
+                                <li>✓ Luxury venue setup</li>
+                                <li>✓ VIP guest treatment</li>
+                                <li>✓ Unlimited guests</li>
+                                <li>✓ Professional photography</li>
+                            </ul>
+                            <div class="price-box">
+                                <span class="price">$1000</span>
+                                <span class="price-note">exclusive service</span>
+                            </div>
+                        </div>
+                        <button onclick="selectTier('Luxury', event)" class="tier-select-btn">
+                            Choose Luxury
+                            <svg class="arrow-icon" viewBox="0 0 24 24">
+                                <path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z" />
+                            </svg>
+                        </button>
+
+                    </div>
+                </div>
             </div>
-        </div>
-        <!-- Premium Tier -->
-        <div class="col-md-4">
-            <div class="card tier-card p-3">
-                <h4>Premium Tier</h4>
-                <p>Luxury setup, VIP treatment, premium photography.</p>
-                <p class="price-label">Base Price: $1000</p>
-                <button class="btn btn-primary btn-select" onclick="selectTier('Premium')">Select</button>
-            </div>
-        </div>
+
+            <input type="hidden" name="tier" id="tierInput" value="">
+
+        </form>
     </div>
 </div>
 
 <script>
-    function selectTier(tier) {
-        window.location.href = "{% url 'eventapp:event_location' %}?tier=" + tier;
+    function selectTier(tier, event) {
+        console.log("Selected tier:", tier);
+
+        if (!event) {
+            console.error("Event object is undefined. Make sure 'event' is passed from onclick.");
+            return;
+        }
+
+        // Remove 'selected' class from all cards
+        document.querySelectorAll('.tier-card').forEach(card => card.classList.remove('selected'));
+
+        // Set selected tier in hidden input
+        document.getElementById('tierInput').value = tier;
+
+        // Highlight selected card
+        event.currentTarget.closest('.tier-card').classList.add('selected');
+
+        // Show alert
+        alert(`You selected the ${tier} package.`);
+
+        // Submit form after a short delay
+        setTimeout(() => {
+            document.getElementById('eventTypeForm').submit();
+        }, 800);
     }
+
+
+
+
 </script>
+
+<style>
+    :root {
+        --primary: #6366f1;
+        --success: #10b981;
+        --premium: #f59e0b;
+        --luxury: #8b5cf6;
+        --text: #1e293b;
+        --light: #f8fafc;
+    }
+
+    .tier-container {
+        max-width: 1200px;
+        margin: 2rem auto;
+        padding: 2rem;
+        background: rgba(255, 255, 255, 0.95);
+        border-radius: 1.5rem;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    }
+
+    .selection-header {
+        text-align: center;
+        font-size: 2.5rem;
+        color: var(--text);
+        margin-bottom: 2rem;
+        font-weight: 700;
+    }
+
+    .custom-select {
+        margin-bottom: 3rem;
+    }
+
+    .custom-select label {
+        display: block;
+        margin-bottom: 0.75rem;
+        font-weight: 600;
+        color: var(--text);
+    }
+
+    .select-wrapper {
+        position: relative;
+        max-width: 500px;
+        margin: 0 auto;
+    }
+
+    .custom-select select {
+        width: 100%;
+        padding: 1rem 2rem;
+        border: 2px solid #e2e8f0;
+        border-radius: 0.75rem;
+        appearance: none;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+    }
+
+    .select-arrow {
+        position: absolute;
+        right: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 24px;
+        height: 24px;
+        fill: currentColor;
+        pointer-events: none;
+    }
+
+    .tier-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 2rem;
+    }
+
+    .tier-card {
+        background: white;
+        border-radius: 1rem;
+        padding: 1.5rem;
+        transition: all 0.3s ease;
+        border: 2px solid transparent;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .tier-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: var(--primary);
+    }
+
+    .tier-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    }
+
+    .tier-card.selected {
+        border-color: var(--primary);
+        background: rgba(99, 102, 241, 0.03);
+    }
+
+    .tier-title {
+        font-size: 1.5rem;
+        color: var(--text);
+        margin-bottom: 1rem;
+        font-weight: 700;
+    }
+
+    .tier-features {
+        list-style: none;
+        padding: 0;
+        margin: 1.5rem 0;
+    }
+
+    .tier-features li {
+        padding: 0.5rem 0;
+        color: #64748b;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .price-box {
+        text-align: center;
+        margin: 2rem 0;
+        padding: 1rem;
+        background: var(--light);
+        border-radius: 0.75rem;
+    }
+
+    .price {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--text);
+        display: block;
+    }
+
+    .price-note {
+        font-size: 0.9rem;
+        color: #64748b;
+    }
+
+    .tier-select-btn {
+        width: 100%;
+        padding: 1rem;
+        border: none;
+        border-radius: 0.75rem;
+        background: var(--primary);
+        color: white;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        transition: all 0.3s ease;
+    }
+
+    .tier-select-btn:hover {
+        background: #4f46e5;
+        transform: translateY(-2px);
+    }
+
+    .arrow-icon {
+        width: 20px;
+        height: 20px;
+        fill: currentColor;
+    }
+
+    /* Tier-specific styling */
+    .minimal-tier::before {
+        background: var(--success);
+    }
+
+    .medium-tier::before {
+        background: var(--premium);
+    }
+
+    .premium-tier::before {
+        background: var(--luxury);
+    }
+
+    .minimal-tier .tier-select-btn {
+        background: var(--success);
+    }
+
+    .medium-tier .tier-select-btn {
+        background: var(--premium);
+    }
+
+    .premium-tier .tier-select-btn {
+        background: var(--luxury);
+    }
+
+    .minimal-tier .tier-select-btn:hover {
+        background: #059669;
+    }
+
+    .medium-tier .tier-select-btn:hover {
+        background: #d97706;
+    }
+
+    .premium-tier .tier-select-btn:hover {
+        background: #7c3aed;
+    }
+</style>
 {% endblock content %}
 {% block footer %}{% endblock %}

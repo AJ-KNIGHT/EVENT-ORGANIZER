@@ -7,12 +7,19 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from .models import CustomUser
 
+from django.contrib import admin
+from .models import CustomUser, ChangeRequest
+
 @admin.register(CustomUser)
-class CustomUserAdmin(UserAdmin):  # Use UserAdmin to manage user fields
+class CustomUserAdmin(admin.ModelAdmin):  # or extend UserAdmin if preferred
     list_display = ('username', 'email', 'phone_number', 'is_active', 'is_staff')
-    fieldsets = UserAdmin.fieldsets + (  # Extend default fields
-        ("Additional Info", {"fields": ("phone_number", "address", "profile_picture")}),
-    )
+    # You can extend fieldsets if needed
+
+@admin.register(ChangeRequest)
+class ChangeRequestAdmin(admin.ModelAdmin):
+    list_display = ('user', 'request_type', 'new_value', 'created_at')
+    list_filter = ('request_type',)
+    search_fields = ('user__username', 'new_value')
 
 # Alternative way (if @admin.register doesn't work)
 # admin.site.register(CustomUser, CustomUserAdmin)
@@ -80,5 +87,4 @@ class ChangeRequestAdmin(admin.ModelAdmin):
 
     reject_request.short_description = "Reject selected change requests"
 
-# Register the ChangeRequest model with the admin
-admin.site.register(ChangeRequest, ChangeRequestAdmin)
+

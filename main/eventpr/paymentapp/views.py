@@ -5,6 +5,8 @@ from eventapp.views import Event , Booking ,Payment
 from userapp.utils import send_html_email
 from django.conf import settings
 from datetime import date
+from eventapp.utils import calculate_total_price
+from django.contrib.auth.decorators import login_required
 
 def payment_page(request):
     """ Renders the payment options page with booking details """
@@ -25,33 +27,38 @@ def payment_page(request):
     return render(request, "paymentapp/payment_options.html", context)
 
 
+@login_required
 def confirm_payment(request):
-    """ Confirms payment and creates booking after selection """
+    """ Confirms payment and saves all session data to database """
     if request.method == "POST":
-        booking_data = request.session.get("booking_data")
-        if not booking_data:
-            request.toast_type = 'error'  # 'error', 'warning', 'info', etc.
-            request.toast_message = 'Invalid session. Please try again!'
-            messages.error(request, "Invalid session. Please try again.")
+        if not request.session.get("event_slug"):
+            messages.error(request, "Session expired. Please start over.")
             return redirect("eventapp:events")
 
-        event = Event.objects.get(id=booking_data['event_id'])
+        event = Event.objects.get(slug=request.session["event_slug"])
         selected_payment_method = request.POST.get("payment_method", "COD")
 
-        # ✅ Create Booking only AFTER payment selection
+        # ✅ Create Booking (Final Step)
         booking = Booking.objects.create(
             user=request.user,
-            event=event,  # Correct field
-            event_date=event.event_date,
-            cus_name=booking_data["cus_name"],
-            cus_email=booking_data["cus_email"],
-            venue=booking_data["venue"],
-            booking_date=date.today(),  # Set the current date
-            total_amount=booking_data["total_amount"],
+            event=event,
+            event_date=request.session.get("selected_event_date"),
+            venue=request.session.get("selected_venue"),
+            total_amount=calculate_total_price(request.session.get("customization", {})),
         )
 
-        # ✅ Create Payment Record
-        payment = Payment.objects.create(
+        # ✅ Create Event Customization
+        EventCustomization.objects.create(
+            booking=booking,
+            tier=request.session.get("selected_tier", "Minimal"),
+            selected_options=request.session.get("customization", {}),
+            guest_count=request.session.get("customization", {}).get("guest_count", 0),
+            venue_subtier=request.session.get("venue_subtier"),
+            custom_venue_description=request.session.get("custom_venue_description", ""),
+        )
+
+        # ✅ Create Payment
+        Payment.objects.create(
             user=request.user,
             booking=booking,
             amount=booking.total_amount,
@@ -59,31 +66,10 @@ def confirm_payment(request):
             is_paid=False if selected_payment_method == "COD" else True
         )
 
-        booking.payment = payment
-        booking.save()
-
-        # ✅ Send Email Confirmations (User + Admin)
-        send_html_email(
-            subject=f"Booking Confirmation for {event.name}",
-            template_name="email/booking_confirmation_email.html",
-            context={"cus_name": booking.cus_name, "event_name": event.name, "total_amount": booking.total_amount},
-            recipient_list=[booking.cus_email],
-        )
-
-        send_html_email(
-            subject=f"New Booking for {event.name}",
-            template_name="email/new_booking_notification.html",
-            context={"event_name": event.name, "cus_name": booking.cus_name, "total_amount": booking.total_amount},
-            recipient_list=[settings.ADMIN_EMAIL],
-        )
-
-        # ✅ Remove session data after booking
-        del request.session["booking_data"]
-        request.toast_type = 'success'  # 'error', 'warning', 'info', etc.
-        request.toast_message = f"Booking confirmed! Payment selected: '{ selected_payment_method}'"
-        messages.success(request, "Booking confirmed! Payment selected: " + selected_payment_method)
-
-        return redirect("paymentapp:payment_success")  # Redirect to success page
+        # ✅ Clear session after saving
+        request.session.flush()
+        messages.success(request, "Booking confirmed!")
+        return redirect("paymentapp:payment_success")
 
     return redirect("paymentapp:payment_page")
 

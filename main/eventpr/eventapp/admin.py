@@ -22,23 +22,54 @@ admin.site.register(Contact)
 
 
 # Register the Booking model with custom admin
+
+# Register the Booking model with custom admin
 class BookingAdmin(admin.ModelAdmin):
-    list_display = ('id', 'user', 'get_event_name', 'booking_date', 'venue')
+    list_display = ('id', 'user', 'get_event_name', 'booking_date', 'venue_tier', 'total_amount', 'status')
 
     def get_event_name(self, obj):
-        return obj.event.name  # Assuming Event model has 'name' field
+        return obj.event.name  # Display the event name
 
     get_event_name.admin_order_field = 'event'  # Allows sorting by event name
     get_event_name.short_description = 'Event Name'  # Column header in Admin panel
 
+    def venue_tier(self, obj):
+        return obj.venue_tier  # Display the venue tier (Minimal, Medium, Luxury)
+
+    venue_tier.short_description = 'Venue Tier'
+
+    def total_amount(self, obj):
+        return obj.total_amount  # Display the total amount for the booking
+
+    total_amount.short_description = 'Total Amount'
+
+admin.site.register(Booking, BookingAdmin)
+
 #from .models import ChatbotQA
 
+@admin.register(EventCustomization)
+class EventCustomizationAdmin(admin.ModelAdmin):
+    list_display = ('get_user', 'get_event', 'get_selected_options', 'total_price')
+
+    def get_user(self, obj):
+        return obj.booking.user.username if obj.booking.user else "N/A"
+    get_user.short_description = "User"
+
+    def get_event(self, obj):
+        return obj.booking.event.name if obj.booking.event else "N/A"
+    get_event.short_description = "Event"
+
+    def get_selected_options(self, obj):
+        return ", ".join([f"{key}: {value['name']}" for key, value in obj.add_ons.items()])
+    get_selected_options.short_description = "Selected Options"
+
+    def total_price(self, obj):
+        return obj.calculate_total_price()  # Show the calculated total price for the customization
+
+    total_price.short_description = "Total Price"
 
 
 
-
-# Only register Booking with the BookingAdmin class
-admin.site.register(Booking, BookingAdmin)
 
 
 class JsonImportForm(forms.Form):
@@ -101,15 +132,25 @@ class ChatbotQAAdmin(admin.ModelAdmin):
 class AddOnAdmin(admin.ModelAdmin):
     list_display = ('name', 'options')  # Adjust fields as needed
 
-@admin.register(EventCustomization)
-class EventCustomizationAdmin(admin.ModelAdmin):
-    list_display = ('get_user', 'get_event', 'selected_options', 'total_price')
 
-    def get_user(self, obj):
-        return obj.booking.user.username if obj.booking.user else "N/A"
-    get_user.short_description = "User"
+from django.contrib import admin
+from django.utils.html import format_html
+from .models import EventLocation
 
-    def get_event(self, obj):
-        return obj.booking.event.name if obj.booking.event else "N/A"
-    get_event.short_description = "Event"
+class EventLocationAdmin(admin.ModelAdmin):
+    list_display = ("booking", "full_address", "latitude", "longitude", "maps_link")
 
+    def maps_link(self, obj):
+        """Show clickable links to open the location on different map services."""
+        if obj.latitude and obj.longitude:
+            return format_html(
+                '<a href="{}" target="_blank" style="color: blue; font-weight: bold;">Google Maps</a> | '
+                '<a href="{}" target="_blank" style="color: green; font-weight: bold;">OpenStreetMap</a>',
+                obj.google_maps_link(),
+                obj.openstreetmap_link(),
+            )
+        return "No Location Set"
+    
+    maps_link.short_description = "View on Map"
+
+admin.site.register(EventLocation, EventLocationAdmin)

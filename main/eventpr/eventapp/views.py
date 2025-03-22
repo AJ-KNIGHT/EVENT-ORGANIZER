@@ -67,7 +67,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 
 from .forms import EventCustomizationForm, EventTypeForm
 from .models import Event, Booking, EventCustomization
-from .addon_config import ADDON_CONFIG  # Make sure this file exists as per our plan
+
 
 import json
 from django.contrib import messages
@@ -114,7 +114,7 @@ import json
 import math
 import requests
 from decimal import Decimal
-
+from django.utils.text import slugify
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -123,261 +123,11 @@ from django.utils.timezone import now
 
 from .forms import BookingForm, EventCustomizationForm, EventTypeForm
 from .models import Event, Booking, EventCustomization, AddOn, EventLocation
-from .addon_config import ADDON_CONFIG
+
 from .utils import get_coordinates  # Assuming get_coordinates is defined in utils.py
-
-
-
-def clear_booking_session(request):
-    """Clears booking-related session data after booking completion."""
-    for key in ['event_slug', 'selected_event_type', 'base_price', 'booking_id', 'selected_tier', 'event_location', 'user_lat', 'user_lon']:
-        request.session.pop(key, None)
-
-
-def booking(request, slug=None):
-    event = get_object_or_404(Event, slug=slug)
-    if event.event_date < now().date() or not event.is_available:
-        messages.error(request, "This event is no longer available for booking.")
-        return redirect('event_detail', slug=slug)
-
-    if request.method == "POST":
-        booking_form = BookingForm(request.POST)
-        customization_form = EventCustomizationForm(request.POST)
-        if booking_form.is_valid() and customization_form.is_valid():
-            booking = booking_form.save(commit=False)
-            booking.user = request.user
-            booking.event = event
-            booking.event_date = event.event_date
-            booking.save()
-            
-            # Save session data for later use during payment
-            request.session['booking_data'] = {
-                'event_id': event.id,
-                'cus_name': request.user.get_full_name(),
-                'cus_email': request.user.email,
-                'venue': booking.venue,
-                'total_amount': booking.total_amount,
-            }
-
-            # Handle customization and update total amount
-            customization, _ = EventCustomization.objects.get_or_create(booking=booking)
-            customization_form = EventCustomizationForm(request.POST, instance=customization)
-            if customization_form.is_valid():
-                customization_form.save()
-
-            booking.total_amount = customization.calculate_price()
-            booking.save(update_fields=['total_amount'])
-            messages.success(request, "Booking successful! Your customization has been applied.")
-            return redirect('paymentapp:payment_page')
-    else:
-        initial_data = {'cus_name': request.user.get_full_name(), 'cus_email': request.user.email}
-        booking_form = BookingForm(initial=initial_data)
-        customization_form = EventCustomizationForm()
-
-    return render(request, 'eventapp/booking.html', {
-        'booking_form': booking_form,
-        'customization_form': customization_form,
-        'event': event,
-    })
-
-
-@login_required
-def select_event_type(request):
-    """
-    Allows the user to select the event type and tier.
-    Stores the event slug, selected event type, and tier in session.
-    """
-    event_slug = request.GET.get('event')
-    if event_slug:
-        request.session['event_slug'] = event_slug
-
-    if request.method == 'POST':
-        form = EventTypeForm(request.POST)
-        if form.is_valid():
-            request.session['selected_event_type'] = form.cleaned_data['event_type']
-            # Get tier from POST (if provided) and store it in session.
-            request.session['selected_tier'] = request.POST.get('tier', 'Minimal').capitalize()
-            return redirect('eventapp:event_location')  # Redirect to Event Location page
-    else:
-        form = EventTypeForm()
-
-    return render(request, 'eventapp/select_event_type.html', {'form': form})
-
-
-@login_required
-def customize_event(request):
-    """
-    Handles event customization. Ensures a booking exists, then retrieves or creates the EventCustomization instance.
-    Uses the selected tier (from session or GET parameter) to dynamically build allowed addon options and initialize the form.
-    Also passes the chosen venue, location, and venue tier to the template.
-    """
-    event_slug = request.session.get('event_slug')
-    if not event_slug:
-        messages.error(request, "Please select an event first.")
-        return redirect('eventapp:select_event_type')
-
-    event = get_object_or_404(Event, slug=event_slug)
-    selected_tier = request.session.get('selected_tier', 'Minimal')
-
-    # Create (or retrieve) the booking.
-    booking, created = Booking.objects.get_or_create(user=request.user, event=event,defaults={
-        'event_date': event.event_date,   # Use the event's date as default
-        'cus_name': request.user.get_full_name(),
-        'cus_email': request.user.email,
-    })
-    
-    # Ensure the booking is saved before proceeding to the EventCustomization creation
-    booking.save()
-
-    request.session['booking_id'] = booking.id
-
-    # Store the booking data in the session (convert Decimal to float for total_amount)
-    request.session['booking_data'] = {
-        'event_id': event.id,
-        'cus_name': request.user.get_full_name(),
-        'cus_email': request.user.email,
-        'venue': booking.venue,
-        'total_amount': float(booking.total_amount),  # Convert Decimal to float
-    }
-
-    # Retrieve (or create) the customization instance.
-    customization, _ = EventCustomization.objects.get_or_create(booking=booking)
-
-    # Optionally override tier from GET parameters.
-    if request.GET.get('tier'):
-        selected_tier = request.GET.get('tier').capitalize()
-    if customization.tier != selected_tier:
-        customization.tier = selected_tier
-        customization.save(update_fields=['tier'])
-
-    if request.method == 'POST':
-        form = EventCustomizationForm(request.POST, instance=customization, selected_tier=selected_tier)
-        if form.is_valid():
-            customization = form.save()
-            booking.total_amount = customization.calculate_price()
-            booking.save(update_fields=['total_amount'])
-            messages.success(request, "Your event customization has been saved!")
-            return redirect('eventapp:customization_summary', booking_id=booking.id)
-    else:
-        form = EventCustomizationForm(instance=customization, selected_tier=selected_tier)
-
-    # Build allowed addon options from ADDON_CONFIG based on the selected tier.
-    customization_options = []
-    for key, addon in ADDON_CONFIG.items():
-        tiers_allowed = addon.get("tiers_allowed", ["Minimal", "Medium", "Premium"])
-        if selected_tier in tiers_allowed:
-            customization_options.append({
-                "name": key,
-                "display_name": addon.get("label", key.capitalize()),
-                "image": f"/static/eventapp/images/{key}.png",
-                "tiers_allowed": tiers_allowed,
-            })
-
-    # Retrieve additional details from session:
-    selected_venue = request.session.get('selected_venue', '')
-    location_name = request.session.get('event_location', '')
-    venue_tier = request.session.get('selected_tier', '')
-    print(f"Booking Data in Session: {request.session.get('booking_data')}")
-
-
-    context = {
-        'form': form,
-        'booking': booking,
-        'selected_tier': selected_tier,
-        'selected_options_json': json.dumps(customization.selected_options or {}),
-        'customization_options': customization_options,
-        'addon_config': ADDON_CONFIG,
-        'tier': selected_tier,  # for template hidden input
-        'selected_venue': selected_venue,
-        'location_name': location_name,
-        'venue_tier': venue_tier,
-    }
-    return render(request, 'eventapp/customize_event.html', context)
-
-
-
-
-
-@login_required
-def customization_summary(request, booking_id):
-    """Displays the customization summary before proceeding to payment."""
-    booking = get_object_or_404(Booking, id=booking_id, user=request.user)
-    customization = get_object_or_404(EventCustomization, booking=booking)
-
-    # Retrieve selected venue and location from session.
-    selected_venue = request.session.get('selected_venue', '')
-    event_location_name = request.session.get('event_location', '')
-    print(f"Booking Data in Session: {request.session.get('booking_data')}")
-
-
-    # Prepare the context for the template
-    context = {
-        'booking': booking,
-        'customization': customization,
-        'selected_venue': selected_venue,
-        'event_location': event_location_name,
-        'venue_tier': request.session.get('selected_tier', ''),
-    }
-
-    return render(request, 'eventapp/customization_summary.html', context)
-
-
-
-
-def update_price(request):
-    """
-    AJAX view to update the total price.
-    Expects 'tier', 'guest_count', and 'selected_options' in POST data.
-    Returns a JSON response with the calculated total price.
-    The calculation multiplies (base price + addon cost) by guest count.
-    (The final price is computed by the model upon form submission.)
-    """
-    if request.method == "POST":
-        tier = request.POST.get('tier', 'Minimal').capitalize()
-        try:
-            guest_count = int(request.POST.get('guest_count', 0))
-        except ValueError:
-            return JsonResponse({"error": "Invalid guest count."}, status=400)
-
-        # Enforce tier-specific guest limits.
-        tier_guest_limits = {"Minimal": 50, "Medium": 100, "Premium": 200}
-        if guest_count > tier_guest_limits.get(tier, 50):
-            return JsonResponse({"error": f"Guest count exceeds {tier} tier limit."}, status=400)
-
-        # Base price by tier.
-        tier_pricing = {"Minimal": Decimal('0'), "Medium": Decimal('500'), "Premium": Decimal('1000')}
-        base_price = tier_pricing.get(tier, Decimal('0'))
-
-        # Simplified addon cost mapping for AJAX price estimation.
-        addon_costs = {
-            "catering": Decimal('300'),
-            "entertainment": Decimal('200'),
-            "decorations": Decimal('100'),
-            "event_manager": Decimal('100'),
-            "medical_support": Decimal('100'),
-            "cleanup_service": Decimal('100'),
-            "lighting_effects": Decimal('100'),
-            "audio_visual": Decimal('100'),
-            "photography": Decimal('100'),
-        }
-
-
-        selected_options = request.POST.getlist('selected_options[]', [])
-
-
-        extra_cost = sum(addon_costs.get(opt, Decimal('0')) for opt in selected_options)
-
-        total_price = (base_price + extra_cost) * guest_count
-        return JsonResponse({"total_price": str(total_price)})
-
-    return JsonResponse({"error": "Invalid request method."}, status=400)
-
-
-def event_detail(request, slug):
-    event = get_object_or_404(Event, slug=slug)
-    related_events = Event.objects.filter(event_type=event.event_type).exclude(id=event.id).order_by('?')[:3]
-    return render(request, 'eventapp/event_details.html', {'event': event, 'related_events': related_events})
-
+from django.http import JsonResponse
+from fuzzywuzzy import process
+from .models import ChatbotQA
 
 import math
 import json
@@ -388,13 +138,682 @@ from django.http import JsonResponse
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 
-from .models import EventLocation, Venue, Booking, EventCustomization
+#from .models import EventLocation, Venue, Booking, EventCustomization
+from .models import EventLocation, Booking, EventCustomization  # Temporarily remove Venue
+
 from .utils import get_coordinates
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib import messages
+from .models import Booking, EventCustomization
+
+from django.db import transaction
+from django.shortcuts import get_object_or_404, redirect, render
+from django.contrib import messages
+from django.utils.timezone import now
+from .models import Event, Booking, EventCustomization
+from .forms import BookingForm, EventCustomizationForm
+
+
+
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib import messages
+from django.utils.timezone import now
+from django.db import transaction
+from django.http import JsonResponse
+from decimal import Decimal
+import json, math, logging
+
+from django.contrib.auth.decorators import login_required
+#from .models import Event, Booking, EventCustomization, EventLocation, AddOn
+from .forms import BookingForm, EventCustomizationForm, EventTypeForm
+from .utils import get_coordinates  # Assumed to exist for geocoding
+import logging
+import json
+from decimal import Decimal
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from django.contrib.auth.decorators import login_required
+#from eventapp.models import Booking, EventCustomization  # Ensure correct import
+from eventapp.addon_config import ADDON_CONFIG  # Ensure ADDON_CONFIG is imported correctly
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from decimal import Decimal
+import json
+import logging
+import json
+import logging
+from decimal import Decimal
+from django.http import JsonResponse
+from django.shortcuts import get_object_or_404, redirect, render
+from django.contrib.auth.decorators import login_required
+from django.views.decorators.csrf import csrf_exempt
+from django.contrib import messages
+
+
+import logging
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib import messages
+from django.db import transaction
+from django.http import JsonResponse
+from django.utils.timezone import now
+from django.contrib.auth.decorators import login_required
+from eventapp.models import Event, Booking, EventCustomization, AddOn
+from eventapp.forms import BookingForm, EventCustomizationForm, EventTypeForm
+import json
+from datetime import date
+from django.shortcuts import render, redirect
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+import json
+from .forms import EventCustomizationForm
+from .addon_config import ADDON_CONFIG  # Assuming this is where your addon config is stored
+
+from django.shortcuts import render, redirect
+from django.contrib import messages
+from datetime import date
+import json
+from .forms import EventCustomizationForm
+from .addon_config import ADDON_CONFIG  # Assuming this is where your addon config is stored
+
+import json
+import logging
+from decimal import Decimal
+from datetime import date
+from django.http import JsonResponse
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib import messages
+from django.views.decorators.csrf import csrf_exempt
+from django.contrib.auth.decorators import login_required
+from eventapp.models import Booking, Event
+from eventapp.forms import EventCustomizationForm
+from eventapp.utils import calculate_total_price
+from eventapp.models import EventCustomization
+
+import json
+import logging
+from decimal import Decimal
+from django.http import JsonResponse
+from django.contrib.auth.decorators import login_required
+from .addon_config import ADDON_CONFIG
+from eventapp.models import Event
+
+from decimal import Decimal, InvalidOperation
+
+from decimal import Decimal, InvalidOperation
+
+from decimal import Decimal, InvalidOperation
+
+from decimal import Decimal, InvalidOperation
+import logging
+from django.shortcuts import render, get_object_or_404
+from django.contrib.auth.decorators import login_required
+from .models import Booking  # Import your Booking model
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from eventapp.models import Event, Booking, EventLocation
+from django.shortcuts import redirect, render, get_object_or_404
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from .models import Event, Booking, EventLocation
+from .utils import get_session_booking  # Import session helper
+from .utils import log_session_data
+
+logger = logging.getLogger(__name__)
+@login_required
+def booking(request, slug=None):
+    event = get_object_or_404(Event, slug=slug)
+    print("Received slug:", slug)
+
+    # Save event slug in session at the beginning of the booking view
+    request.session['event_slug'] = slug  # Save the event slug in the session
+    logger.debug(f"Received event slug: {slug}")
+    logger.debug(f"Event slug stored in session: {request.session.get('event_slug')}")
+    logger.debug(f"Booking ID stored in session: {request.session.get('booking_id')}")
+
+
+
+    # Retrieve booking instance from session
+    booking_id = request.session.get('booking_id')
+    booking_instance = None
+    if booking_id:
+        booking_instance = Booking.objects.filter(id=booking_id, user=request.user).first()
+
+    # Retrieve or create customization instance
+    customization_instance = None
+    if booking_instance:
+        customization_instance = EventCustomization.objects.filter(booking=booking_instance).first()
+
+    if request.method == "POST":
+        customization_form = EventCustomizationForm(request.POST, instance=customization_instance)
+
+        if customization_form.is_valid():
+            with transaction.atomic():
+                # Ensure booking instance has an event_date
+                if not booking_instance:
+                    selected_event_date = request.session.get('selected_event_date')
+                    if not selected_event_date:
+                        messages.error(request, "Please select an event date.")
+                        return redirect('eventapp:select_event_date')
+
+                    booking_instance = Booking.objects.create(
+                        user=request.user,
+                        event=event,
+                        event_date=selected_event_date
+                    )
+                    request.session['booking_id'] = booking_instance.id
+
+                # Save customization form
+                customization = customization_form.save(commit=False)
+                customization.booking = booking_instance
+                customization.save()
+                logger.debug(f"Customization data saved in session: {request.session.get('customization')}")
+
+
+                # Save booking-related data to session
+                request.session['booking_data'] = {
+                    'event_id': event.id,
+                    'cus_name': request.user.get_full_name(),
+                    'cus_email': request.user.email,
+                    'venue': customization.selected_location or "Custom Venue",
+                    'total_amount': float(booking_instance.total_amount) if booking_instance.total_amount else 0.0,
+                    
+                }
+                logger.debug(f"Customization data saved in session: {request.session.get('customization')}")
+
+
+            messages.success(request, "Booking successful! Your customization has been applied.")
+            return redirect('paymentapp:payment_page')
+
+    else:
+        customization_form = EventCustomizationForm(instance=customization_instance)
+
+    return render(request, 'eventapp/booking.html', {
+        'customization_form': customization_form,
+        'event': event,
+    })
+
+@login_required
+def select_event_type(request, slug):
+    """
+    Allows the user to select the event type and main tier.
+    Stores the event slug, selected event type, and tier in session.
+    Also ensures a Booking is created and stores its ID in session.
+    """
+    request.session['event_slug'] = slug
+    event = get_object_or_404(Event, slug=slug)
+
+    # Ensure a booking exists for the user and event
+    booking, created = Booking.objects.get_or_create(
+        user=request.user,
+        event=event,
+        defaults={'cus_name': request.user.get_full_name(), 'cus_email': request.user.email, "event_date": date.today()}
+    )
+
+    # Store booking ID in session
+    request.session['booking_id'] = booking.id
+    logger.info(f"Booking stored in session: {booking.id}")
+    logger.info(f"slug = {slug}")
+
+    if request.method == 'POST':
+        form = EventTypeForm(request.POST)
+        if form.is_valid():
+            request.session['selected_event_type'] = form.cleaned_data['event_type']
+            request.session['selected_tier'] = request.POST.get('tier', 'Minimal').capitalize()
+            return redirect('eventapp:event_location')  # Proceed to location selection
+    else:
+        form = EventTypeForm()
+
+    request.session.setdefault('selected_tier', 'Minimal')
+    logger.debug(f"Event slug: {slug} saved in session")
+    logger.debug(f"Booking created with ID: {booking.id}")
+    logger.debug(f"Booking ID stored in session: {request.session.get('booking_id')}")
+
+
+
+    return render(request, 'eventapp/select_event_type.html', {'form': form})
+
+
+
+@login_required
+def select_event_date(request):
+    # Check if the event date is already set
+    if 'selected_event_date' not in request.session:
+        # If no event date is found, set it to today's date (default)
+        request.session['selected_event_date'] = str(date.today())
+        request.session.modified = True  # Ensure session updates
+
+    # No need to render any form, just redirect to the next step
+    return redirect('eventapp:customize_event')
+
+
+
+#############################################
+# Event Customization View
+#############################################
+
+
+logger = logging.getLogger("eventapp.customization")
+
+@login_required
+def addon_details(request, addon_name):
+    """Fetches and returns addon details as JSON for the popup."""
+    logger.debug(f"Fetching details for addon: {addon_name}")
+    
+    try:
+        addon = get_object_or_404(AddOn, name=addon_name)
+        options_dict = json.loads(addon.options or "{}") if isinstance(addon.options, str) else addon.options
+
+        response_data = {
+            "name": addon.name,
+            "description": addon.description,
+            "image_url": static(f"eventapp/images/{addon.name}.jpeg"),
+            "pricing": options_dict,
+            "tiers_allowed": addon.tiers_allowed,
+        }
+
+        logger.debug(f"Addon details response: {response_data}")
+        return JsonResponse(response_data)
+        
+
+    except Exception as e:
+        logger.error(f"Error fetching addon details: {str(e)}")
+        return JsonResponse({"error": "Failed to fetch addon details"}, status=500)
+    
+
+
+
+@login_required
+def customize_event(request):
+    logger.debug("Accessing customize_event view")
+    log_session_data(request)
+
+    event_slug = request.session.get('event_slug')
+    if not event_slug:
+        messages.error(request, "Please select an event first.")
+        logger.warning("No event selected in session.")
+        return redirect('eventapp:select_event_type')
+
+    selected_tier = request.session.get('selected_tier', 'Minimal')
+    selected_event_date = request.session.get('selected_event_date')
+
+    if not selected_event_date:
+        messages.error(request, "Please select an event date first.")
+        logger.warning("No event date selected in session.")
+        return redirect('eventapp:select_event_date')
+
+    # Ensure customization data exists in session
+    request.session.setdefault('customization', {})
+    customization_data = request.session['customization']
+    logger.debug(f"Customization data in session: {customization_data}")
+    logger.debug(f"Event slug from session: {event_slug}")
+    logger.debug(f"Selected tier from session: {selected_tier}")
+    logger.debug(f"Selected event date from session: {selected_event_date}")
+
+
+    # Prepare add-on configurations (all Boolean add-ons now)
+    addon_config_json = json.dumps(ADDON_CONFIG)
+
+    if request.method == 'POST':
+        # Handle form submission
+        customization_data['guest_count'] = int(request.POST.get('guest_count', 1))
+        customization_data['selected_options'] = request.POST.getlist('selected_options')  # Assuming we send selected addon names
+        request.session['customization'] = customization_data
+        request.session.modified = True  # Ensure session changes are saved
+
+        logger.info(f"Customization updated in session: {request.session['customization']}")
+        messages.success(request, "Your event customization has been saved!")
+        return redirect('eventapp:customization_summary')
+    else:
+        form = EventCustomizationForm(initial=customization_data, selected_tier=selected_tier)
+
+    # Generate customization options based on selected tier (only boolean add-ons)
+    customization_options = []
+    logger.debug(f"🔍 Available add-ons in config: {list(ADDON_CONFIG.keys())}")
+
+    for key, addon in ADDON_CONFIG.items():
+        if selected_tier not in addon.get("tiers_allowed", ["Minimal", "Medium", "Premium"]):
+            continue
+
+        option_data = {
+        "name": key,
+        "display_name": addon.get("label", key.capitalize()),
+        "image": f"/static/eventapp/images/{key}.jpeg",
+        "tiers_allowed": addon.get("tiers_allowed", ["Minimal", "Medium", "Premium"]),
+        "type": addon.get("type", "boolean"),  
+        "price": addon.get("price", 0),  
+        "per_guest": addon.get("per_guest", False),  # Include per_guest flag
+    
+        }
+
+        customization_options.append(option_data)
+
+    logger.debug(f"Customization options for {selected_tier}: {len(customization_options)} options available.")
+    logger.debug(f"Customization data updated in session: {request.session.get('customization')}")
+    logger.debug(f"Customization options generated: {customization_options}")
+
+
+
+    # Build context for rendering
+    context = {
+        'form': form,
+        'selected_tier': selected_tier,
+        'selected_event_date': selected_event_date,
+        'selected_options_json': json.dumps(customization_data),
+        'customization_options': customization_options,
+        'tier': selected_tier,
+        'selected_venue': request.session.get('selected_venue', ''),
+        'location_name': request.session.get('event_location', ''),
+        'venue_tier': request.session.get('selected_venue_tier', ''),
+        'max_guests': {"Minimal": 50, "Medium": 100, "Premium": 200}.get(selected_tier, 50),
+        'today': date.today(),
+        'addon_config': addon_config_json,
+        'customization_options_json': json.dumps(customization_options),
+    }
+
+    logger.debug("Rendering 'customize_event.html' with provided context.")
+    return render(request, 'eventapp/customize_event.html', context)
+
+
+
+logger = logging.getLogger("eventapp.customization")
+
+@login_required
+def update_price(request):
+    log_session_data(request)
+    if request.method != "POST":
+        return JsonResponse({"error": "Invalid request method."}, status=400)
+
+    try:
+        data = json.loads(request.body)
+        logger.debug(f"🔹 Received data for price update: {json.dumps(data, indent=2)}")
+
+        guest_count = int(data.get("guest_count", 0))
+        selected_tier = request.session.get("selected_tier", "Minimal")
+        event_slug = request.session.get("event_slug")  # Get event slug from session
+
+        if not event_slug:
+            logger.error("❌ No event selected in session.")
+            return JsonResponse({"error": "No event selected."}, status=400)
+
+        # Ensure guest count does not exceed tier limit
+        max_guests = {"Minimal": 50, "Medium": 100, "Premium": 200}.get(selected_tier, 50)
+        if guest_count > max_guests:
+            logger.warning(f"⚠️ Guest count {guest_count} exceeds {selected_tier} tier limit.")
+            return JsonResponse({"error": f"Guest count exceeds {selected_tier} tier limit."}, status=400)
+
+        selected_options = []
+        total_addon_price = Decimal("0.00")
+
+        for addon_name in data.get("selected_addons", []):
+            addon = ADDON_CONFIG.get(addon_name, {})
+            if not addon:
+                logger.warning(f"⚠️ Unrecognized add-on: {addon_name}")
+                continue
+
+            price = Decimal(addon.get("price", 0))
+            if addon.get("per_guest", False):
+                price *= guest_count  
+
+            total_addon_price += price
+            selected_options.append({"name": addon_name, "price": str(price)})
+
+        # Calculate total price with event's base price
+        total_price = calculate_dynamic_price(selected_tier, guest_count, total_addon_price, event_slug)
+
+        # Update session safely
+        customization_data = request.session.get("customization", {})
+        customization_data.update({"guest_count": guest_count, "selected_options": selected_options})
+        request.session["customization"] = customization_data
+        request.session.modified = True
+
+        logger.debug(f"✅ Calculated price: {total_price} for customization: {json.dumps(selected_options, indent=2)}")
+        
+
+        return JsonResponse({
+            "total_price": str(total_price),
+            "selected_options": selected_options
+        })
+
+    except (ValueError, json.JSONDecodeError) as e:
+        logger.error(f"❌ Invalid input data: {e}")
+        return JsonResponse({"error": "Invalid input data."}, status=400)
+    except Exception as e:
+        logger.error(f"❌ Unexpected error updating price: {e}")
+        return JsonResponse({"error": "An unexpected error occurred."}, status=500)
+
+
+
+def calculate_dynamic_price(tier, guest_count, total_addon_price, event_slug):
+    try:
+        # Ensure guest_count and total_addon_price are safely converted to Decimal
+        if isinstance(guest_count, (int, float)):
+            guest_count = Decimal(guest_count)
+        elif isinstance(guest_count, str) and guest_count.replace('.', '', 1).isdigit():
+            guest_count = Decimal(guest_count)
+        else:
+            guest_count = Decimal("0.00")
+        
+        if isinstance(total_addon_price, (int, float)):
+            total_addon_price = Decimal(total_addon_price)
+        elif isinstance(total_addon_price, str) and total_addon_price.replace('.', '', 1).isdigit():
+            total_addon_price = Decimal(total_addon_price)
+        else:
+            total_addon_price = Decimal("0.00")
+        
+        logger.debug(f"🔹 Calculating total price with base event slug: {event_slug}")
+        logger.debug(f"Guest count: {guest_count}, Addon price: {total_addon_price}")
+
+        # Fetch event's base estimated price
+        event = Event.objects.get(slug=event_slug)
+        base_price = Decimal(event.estimated_price)  # Event base price
+        
+        logger.debug(f"Base price of event '{event_slug}': {base_price}")
+        
+        # Additional price per guest
+        guest_price = guest_count * Decimal("500.00")
+        
+        logger.debug(f"Guest price for {guest_count} guests: {guest_price}")
+        
+        # Tier-based price adjustment
+        if tier == "Premium":
+            base_price += Decimal("2000.00")
+        elif tier == "Medium":
+            base_price += Decimal("1000.00")
+        
+        logger.debug(f"Adjusted base price for tier '{tier}': {base_price}")
+        
+        # Total price calculation
+        total_price = base_price + guest_price + total_addon_price
+        
+        logger.debug(f"Total price calculated: {total_price}")
+        
+        return str(total_price)  # Return total price as a string
+        
+
+    except InvalidOperation as e:
+        logger.error(f"❌ Invalid operation in price calculation: {e}")
+        return str(Decimal("0.00"))  # Return zero if an error occurs during the calculation
+
+    except Event.DoesNotExist:
+        logger.warning(f"⚠️ Event with slug {event_slug} not found. Using default price.")
+        return str(Decimal("0.00"))
+
+    except Exception as e:
+        logger.error(f"❌ Unexpected error in price calculation: {e}")
+        return str(Decimal("0.00"))  # Return zero if any other error occurs
+
+
+#############################################
+# Customization Summary
+#############################################
+
+
+def customization_summary(request, booking_id):
+    log_session_data(request)
+    booking = get_object_or_404(Booking, id=booking_id)
+    
+    # Retrieve all necessary data from the session
+    selected_venue = request.session.get('selected_venue', '')
+    event_location_name = request.session.get('event_location', '')
+    customization = request.session.get('customization', {})
+    event_slug = request.session.get('event_slug', '')  # Ensure this is a string
+    
+    logger.debug(f"Retrieved customization from session: {customization}")
+    logger.debug(f"Selected venue from session: {selected_venue}")
+    logger.debug(f"Event slug from session: {event_slug}")
+    logger.debug(f"Calculating price with params: event_slug={event_slug}, tier={selected_tier}, guest_count={customization.get('guest_count', 0)}")
+    
+    # Get the event_slug from session (no need to fetch from booking)
+    if not event_slug:
+        event_slug = booking.event.slug  # Fallback to booking event if session value is missing
+    
+    # Calculate the total price
+    total_price = calculate_dynamic_price(
+        selected_tier,  # Pass the selected tier
+        customization.get('guest_count', 0),  # Get guest count from customization
+        sum([Decimal(option['price']) for option in customization.get('selected_options', [])]),  # Sum addon prices
+        event_slug  # Pass the event slug here
+    )
+    
+    # Prepare context
+    context = {
+        'customization': customization,
+        'selected_venue': selected_venue,
+        'event_location': event_location_name,
+        'venue_tier': selected_tier,
+        'guest_count': customization.get('guest_count', 0),
+        'total_price': total_price,
+        'selected_addons': customization.get('selected_options', []),
+        'booking': booking,
+    }
+
+    # Log the customization data for debugging
+    logger.debug(f"Customization summary data: {context}")
+
+    return render(request, 'eventapp/customization_summary.html', context)
+
+
+
+#############################################
+# Location Picker View
+#############################################
+
+@login_required
+def event_location(request):
+    """
+    Handles event location selection using session-stored booking information.
+    """
+    session_data = get_session_booking(request)  # Fetch session data
+
+    if not session_data['event_slug']:
+        messages.error(request, "Please select an event first.")
+        return redirect('eventapp:select_event_type')
+
+    event = get_object_or_404(Event, slug=session_data['event_slug'])
+
+    if not session_data['booking_id']:
+        messages.error(request, "No booking found. Please start over.")
+        return redirect('eventapp:select_event_type', slug=session_data['event_slug'])
+
+    # Retrieve existing booking (ensures it exists instead of creating a new one)
+    booking = get_object_or_404(Booking, id=session_data['booking_id'], user=request.user)
+
+    # Retrieve or create event location instance
+    location_instance, _ = EventLocation.objects.get_or_create(booking=booking)
+
+    if request.method == 'POST':
+        full_address = request.POST.get('full_address')
+        latitude = request.POST.get('latitude')
+        longitude = request.POST.get('longitude')
+        pincode = request.POST.get('pincode')
+        place_id = request.POST.get('place_id')
+
+        if full_address and latitude and longitude:
+            location_instance.full_address = full_address
+            location_instance.latitude = float(latitude)
+            location_instance.longitude = float(longitude)
+            location_instance.pincode = pincode
+            location_instance.place_id = place_id
+            location_instance.save()
+
+            # Store location in session
+            request.session['event_location'] = {
+                "full_address": full_address,
+                "latitude": latitude,
+                "longitude": longitude,
+                "pincode": pincode,
+                "place_id": place_id,
+            }
+
+            messages.success(request, "Location saved successfully.")
+            return redirect('eventapp:select_venue_tier')
+
+    return render(request, 'eventapp/event_location.html', {'event': event, 'booking': booking, 'location': location_instance})
+
+
+#############################################
+# Venue Tier Selection View
+#############################################
+@login_required
+def select_venue_tier(request):
+    selected_tier = request.session.get('selected_tier', 'Minimal')
+    event_location_name = request.session.get('event_location', None)
+    allowed_subtiers = get_allowed_subtiers(selected_tier)
+
+    venue_subtier_pricing = {"Minimal": Decimal('0'), "Medium": Decimal('300'), "Luxury": Decimal('600')}
+    enhanced_subtiers = [(t, f"{t} (+${venue_subtier_pricing.get(t, Decimal('0'))})") for t in allowed_subtiers]
+
+    if request.method == 'POST':
+        chosen_subtier = request.POST.get('venue_subtier')
+        custom_desc = request.POST.get('custom_venue_description', '')
+
+        if not chosen_subtier:
+            messages.error(request, "Please select a venue sub-tier.")
+            return redirect('eventapp:select_venue_tier')
+
+        if not is_valid_subtier(chosen_subtier, allowed_subtiers):
+            messages.error(request, "Invalid venue selection for your tier.")
+            return redirect('eventapp:select_venue_tier')
+
+        # 🚀 Save venue data in session
+        request.session['selected_venue'] = "Custom" if chosen_subtier == "Custom" else chosen_subtier
+        request.session['venue_subtier'] = chosen_subtier
+        request.session['custom_venue_description'] = custom_desc if chosen_subtier == "Custom" else ""
+
+        messages.success(request, "Venue selection saved!")
+        return redirect('eventapp:customize_event')
+
+    return render(request, 'eventapp/select_venue_tier.html', {
+        'selected_tier': selected_tier,
+        'allowed_subtier_names': allowed_subtiers,
+        'enhanced_subtiers': enhanced_subtiers,
+        'event_location': event_location_name,
+    })
+
+
+#############################################
+# Helper Functions
+#############################################
+def get_allowed_subtiers(selected_tier):
+    """Determine allowed venue sub-tiers based on the main event tier."""
+    return {
+        "Minimal": ["Minimal"],
+        "Medium": ["Minimal", "Medium"],
+        "Premium": ["Minimal", "Medium", "Luxury"]
+    }.get(selected_tier, ["Minimal"])
+
+
+def is_valid_subtier(subtier, allowed_subtiers):
+    """Check if the selected subtier is valid for the event tier."""
+    return subtier in allowed_subtiers or subtier == "Custom"
+
+
 
 #############################################
 # Helper Functions for Location/Map
 #############################################
-
 def haversine(lat1, lon1, lat2, lon2):
     """Calculate the great-circle distance between two points."""
     R = 6371  # Earth radius in km
@@ -415,134 +834,10 @@ def find_nearby_venues(user_lat, user_lon, venues):
             nearby.append({**venue, "distance": round(distance, 2)})
     return nearby
 
-#############################################
-# Location Picker View
-#############################################
-@login_required
-def event_location(request):
-    """
-    View for picking an event location using a map (Leaflet) and/or search.
-    Saves or updates the chosen location (name and coordinates) for the current booking,
-    and stores the location name in session.
-    Carries over the main event tier to the next step.
-    """
-    # Check if there's a 'tier' parameter in the GET request; update session tier if present.
-    if 'tier' in request.GET:
-        request.session['selected_tier'] = request.GET['tier'].capitalize()
-
-    nearby_venues = []  # (For legacy purposes; may be unused.)
-
-    if request.method == 'POST':
-        location = request.POST.get('location')
-        lat = request.POST.get('latitude')
-        lon = request.POST.get('longitude')
-
-        # If lat/lon is missing, try geocoding the location name.
-        if not lat or not lon:
-            lat, lon = get_coordinates(location)
-
-        if lat is not None and lon is not None:
-            # Check if there's an existing booking.
-            booking_id = request.session.get('booking_id')
-            if booking_id:
-                booking = get_object_or_404(Booking, id=booking_id)
-                # Update or create the EventLocation record linked to this booking.
-                event_loc, created = EventLocation.objects.update_or_create(
-                    booking=booking,
-                    defaults={
-                        'name': location,
-                        'latitude': float(lat),
-                        'longitude': float(lon)
-                    }
-                )
-            else:
-                # If no booking exists yet, create an unlinked EventLocation record.
-                event_loc = EventLocation.objects.create(
-                    name=location,
-                    latitude=float(lat),
-                    longitude=float(lon)
-                )
-            # Store location data in the session.
-            request.session['event_location'] = location
-            request.session['user_lat'] = float(lat)
-            request.session['user_lon'] = float(lon)
-
-            messages.success(request, "Location saved successfully!")
-            # Redirect to the venue tier selection page.
-            return redirect('eventapp:select_venue_tier')
-        else:
-            return JsonResponse({'error': 'Could not find location, try again'}, status=400)
-
-    # On GET, render the location picking template.
-    context = {
-        'nearby_venues': nearby_venues,
-    }
-    return render(request, 'eventapp/event_location.html', context)
-
-
-
-#############################################
-# Venue Tier Selection View
-#############################################
-@login_required
-def select_venue_tier(request):
-    """
-    Separate page for selecting the internal venue tier (Minimal, Medium, Luxury)
-    based on the main event tier and optionally the picked location.
-    """
-    # Retrieve main event tier from session
-    selected_tier = request.session.get('selected_tier', 'Minimal')
-    # Retrieve the picked location name from session (if available)
-    event_location_name = request.session.get('event_location', None)
-
-    # Determine allowed venue sub-tiers based on main event tier.
-    if selected_tier == "Minimal":
-        allowed_subtiers = ["Minimal"]
-    elif selected_tier == "Medium":
-        allowed_subtiers = ["Minimal", "Medium"]
-    else:  # Premium (or higher)
-        allowed_subtiers = ["Minimal", "Medium", "Luxury"]
-
-    if request.method == 'POST':
-        chosen_subtier = request.POST.get('venue_subtier')
-        custom_desc = request.POST.get('custom_venue_description', '')
-
-        booking_id = request.session.get('booking_id')
-        booking = get_object_or_404(Booking, id=booking_id)
-        customization, _ = EventCustomization.objects.get_or_create(booking=booking)
-
-        # Validate the chosen sub-tier
-        if chosen_subtier not in allowed_subtiers and chosen_subtier != 'Custom':
-            messages.error(request, "Invalid venue selection for your tier.")
-            return redirect('eventapp:select_venue_tier')
-
-        # Save sub-tier (or custom) to the EventCustomization model and update session
-        if chosen_subtier == 'Custom':
-            customization.venue_subtier = 'Custom'
-            customization.custom_venue_description = custom_desc
-            request.session['selected_venue'] = "Custom"
-        else:
-            customization.venue_subtier = chosen_subtier
-            customization.custom_venue_description = ''
-            request.session['selected_venue'] = chosen_subtier
-
-        customization.save()
-        messages.success(request, "Venue selection saved!")
-        return redirect('eventapp:customize_event')
-
-    context = {
-        'selected_tier': selected_tier,
-        'allowed_subtiers': allowed_subtiers,
-        'event_location': event_location_name,
-    }
-    return render(request, 'eventapp/select_venue_tier.html', context)
-
-
-
-
 def index(request):
     # Get all available future events
-    events = Event.objects.filter(event_date__gte=now().date(), is_available=True)
+    events = Event.objects.filter(available_until__gte=now().date(), is_available=True)
+
 
     # Fetch random events
     random_events = events.order_by('?')[:3] if events.count() >= 3 else events
@@ -562,11 +857,12 @@ def about(request):
 
 # Event list view (for pagination)
 def event_list(request):
-    events = Event.objects.filter(event_date__gte=now().date(), is_available=True).order_by('event_date')  # Order by event date
+    events = Event.objects.filter(available_until__gte=now().date(), is_available=True).order_by('available_until')  
     paginator = Paginator(events, 6)  # Adjust the number of events per page
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
     return render(request, 'eventapp/events.html', {'page_obj': page_obj})
+
 
 # Contact view
 def contact(request):
@@ -596,7 +892,10 @@ def base(request):
     }
     return render(request, 'base.html', context)
 
-
+def event_detail(request, slug):
+    event = get_object_or_404(Event, slug=slug)
+    related_events = Event.objects.filter(event_type=event.event_type).exclude(id=event.id).order_by('?')[:3]
+    return render(request, 'eventapp/event_details.html', {'event': event, 'related_events': related_events})
 
 def privacy_policy(request):
     return render(request, 'privacy_policy.html')
@@ -604,11 +903,6 @@ def terms_of_service(request):
     return render(request, 'terms_of_service.html')
 
 # eventapp/views.py/chatbot-view
-
-
-from django.http import JsonResponse
-from fuzzywuzzy import process
-from .models import ChatbotQA
 
 def chatbot_response(request):
     try:

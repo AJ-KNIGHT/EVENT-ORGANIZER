@@ -1,0 +1,125 @@
+/* 🔒 Disabled Add-on Overlay */
+.restricted-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7); /* Slightly darker for more contrast */
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    font-weight: bold;
+    border-radius: 5px;
+    text-align: center;
+    opacity: 1;
+    padding: 15px;
+    backdrop-filter: blur(4px); /* More blur for better effect */
+}
+
+/* 💬 Option Popup */
+#optionPopup {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: white;
+    box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.2);
+    padding: 20px;
+    border-radius: 10px;
+    z-index: 1001; /* Ensure it's on top of everything */
+    width: 420px;
+    max-width: 95%;
+    display: none; /* Hide by default */
+    opacity: 0; /* Start invisible for fade-in animation */
+    animation: fadeIn 0.3s ease-in-out forwards; /* Keep final state after animation */
+}
+
+/* 🖥️ Responsive Popup Adjustments */
+@media (max-width: 600px) {
+    #optionPopup {
+        width: 90%;
+        padding: 15px;
+    }
+}
+
+/* 🔲 Overlay Styling */
+#overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1000; /* Overlay needs to be just below the popup */
+    display: none; /* Hide by default */
+    opacity: 0;
+    transition: opacity 0.3s ease-in-out;
+}
+
+/* 🚀 Show Overlay */
+.show {
+    display: block !important; /* Ensure visibility when needed */
+    opacity: 1;
+}
+
+/* 💰 Total Price Display */
+.total-price {
+    border: 2px solid #007bff;
+    font-size: 20px;
+    padding: 15px;
+    background: #f8f9fa;
+    font-weight: bold;
+    border-radius: 5px;
+    text-align: center;
+}
+
+/* 📌 Sidebar Styling */
+.sidebar-summary {
+    border-left: 4px solid #007bff;
+    padding: 20px;
+    background: #f9f9f9;
+    border-radius: 5px;
+    max-height: 90vh;
+    overflow-y: auto; /* Make sidebar scrollable on small screens */
+}
+/* 🎭 Option Cards */
+.option-card {
+    position: relative;
+    background: white;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    cursor: pointer;
+}
+
+.option-card:hover {
+    transform: scale(1.05); /* Slightly larger to indicate interaction */
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.15);
+}
+
+/* Responsive Option Cards */
+@media (max-width: 768px) {
+    .option-card {
+        padding: 12px;
+    }
+}
+@media (max-width: 600px) {
+    .option-card {
+        padding: 10px;
+    }
+}
+
+/* 🔥 Popup Fade-in Animation */
+.option-popup {
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+/* Fade-in keyframes */
+@keyframes fadeIn {
+    from { opacity: 0; transform: scale(0.9); }
+    to { opacity: 1; transform: scale(1); }
+}
